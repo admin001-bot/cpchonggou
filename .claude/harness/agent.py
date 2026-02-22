@@ -52,20 +52,16 @@ def count_remaining_features(features: list) -> tuple:
 
 
 def get_next_feature(features: list) -> dict:
-    """获取下一个要处理的功能"""
-    priority_order = {'critical': 0, 'high': 1, 'medium': 2, 'low': 3}
-    category_order = {'setup': 0, 'security': 1, 'functional': 2, 'performance': 3, 'refactor': 4, 'documentation': 5}
+    """获取下一个要处理的功能
 
+    排序规则: 按功能ID顺序处理，因为功能之间有依赖关系
+    """
     incomplete = [f for f in features if not f.get('passes', False)]
     if not incomplete:
         return None
 
-    # 按优先级和类别排序
-    incomplete.sort(key=lambda x: (
-        priority_order.get(x.get('priority', 'low'), 3),
-        category_order.get(x.get('category', 'functional'), 1),
-        x.get('id', 999)
-    ))
+    # 按ID排序 (保持功能列表的原始顺序)
+    incomplete.sort(key=lambda x: x.get('id', 999))
 
     return incomplete[0]
 
