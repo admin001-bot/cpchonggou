@@ -54,7 +54,7 @@ def count_remaining_features(features: list) -> tuple:
 def get_next_feature(features: list) -> dict:
     """获取下一个要处理的功能"""
     priority_order = {'critical': 0, 'high': 1, 'medium': 2, 'low': 3}
-    category_order = {'security': 0, 'functional': 1, 'performance': 2, 'refactor': 3, 'documentation': 4}
+    category_order = {'setup': 0, 'security': 1, 'functional': 2, 'performance': 3, 'refactor': 4, 'documentation': 5}
 
     incomplete = [f for f in features if not f.get('passes', False)]
     if not incomplete:
