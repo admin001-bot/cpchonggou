@@ -1,7 +1,8 @@
-package database
+package model
 
 import (
 	"fmt"
+
 	"lottery-system/internal/config"
 
 	"gorm.io/driver/mysql"
@@ -45,6 +46,28 @@ func Init(cfg *config.DatabaseConfig) error {
 // GetDB 获取数据库实例
 func GetDB() *gorm.DB {
 	return DB
+}
+
+// AutoMigrate 自动迁移表结构 (仅用于开发环境)
+func AutoMigrate() error {
+	return DB.AutoMigrate(
+		&User{},
+		&UserBank{},
+		&UserSession{},
+		&GameType{},
+		&Played{},
+		&PlayedGroup{},
+		&Bet{},
+		&LotteryData{},
+		&DataTime{},
+		&MemberCash{},
+		&MemberRecharge{},
+		&BonusLog{},
+		&Letter{},
+		&Link{},
+		&Params{},
+		&Content{},
+	)
 }
 
 // GetTablePrefix 获取表前缀

@@ -31,7 +31,7 @@ func main() {
 	// 健康检查
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"status": "ok",
+			"status":  "ok",
 			"message": "Lottery System API is running",
 		})
 	})
@@ -44,6 +44,32 @@ func main() {
 				"message": "pong",
 			})
 		})
+
+		// 用户相关路由
+		user := api.Group("/user")
+		{
+			user.POST("/login", func(c *gin.Context) {
+				// TODO: 实现登录逻辑
+				c.JSON(200, gin.H{"code": 0, "message": "login"})
+			})
+			user.POST("/register", func(c *gin.Context) {
+				// TODO: 实现注册逻辑
+				c.JSON(200, gin.H{"code": 0, "message": "register"})
+			})
+		}
+
+		// 游戏相关路由
+		game := api.Group("/game")
+		{
+			game.GET("/list", func(c *gin.Context) {
+				// TODO: 实现游戏列表
+				c.JSON(200, gin.H{"code": 0, "data": []string{}})
+			})
+			game.GET("/lottery/:type", func(c *gin.Context) {
+				// TODO: 实现开奖数据
+				c.JSON(200, gin.H{"code": 0, "data": nil})
+			})
+		}
 	}
 
 	// 启动服务器

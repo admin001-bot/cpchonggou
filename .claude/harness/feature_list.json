@@ -1,141 +1,211 @@
 [
   {
     "id": 1,
-    "category": "security",
+    "category": "setup",
     "priority": "critical",
-    "description": "数据库配置敏感信息应从代码中移除，使用环境变量",
+    "description": "搭建项目基础框架",
     "steps": [
-      "创建 .env 文件存储数据库凭证",
-      "修改 config.php 从环境变量读取配置",
-      "添加 .env 到 .gitignore",
-      "创建 .env.example 作为模板",
-      "验证数据库连接仍然正常工作"
+      "创建 backend/ 目录结构 (Go + Gin)",
+      "创建 frontend/ 目录结构 (Vue 3 + Vite)",
+      "配置 Go modules 和依赖",
+      "配置 Vite 和 Vue 3",
+      "设置开发环境配置文件"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 2,
-    "category": "security",
+    "category": "setup",
     "priority": "critical",
-    "description": "SQL注入防护增强 - 检查所有数据库查询",
+    "description": "数据库连接和模型定义",
     "steps": [
-      "审查 sqlin.php 的防护逻辑",
-      "检查所有 DBAccess.class 中的查询方法",
-      "确保所有用户输入都经过参数化查询",
-      "添加输入验证层",
-      "测试各种SQL注入payload"
+      "使用 GORM 连接 MySQL",
+      "分析现有数据库表结构",
+      "创建 Go struct 模型 (对应原PHP表)",
+      "实现数据库迁移脚本",
+      "测试数据库连接"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": 3,
-    "category": "security",
-    "priority": "high",
-    "description": "XSS防护 - 检查所有输出点",
+    "category": "functional",
+    "priority": "critical",
+    "description": "用户系统 - 注册功能",
     "steps": [
-      "审查所有模板文件中的输出",
-      "确保用户输入在输出前经过 htmlspecialchars",
-      "检查 JavaScript 中的动态内容",
-      "添加 Content-Security-Policy 头",
-      "测试XSS攻击向量"
+      "设计注册API接口",
+      "实现后端注册逻辑 (密码加密、验证)",
+      "创建前端注册页面组件",
+      "实现表单验证",
+      "测试注册流程"
     ],
     "passes": false
   },
   {
     "id": 4,
-    "category": "security",
-    "priority": "high",
-    "description": "会话安全增强",
+    "category": "functional",
+    "priority": "critical",
+    "description": "用户系统 - 登录功能",
     "steps": [
-      "检查 session 配置",
-      "添加 session_regenerate_id 在登录后",
-      "设置安全的 session cookie 参数",
-      "添加 CSRF token 验证",
-      "测试会话固定攻击"
+      "设计登录API接口 (JWT认证)",
+      "实现后端登录逻辑",
+      "创建前端登录页面组件",
+      "实现Token存储和自动刷新",
+      "测试登录流程"
     ],
     "passes": false
   },
   {
     "id": 5,
-    "category": "refactor",
-    "priority": "medium",
-    "description": "代码规范化 - 统一代码风格",
+    "category": "functional",
+    "priority": "high",
+    "description": "用户系统 - 个人中心",
     "steps": [
-      "配置 PHP-CS-Fixer 或 PHP_CodeSniffer",
-      "统一缩进和换行风格",
-      "统一命名规范 (PSR-1/PSR-12)",
-      "添加类型声明到方法签名",
-      "运行代码检查工具"
+      "实现用户信息API",
+      "创建个人中心页面",
+      "实现头像上传功能",
+      "实现个人信息修改",
+      "测试个人信息功能"
     ],
     "passes": false
   },
   {
     "id": 6,
-    "category": "refactor",
-    "priority": "medium",
-    "description": "错误处理改进",
+    "category": "functional",
+    "priority": "high",
+    "description": "用户系统 - 银行卡绑定",
     "steps": [
-      "创建统一的异常处理类",
-      "替换 die() 和 exit() 为异常",
-      "添加日志记录机制",
-      "创建友好的错误页面",
-      "测试各种错误场景"
+      "实现银行卡绑定API",
+      "创建银行卡管理页面",
+      "实现资金密码设置",
+      "添加安全验证",
+      "测试银行卡功能"
     ],
     "passes": false
   },
   {
     "id": 7,
     "category": "functional",
-    "priority": "medium",
-    "description": "API响应标准化",
+    "priority": "high",
+    "description": "游戏系统 - 游戏大厅",
     "steps": [
-      "创建统一的API响应格式",
-      "添加响应状态码常量",
-      "统一错误消息格式",
-      "添加API文档注释",
-      "测试所有API端点"
+      "分析原有游戏类型和数据结构",
+      "实现游戏列表API",
+      "创建游戏大厅页面",
+      "实现游戏导航组件",
+      "测试游戏大厅"
     ],
     "passes": false
   },
   {
     "id": 8,
-    "category": "performance",
-    "priority": "medium",
-    "description": "数据库查询优化",
+    "category": "functional",
+    "priority": "high",
+    "description": "游戏系统 - 开奖数据",
     "steps": [
-      "分析慢查询日志",
-      "添加必要的索引",
-      "优化 N+1 查询问题",
-      "实现查询缓存机制",
-      "测试页面加载性能"
+      "实现开奖数据API",
+      "创建开奖展示组件",
+      "实现历史开奖查询",
+      "添加倒计时功能",
+      "测试开奖模块"
     ],
     "passes": false
   },
   {
     "id": 9,
     "category": "functional",
-    "priority": "low",
-    "description": "添加单元测试框架",
+    "priority": "high",
+    "description": "游戏系统 - 投注功能",
     "steps": [
-      "安装 PHPUnit",
-      "创建 tests 目录结构",
-      "编写核心功能的测试用例",
-      "配置 CI/CD 测试运行",
-      "确保测试覆盖率"
+      "分析原有投注逻辑",
+      "实现投注API",
+      "创建投注面板组件",
+      "实现投注确认流程",
+      "测试投注功能"
     ],
     "passes": false
   },
   {
     "id": 10,
-    "category": "documentation",
-    "priority": "low",
-    "description": "项目文档完善",
+    "category": "functional",
+    "priority": "medium",
+    "description": "资金系统 - 充值功能",
     "steps": [
-      "更新 README.md",
-      "添加安装部署文档",
-      "编写API文档",
-      "添加代码注释",
-      "创建开发者指南"
+      "分析原有充值流程",
+      "实现充值API",
+      "创建充值页面",
+      "集成支付通道",
+      "测试充值流程"
+    ],
+    "passes": false
+  },
+  {
+    "id": 11,
+    "category": "functional",
+    "priority": "medium",
+    "description": "资金系统 - 提现功能",
+    "steps": [
+      "实现提现API",
+      "创建提现页面",
+      "实现提现审核流程",
+      "添加资金密码验证",
+      "测试提现流程"
+    ],
+    "passes": false
+  },
+  {
+    "id": 12,
+    "category": "functional",
+    "priority": "medium",
+    "description": "团队系统 - 代理功能",
+    "steps": [
+      "实现代理关系API",
+      "创建推广页面",
+      "实现佣金计算逻辑",
+      "创建下级管理页面",
+      "测试代理功能"
+    ],
+    "passes": false
+  },
+  {
+    "id": 13,
+    "category": "performance",
+    "priority": "medium",
+    "description": "WebSocket实时推送",
+    "steps": [
+      "实现Go WebSocket服务",
+      "创建前端WebSocket连接",
+      "实现开奖实时推送",
+      "实现用户余额实时更新",
+      "测试实时通信"
+    ],
+    "passes": false
+  },
+  {
+    "id": 14,
+    "category": "security",
+    "priority": "critical",
+    "description": "安全加固",
+    "steps": [
+      "实现JWT认证中间件",
+      "添加请求频率限制",
+      "实现输入验证和过滤",
+      "添加SQL注入防护",
+      "实现XSS防护"
+    ],
+    "passes": false
+  },
+  {
+    "id": 15,
+    "category": "deployment",
+    "priority": "low",
+    "description": "部署配置",
+    "steps": [
+      "创建Docker配置",
+      "配置Nginx反向代理",
+      "设置生产环境配置",
+      "实现日志收集",
+      "编写部署文档"
     ],
     "passes": false
   }
