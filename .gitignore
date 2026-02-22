@@ -1,0 +1,33 @@
+# 环境变量文件
+.env
+.env.local
+
+# 缓存目录
+_cache_*
+
+# 日志
+logs/
+*.log
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 临时文件
+*.tmp
+*.temp
+*.bak
+
+# 上传文件 (可选)
+# upload/
+
+# 压缩包
+*.rar
+*.zip
+*.tar.gz

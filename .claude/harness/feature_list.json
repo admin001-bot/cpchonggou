@@ -1,0 +1,142 @@
+[
+  {
+    "id": 1,
+    "category": "security",
+    "priority": "critical",
+    "description": "数据库配置敏感信息应从代码中移除，使用环境变量",
+    "steps": [
+      "创建 .env 文件存储数据库凭证",
+      "修改 config.php 从环境变量读取配置",
+      "添加 .env 到 .gitignore",
+      "创建 .env.example 作为模板",
+      "验证数据库连接仍然正常工作"
+    ],
+    "passes": false
+  },
+  {
+    "id": 2,
+    "category": "security",
+    "priority": "critical",
+    "description": "SQL注入防护增强 - 检查所有数据库查询",
+    "steps": [
+      "审查 sqlin.php 的防护逻辑",
+      "检查所有 DBAccess.class 中的查询方法",
+      "确保所有用户输入都经过参数化查询",
+      "添加输入验证层",
+      "测试各种SQL注入payload"
+    ],
+    "passes": false
+  },
+  {
+    "id": 3,
+    "category": "security",
+    "priority": "high",
+    "description": "XSS防护 - 检查所有输出点",
+    "steps": [
+      "审查所有模板文件中的输出",
+      "确保用户输入在输出前经过 htmlspecialchars",
+      "检查 JavaScript 中的动态内容",
+      "添加 Content-Security-Policy 头",
+      "测试XSS攻击向量"
+    ],
+    "passes": false
+  },
+  {
+    "id": 4,
+    "category": "security",
+    "priority": "high",
+    "description": "会话安全增强",
+    "steps": [
+      "检查 session 配置",
+      "添加 session_regenerate_id 在登录后",
+      "设置安全的 session cookie 参数",
+      "添加 CSRF token 验证",
+      "测试会话固定攻击"
+    ],
+    "passes": false
+  },
+  {
+    "id": 5,
+    "category": "refactor",
+    "priority": "medium",
+    "description": "代码规范化 - 统一代码风格",
+    "steps": [
+      "配置 PHP-CS-Fixer 或 PHP_CodeSniffer",
+      "统一缩进和换行风格",
+      "统一命名规范 (PSR-1/PSR-12)",
+      "添加类型声明到方法签名",
+      "运行代码检查工具"
+    ],
+    "passes": false
+  },
+  {
+    "id": 6,
+    "category": "refactor",
+    "priority": "medium",
+    "description": "错误处理改进",
+    "steps": [
+      "创建统一的异常处理类",
+      "替换 die() 和 exit() 为异常",
+      "添加日志记录机制",
+      "创建友好的错误页面",
+      "测试各种错误场景"
+    ],
+    "passes": false
+  },
+  {
+    "id": 7,
+    "category": "functional",
+    "priority": "medium",
+    "description": "API响应标准化",
+    "steps": [
+      "创建统一的API响应格式",
+      "添加响应状态码常量",
+      "统一错误消息格式",
+      "添加API文档注释",
+      "测试所有API端点"
+    ],
+    "passes": false
+  },
+  {
+    "id": 8,
+    "category": "performance",
+    "priority": "medium",
+    "description": "数据库查询优化",
+    "steps": [
+      "分析慢查询日志",
+      "添加必要的索引",
+      "优化 N+1 查询问题",
+      "实现查询缓存机制",
+      "测试页面加载性能"
+    ],
+    "passes": false
+  },
+  {
+    "id": 9,
+    "category": "functional",
+    "priority": "low",
+    "description": "添加单元测试框架",
+    "steps": [
+      "安装 PHPUnit",
+      "创建 tests 目录结构",
+      "编写核心功能的测试用例",
+      "配置 CI/CD 测试运行",
+      "确保测试覆盖率"
+    ],
+    "passes": false
+  },
+  {
+    "id": 10,
+    "category": "documentation",
+    "priority": "low",
+    "description": "项目文档完善",
+    "steps": [
+      "更新 README.md",
+      "添加安装部署文档",
+      "编写API文档",
+      "添加代码注释",
+      "创建开发者指南"
+    ],
+    "passes": false
+  }
+]
