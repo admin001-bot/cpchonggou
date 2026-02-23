@@ -7,10 +7,10 @@
           v-for="num in row"
           :key="num"
           class="bet-item"
-          :class="['ball-' + num, { selected: isSelected(getPlayId(rank, num)) }]"
+          :class="{ selected: isSelected(getPlayId(rank, num)) }"
           @click="handleToggle(getPlayId(rank, num), rankNames[rank] + '-' + num)"
         >
-          <span class="bet-number">{{ num }}</span>
+          <span class="bet-number" :class="'data-' + num"></span>
           <span class="bet-odds">9.85</span>
         </div>
       </div>
@@ -138,29 +138,26 @@ function handleToggle(playId: number, _name: string) {
 }
 
 .bet-number {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-block;
   width: 30px;
   height: 30px;
-  border-radius: 50%;
-  font-size: 14px;
-  font-weight: bold;
-  color: #fff;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
   margin-bottom: 4px;
 }
 
-/* 不同号码不同颜色 */
-.bet-item.ball-1 .bet-number { background: #e6a23c; }
-.bet-item.ball-2 .bet-number { background: #409eff; }
-.bet-item.ball-3 .bet-number { background: #67c23a; }
-.bet-item.ball-4 .bet-number { background: #f56c6c; }
-.bet-item.ball-5 .bet-number { background: #909399; }
-.bet-item.ball-6 .bet-number { background: #e6a23c; }
-.bet-item.ball-7 .bet-number { background: #409eff; }
-.bet-item.ball-8 .bet-number { background: #67c23a; }
-.bet-item.ball-9 .bet-number { background: #f56c6c; }
-.bet-item.ball-10 .bet-number { background: #909399; }
+/* PK10号码图片 */
+.bet-number.data-1 { background-image: url('/images/ball/1.png'); }
+.bet-number.data-2 { background-image: url('/images/ball/2.png'); }
+.bet-number.data-3 { background-image: url('/images/ball/3.png'); }
+.bet-number.data-4 { background-image: url('/images/ball/4.png'); }
+.bet-number.data-5 { background-image: url('/images/ball/5.png'); }
+.bet-number.data-6 { background-image: url('/images/ball/6.png'); }
+.bet-number.data-7 { background-image: url('/images/ball/7.png'); }
+.bet-number.data-8 { background-image: url('/images/ball/8.png'); }
+.bet-number.data-9 { background-image: url('/images/ball/9.png'); }
+.bet-number.data-10 { background-image: url('/images/ball/10.png'); }
 
 .bet-odds {
   display: block;
