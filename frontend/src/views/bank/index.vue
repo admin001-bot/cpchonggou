@@ -1,5 +1,14 @@
 <template>
   <div class="m-bank">
+    <!-- 顶部导航 -->
+    <header class="bank-header">
+      <a class="back-btn" href="javascript:void(0)" @click="goBack">
+        <img src="/images/backarrow.png" />
+      </a>
+      <h1 class="header-title">{{ t('bank.fundManage') }}</h1>
+      <span class="header-right"></span>
+    </header>
+
     <!-- 顶部用户信息 -->
     <div class="cash-top">
       <div class="user-header">
@@ -33,13 +42,19 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { t } from '@/locales'
 
+const router = useRouter()
 const userStore = useUserStore()
 
 const username = computed(() => userStore.userInfo?.username || '')
 const balance = computed(() => (userStore.userInfo?.balance || 0).toFixed(2))
+
+const goBack = () => {
+  router.back()
+}
 
 const refreshBalance = () => {
   // TODO: 调用API刷新余额
@@ -57,6 +72,42 @@ onMounted(() => {
   background: #f5f5f5;
   max-width: 640px;
   margin: 0 auto;
+}
+
+/* 顶部导航 */
+.bank-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 45px;
+  background: linear-gradient(45deg, #fb2351, #ff4b3e);
+  padding: 0 10px;
+}
+
+.back-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.back-btn img {
+  width: 24px;
+  height: 24px;
+}
+
+.header-title {
+  flex: 1;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 500;
+  color: #fff;
+  margin: 0;
+}
+
+.header-right {
+  width: 40px;
 }
 
 /* 顶部区域 */

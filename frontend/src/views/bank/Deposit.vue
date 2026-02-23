@@ -11,51 +11,12 @@
           </div>
         </a>
       </div>
-
-      <!-- 支付宝转账 -->
-      <div v-if="hasAlipay" class="deposit-item" @touchstart="onTouchStart" @touchend="onTouchEnd">
-        <router-link to="/bank/alipay">
-          <img src="/images/zfb-icon.png" alt="支付宝" />
-          <div class="item-info">
-            <p class="title">{{ t('bank.alipayTransfer') }}</p>
-            <span class="desc">{{ t('bank.alipayTransfer') }}</span>
-          </div>
-        </router-link>
-      </div>
-
-      <!-- 微信转账 -->
-      <div v-if="hasWechat" class="deposit-item" @touchstart="onTouchStart" @touchend="onTouchEnd">
-        <router-link to="/bank/wechat">
-          <img src="/images/wechat-icon.png" alt="微信" />
-          <div class="item-info">
-            <p class="title">{{ t('bank.wechatTransfer') }}</p>
-            <span class="desc">{{ t('bank.wechatTransfer') }}</span>
-          </div>
-        </router-link>
-      </div>
-
-      <!-- 银行转账 -->
-      <div v-if="hasBank" class="deposit-item" @touchstart="onTouchStart" @touchend="onTouchEnd">
-        <router-link to="/bank/bankpay">
-          <img src="/images/icon04.png" alt="银行" />
-          <div class="item-info">
-            <p class="title">{{ t('bank.bankTransfer') }}</p>
-            <span class="desc">{{ t('bank.bankTransferDesc') }}</span>
-          </div>
-        </router-link>
-      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
 import { t } from '@/locales'
-
-// 支付方式开关
-const hasAlipay = ref(true)
-const hasWechat = ref(true)
-const hasBank = ref(true)
 
 // 触摸反馈
 const onTouchStart = (e: TouchEvent) => {
@@ -69,10 +30,6 @@ const onTouchEnd = (e: TouchEvent) => {
     target.classList.remove('touch-active')
   }, 150)
 }
-
-onMounted(() => {
-  // TODO: 从API获取支付方式配置
-})
 </script>
 
 <style scoped>

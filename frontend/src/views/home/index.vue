@@ -95,13 +95,13 @@
       <div class="index-menu">
         <ul>
           <li>
-            <a href="/user">
+            <a href="/bank/deposit">
               <img src="/images/icon01.png" />
               <p style="color: #ef4a42">存/取款</p>
             </a>
           </li>
           <li>
-            <a href="/user">
+            <a href="/bank/records/1">
               <img src="/images/icon02.png" />
               <p style="color: #ffa421">投註記錄</p>
             </a>

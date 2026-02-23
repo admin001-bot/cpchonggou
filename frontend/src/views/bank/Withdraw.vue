@@ -32,14 +32,14 @@
           class="form-input"
         />
         <p class="form-tip">
-          {{ t('bank.minLimit') }}<span class="red">10</span>，
-          {{ t('bank.maxLimit') }}<span class="red">2,000,000</span>
+          {{ t('bank.minLimit') }}<span class="red">{{ withdrawConfig.minMoney }}</span>，
+          {{ t('bank.maxLimit') }}<span class="red">{{ formatMoney(withdrawConfig.maxMoney) }}</span>
         </p>
       </div>
 
       <div class="form-group bank-info">
         <div class="bank-card-info">
-          {{ bankInfo.bankName }} {{ bankInfo.cardNo }} {{ bankInfo.realName }}
+          {{ bankInfo.bankName }} {{ maskCardNo(bankInfo.cardNo) }} {{ bankInfo.realName }}
         </div>
       </div>
 
@@ -78,11 +78,27 @@ const form = reactive({
   password: '',
 })
 
-const bankInfo = reactive({
-  bankName: '中国银行',
-  cardNo: '**** **** **** 1234',
-  realName: '**',
+// 后端返回的配置
+const withdrawConfig = reactive({
+  minMoney: 10,
+  maxMoney: 2000000,
 })
+
+// 后端返回的银行卡信息
+const bankInfo = reactive({
+  bankName: '',
+  cardNo: '',
+  realName: '',
+})
+
+const formatMoney = (n: number) => {
+  return n.toLocaleString()
+}
+
+const maskCardNo = (cardNo: string) => {
+  if (!cardNo || cardNo.length < 8) return cardNo
+  return cardNo.substring(0, 4) + ' **** **** ' + cardNo.substring(cardNo.length - 4)
+}
 
 const goCompleteProfile = () => {
   // TODO: 跳转到完善信息页面
@@ -94,8 +110,47 @@ const goBindBank = () => {
   alert('綁定銀行卡功能開發中')
 }
 
+// 获取用户银行卡信息
+const fetchBankInfo = async () => {
+  try {
+    // TODO: 调用API获取银行卡信息
+    // const response = await bankApi.getBankInfo()
+    // if (response.code === 0) {
+    //   if (!response.data.realName) {
+    //     step.value = 1
+    //   } else if (!response.data.cardNo) {
+    //     step.value = 2
+    //   } else {
+    //     step.value = 3
+    //     Object.assign(bankInfo, response.data)
+    //   }
+    // }
+
+    // 模拟数据
+    bankInfo.bankName = '中国银行'
+    bankInfo.cardNo = '6217001234567890'
+    bankInfo.realName = userStore.userInfo?.name || '**'
+    step.value = 3
+  } catch (error) {
+    console.error('获取银行卡信息失败', error)
+  }
+}
+
+// 获取提款配置
+const fetchWithdrawConfig = async () => {
+  try {
+    // TODO: 调用API获取提款配置
+    // const response = await bankApi.getWithdrawConfig()
+    // if (response.code === 0) {
+    //   Object.assign(withdrawConfig, response.data)
+    // }
+  } catch (error) {
+    console.error('获取提款配置失败', error)
+  }
+}
+
 const submitWithdraw = async () => {
-  if (!form.amount || parseFloat(form.amount) < 10) {
+  if (!form.amount || parseFloat(form.amount) < withdrawConfig.minMoney) {
     alert(t('bank.amountMinLimit'))
     return
   }
@@ -107,10 +162,16 @@ const submitWithdraw = async () => {
   loading.value = true
   try {
     // TODO: 调用提款API
+    // const response = await bankApi.withdraw({
+    //   amount: parseFloat(form.amount),
+    //   password: form.password
+    // })
     await new Promise((resolve) => setTimeout(resolve, 1000))
     alert(t('bank.withdrawSuccess'))
     form.amount = ''
     form.password = ''
+    // 刷新余额
+    emit('balance-updated')
   } catch (error) {
     alert(t('bank.withdrawFailed'))
   } finally {
@@ -118,10 +179,11 @@ const submitWithdraw = async () => {
   }
 }
 
+const emit = defineEmits(['balance-updated'])
+
 onMounted(() => {
-  // TODO: 检查用户状态，设置step
-  // 1. 检查是否完善个人信息
-  // 2. 检查是否绑定银行卡
+  fetchBankInfo()
+  fetchWithdrawConfig()
 })
 </script>
 
