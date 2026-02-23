@@ -2,7 +2,7 @@ package handler
 
 import (
 	"fmt"
-	"math/rand"
+		"math/rand"
 	"strconv"
 	"time"
 
@@ -28,24 +28,21 @@ type GameInfo struct {
 	Enable int    `json:"enable"`
 }
 
-// IssueInfo 期号信息
-type IssueInfo struct {
-	Issue       string `json:"issue"`
-	PreIssue    string `json:"preIssue"`
-	StartTime   int64  `json:"startTime"`
-	EndTime     int64  `json:"endTime"`
-	LotteryTime int64  `json:"lotteryTime"`
-	ServerTime  int64  `json:"serverTime"`
-	EndDiff     int64  `json:"endDiff"`     // 封盘倒计时(秒)
-	LotteryDiff int64  `json:"lotteryDiff"` // 开奖倒计时(秒)
-	Status      int    `json:"status"`      // -1:未开盘 0:已封盘 1:销售中
+// NextIssueData 下一期数据（与PHP格式一致）
+type NextIssueData struct {
+	Issue         string `json:"issue"`         // 当前期号
+	Endtime       string `json:"endtime"`       // 封盘时间 "2006-01-02 15:04:05"
+	LotteryTime   string `json:"lotteryTime"`   // 开奖时间
+	PreIssue      string `json:"preIssue"`      // 上期期号
+	PreNum        string `json:"preNum"`        // 上期开奖号码
+	ServerTime    string `json:"serverTime"`    // 服务器时间
+	GameID        int    `json:"gameId"`
 }
 
-// CurrentIssueInfo 当前期号完整信息（包含开奖号码）
-type CurrentIssueInfo struct {
-	IssueInfo
-	LastIssue string `json:"lastIssue"` // 上期期号
-	LastNums  string `json:"lastNums"`  // 上期开奖号码
+// CurIssueData 当前开奖数据
+type CurIssueData struct {
+	Issue    string `json:"issue"`    // 期号
+	Nums     string `json:"nums"`     // 开奖号码
 }
 
 // PlayInfo 玩法信息
@@ -64,16 +61,15 @@ type PlayInfo struct {
 
 // BetRequest 投注请求
 type BetRequest struct {
-	GameID   int         `json:"gameId" binding:"required"`
-	Issue    string      `json:"issue" binding:"required"`
-	BetData  interface{} `json:"betData" binding:"required"`
-	TotalNum int         `json:"totalNum" binding:"required"`
-	TotalMoney float64  `json:"totalMoney" binding:"required"`
+	GameID     int         `json:"gameId" binding:"required"`
+	Issue      string      `json:"issue" binding:"required"`
+	BetData    interface{} `json:"betData" binding:"required"`
+	TotalNum   int         `json:"totalNum" binding:"required"`
+	TotalMoney float64     `json:"totalMoney" binding:"required"`
 }
 
 // GetGameList 获取游戏列表
 func (h *GameHandler) GetGameList(c *gin.Context) {
-	// 模拟游戏列表数据（实际应从数据库读取）
 	games := []GameInfo{
 		{ID: 55, Name: "幸运飞艇", Title: "幸运飞艇", Enable: 1},
 		{ID: 50, Name: "北京赛车", Title: "北京赛车", Enable: 1},
@@ -84,76 +80,10 @@ func (h *GameHandler) GetGameList(c *gin.Context) {
 		{ID: 72, Name: "极速赛车", Title: "极速赛车", Enable: 1},
 		{ID: 113, Name: "极速六合", Title: "极速六合", Enable: 1},
 	}
-
 	response.Success(c, games)
 }
 
-// GetCurrentIssue 获取当前期号
-func (h *GameHandler) GetCurrentIssue(c *gin.Context) {
-	gameID := c.Query("gameId")
-	if gameID == "" {
-		gameID = "55"
-	}
-
-	now := time.Now()
-
-	// 根据游戏类型生成期号
-	var issue string
-	var issueNum int
-
-	switch gameID {
-	case "55", "52": // 飞艇系列 - 每天180期
-		minutes := now.Hour()*60 + now.Minute()
-		issueNum = minutes/5 + 1
-		if issueNum > 180 {
-			issueNum = 180
-		}
-		issue = fmt.Sprintf("%s%04d", now.Format("20060102"), issueNum)
-	case "50", "72": // 赛车系列
-		minutes := now.Hour()*60 + now.Minute()
-		issueNum = minutes/5 + 1
-		if issueNum > 180 {
-			issueNum = 180
-		}
-		issue = fmt.Sprintf("%s%04d", now.Format("20060102"), issueNum)
-	case "66": // PC蛋蛋
-		minutes := now.Hour()*60 + now.Minute()
-		issueNum = minutes/3 + 1
-		issue = fmt.Sprintf("24%04d", issueNum)
-	default:
-		minutes := now.Hour()*60 + now.Minute()
-		issueNum = minutes/5 + 1
-		issue = fmt.Sprintf("%s%04d", now.Format("20060102"), issueNum)
-	}
-
-	// 计算该期的开始和结束时间
-	minutes := now.Hour()*60 + now.Minute()
-	periodStart := (minutes / 5) * 5
-	startTime := time.Date(now.Year(), now.Month(), now.Day(), periodStart/60, periodStart%60, 0, 0, now.Location())
-	endTime := startTime.Add(4 * time.Minute)
-	lotteryTime := startTime.Add(5 * time.Minute)
-
-	// 判断状态
-	status := 1
-	endSeconds := endTime.Unix() - now.Unix()
-	if endSeconds <= 0 {
-		status = 0 // 封盘
-	}
-
-	preIssue := fmt.Sprintf("%s%04d", now.Format("20060102"), issueNum-1)
-
-	response.Success(c, IssueInfo{
-		Issue:       issue,
-		PreIssue:    preIssue,
-		StartTime:   startTime.Unix(),
-		EndTime:     endTime.Unix(),
-		LotteryTime: lotteryTime.Unix(),
-		ServerTime:  now.Unix(),
-		Status:      status,
-	})
-}
-
-// GetNextIssue 获取下一期期号
+// GetNextIssue 获取下一期期号（与PHP格式一致）
 func (h *GameHandler) GetNextIssue(c *gin.Context) {
 	gameID := c.Query("gameId")
 	if gameID == "" {
@@ -162,7 +92,6 @@ func (h *GameHandler) GetNextIssue(c *gin.Context) {
 	gameIDInt, _ := strconv.Atoi(gameID)
 
 	now := time.Now()
-	nowUnix := now.Unix()
 
 	// 游戏配置
 	var periodSeconds int64 = 300 // 每期时长（秒）
@@ -202,7 +131,6 @@ func (h *GameHandler) GetNextIssue(c *gin.Context) {
 	}
 
 	// 计算当前是当天的第几期
-	// 幸运飞艇从00:00开始，每5分钟一期
 	secondsOfDay := int64(now.Hour()*3600 + now.Minute()*60 + now.Second())
 	issueNum := int(secondsOfDay / periodSeconds) + 1
 
@@ -213,15 +141,12 @@ func (h *GameHandler) GetNextIssue(c *gin.Context) {
 	startSec := int(periodStartSeconds % 60)
 
 	lotteryTime := time.Date(now.Year(), now.Month(), now.Day(), startHour, startMin, startSec, 0, now.Location())
-	endTime := lotteryTime.Add(-time.Duration(ftime) * time.Second)
-	startTime := lotteryTime.Add(-time.Duration(periodSeconds) * time.Second)
 
 	// 如果当前时间已经过了开奖时间，跳到下一期
+	nowUnix := now.Unix()
 	for nowUnix >= lotteryTime.Unix() && issueNum <= periodsPerDay {
 		issueNum++
 		lotteryTime = lotteryTime.Add(time.Duration(periodSeconds) * time.Second)
-		endTime = lotteryTime.Add(-time.Duration(ftime) * time.Second)
-		startTime = lotteryTime.Add(-time.Duration(periodSeconds) * time.Second)
 	}
 
 	// 如果超过当天最后一期，跳到明天第一期
@@ -229,12 +154,12 @@ func (h *GameHandler) GetNextIssue(c *gin.Context) {
 		issueNum = 1
 		tomorrow := now.Add(24 * time.Hour)
 		lotteryTime = time.Date(tomorrow.Year(), tomorrow.Month(), tomorrow.Day(), 0, 0, int(periodSeconds), 0, now.Location())
-		endTime = lotteryTime.Add(-time.Duration(ftime) * time.Second)
-		startTime = lotteryTime.Add(-time.Duration(periodSeconds) * time.Second)
 	}
 
-	// 生成期号字符串
-	// 格式：YYYYMMDD + 3位期号（如20260223176）
+	// 封盘时间 = 开奖时间 - 封盘提前时间
+	endTime := lotteryTime.Add(-time.Duration(ftime) * time.Second)
+
+	// 生成期号字符串：YYYYMMDD + 3位期号（如20260223176）
 	dateStr := now.Format("20060102")
 	issue := fmt.Sprintf("%s%03d", dateStr, issueNum)
 
@@ -243,41 +168,45 @@ func (h *GameHandler) GetNextIssue(c *gin.Context) {
 	if issueNum > 1 {
 		preIssue = fmt.Sprintf("%s%03d", dateStr, issueNum-1)
 	} else {
-		// 昨天最后一期
 		yesterday := now.Add(-24 * time.Hour)
 		preIssue = fmt.Sprintf("%s%03d", yesterday.Format("20060102"), periodsPerDay)
 	}
 
-	// 计算倒计时
-	endDiff := endTime.Unix() - nowUnix
-	lotteryDiff := lotteryTime.Unix() - nowUnix
-
-	// 判断状态
-	var status int
-	if endDiff <= 0 {
-		status = 0 // 已封盘
-	} else if endDiff > 20*60 && gameIDInt != 70 {
-		status = 0 // 距离封盘时间超过20分钟，暂不开放
-	} else {
-		status = 1 // 正常投注
+	// 获取上期开奖号码
+	preNum := ""
+	var lastData struct {
+		Data   string `gorm:"column:data"`
+		Number string `gorm:"column:number"`
+	}
+	err := model.DB.Table("ssc_data").
+		Select("data, number").
+		Where("type = ?", gameIDInt).
+		Order("time DESC").
+		First(&lastData).Error
+	if err == nil {
+		preNum = lastData.Data
+		preIssue = lastData.Number
 	}
 
-	response.Success(c, IssueInfo{
+	// 返回与PHP一致的数据格式
+	response.Success(c, NextIssueData{
 		Issue:       issue,
+		Endtime:     endTime.Format("2006-01-02 15:04:05"),
+		LotteryTime: lotteryTime.Format("2006-01-02 15:04:05"),
 		PreIssue:    preIssue,
-		StartTime:   startTime.Unix(),
-		EndTime:     endTime.Unix(),
-		LotteryTime: lotteryTime.Unix(),
-		ServerTime:  nowUnix,
-		EndDiff:     endDiff,
-		LotteryDiff: lotteryDiff,
-		Status:      status,
+		PreNum:      preNum,
+		ServerTime:  now.Format("2006-01-02 15:04:05"),
+		GameID:      gameIDInt,
 	})
+}
+
+// GetCurrentIssue 获取当前期号（兼容旧接口）
+func (h *GameHandler) GetCurrentIssue(c *gin.Context) {
+	h.GetNextIssue(c)
 }
 
 // PlaceBet 投注
 func (h *GameHandler) PlaceBet(c *gin.Context) {
-	// 检查登录
 	token := c.GetHeader("Authorization")
 	if token == "" {
 		response.Error(c, "请先登录")
@@ -290,23 +219,19 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
 		return
 	}
 
-	// 验证投注金额
 	if req.TotalMoney <= 0 {
 		response.Error(c, "投注金额必须大于0")
 		return
 	}
 
-	// 验证注数
 	if req.TotalNum <= 0 {
 		response.Error(c, "请选择投注号码")
 		return
 	}
 
-	// TODO: 实际应该扣减用户余额并保存投注记录
-	// 这里模拟成功
 	response.Success(c, gin.H{
-		"message":   "投注成功",
-		"issue":    req.Issue,
+		"message":    "投注成功",
+		"issue":      req.Issue,
 		"totalMoney": req.TotalMoney,
 	})
 }
@@ -315,9 +240,7 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
 func (h *GameHandler) GetHistory(c *gin.Context) {
 	gameID := c.DefaultQuery("gameId", "55")
 
-	// 模拟历史开奖数据
 	history := []gin.H{}
-
 	now := time.Now()
 	minutes := now.Hour()*60 + now.Minute()
 	currentIssueNum := minutes/5 + 1
@@ -333,20 +256,17 @@ func (h *GameHandler) GetHistory(c *gin.Context) {
 		var numbers []int
 
 		switch gameID {
-		case "55", "52", "50", "72": // PK10系列
-			issue = fmt.Sprintf("%s%04d", now.Format("20060102"), issueNum)
-			// 生成1-10的不重复随机排列
+		case "55", "52", "50", "72":
+			issue = fmt.Sprintf("%s%03d", now.Format("20060102"), issueNum)
 			numbers = generatePK10Numbers()
-		case "66": // PC蛋蛋
+		case "66":
 			issue = fmt.Sprintf("24%04d", issueNum)
-			// PC蛋蛋: 三个数相加
 			n1 := rand.Intn(10)
 			n2 := rand.Intn(10)
 			n3 := rand.Intn(10)
 			numbers = []int{n1 + n2 + n3, n1, n2, n3}
 		default:
-			issue = fmt.Sprintf("%s%04d", now.Format("20060102"), issueNum)
-			// 普通时时彩: 5个0-9的数字
+			issue = fmt.Sprintf("%s%03d", now.Format("20060102"), issueNum)
 			numbers = []int{rand.Intn(10), rand.Intn(10), rand.Intn(10), rand.Intn(10), rand.Intn(10)}
 		}
 
@@ -360,13 +280,12 @@ func (h *GameHandler) GetHistory(c *gin.Context) {
 	response.Success(c, history)
 }
 
-// generatePK10Numbers 生成PK10开奖号码 (1-10的不重复排列)
+// generatePK10Numbers 生成PK10开奖号码
 func generatePK10Numbers() []int {
 	numbers := make([]int, 10)
 	for i := 0; i < 10; i++ {
 		numbers[i] = i + 1
 	}
-	// Fisher-Yates 洗牌算法
 	rand.Seed(time.Now().UnixNano())
 	for i := len(numbers) - 1; i > 0; i-- {
 		j := rand.Intn(i + 1)
@@ -375,14 +294,13 @@ func generatePK10Numbers() []int {
 	return numbers
 }
 
-// GetPlays 获取玩法赔率 - 从数据库读取
+// GetPlays 获取玩法赔率
 func (h *GameHandler) GetPlays(c *gin.Context) {
 	gameID := c.DefaultQuery("gameId", "55")
 	gameIDInt, _ := strconv.Atoi(gameID)
 
 	plays := make(map[string]PlayInfo)
 
-	// 从数据库读取玩法数据
 	rows, err := model.DB.Raw("SELECT id, name, alias, type, played_groupid, odds, rebate, minMoney, maxMoney, maxTurnMoney FROM ssc_played WHERE type = ?", gameIDInt).Rows()
 	if err != nil {
 		response.Error(c, "获取玩法数据失败")
@@ -422,33 +340,27 @@ func (h *GameHandler) GetCurIssue(c *gin.Context) {
 	gameID := c.DefaultQuery("gameId", "55")
 	gameIDInt, _ := strconv.Atoi(gameID)
 
-	// 从数据库查询最新开奖数据
 	var data struct {
-		Type     int    `gorm:"column:type"`
-		ActionNo string `gorm:"column:actionNo"`
-		Data     string `gorm:"column:data"`
+		Number string `gorm:"column:number"`
+		Data   string `gorm:"column:data"`
 	}
 
-	// 查询最新一期开奖数据
 	err := model.DB.Table("ssc_data").
-		Select("type, actionNo, data").
+		Select("number, data").
 		Where("type = ?", gameIDInt).
 		Order("time DESC").
 		First(&data).Error
 
 	if err != nil {
-		// 如果没有数据，返回模拟数据
-		response.Success(c, gin.H{
-			"issue":   "",
-			"nums":    generatePK10Numbers(),
-			"hasData": false,
+		response.Success(c, CurIssueData{
+			Issue: "",
+			Nums:  "",
 		})
 		return
 	}
 
-	response.Success(c, gin.H{
-		"issue":   data.ActionNo,
-		"nums":    data.Data,
-		"hasData": true,
+	response.Success(c, CurIssueData{
+		Issue: data.Number,
+		Nums:  data.Data,
 	})
 }

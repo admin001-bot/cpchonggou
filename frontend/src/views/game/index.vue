@@ -197,11 +197,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { t, getCurrentLocale } from '@/locales'
+import { t } from '@/locales'
 import { getGameConfig, getGamePanes, getGameList, type GroupPane } from '@/config/games'
+import { gameApi, type NextIssueData } from '@/api/game'
 import LiangMianBet from '@/components/game/LiangMianBet.vue'
 import GuanYaHeBet from '@/components/game/GuanYaHeBet.vue'
 import RankBet from '@/components/game/RankBet.vue'
@@ -229,7 +230,7 @@ const sidebarVisible = ref(false)
 // 当前玩法
 const currentPane = ref<GroupPane | null>(null)
 
-// 投注数据 - 存储每个玩法选中的投注ID
+// 投注数据
 const betData = ref<Record<string, number[]>>({})
 
 // 投注金额
@@ -239,10 +240,11 @@ const betAmount = ref<string>('')
 const showChips = ref(false)
 
 // 期号相关
-const currentPeriod = ref('20260223001')
-const countdown = ref(120) // 秒
-const lastNumbers = ref<number[]>([5, 8, 3, 10, 1, 7, 2, 9, 4, 6])
-const lotteryState = ref(1) // 1: 正常, 0: 封盘, -1: 未开盘
+const currentPeriod = ref('')
+const prePeriod = ref('')
+const countdown = ref(0)
+const lastNumbers = ref<number[]>([])
+const lotteryState = ref(1)
 
 // 确认弹窗
 const showConfirmModal = ref(false)
@@ -250,12 +252,14 @@ const confirmBetList = ref<Array<{ name: string; odds: number; playId: number }>
 
 // 计时器
 let countdownTimer: number | null = null
+let refreshTimer: number | null = null
 
 // 格式化倒计时
 const formatCountdown = computed(() => {
-  const minutes = Math.floor(countdown.value / 60)
-  const seconds = countdown.value % 60
-  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+  const seconds = Math.max(0, countdown.value)
+  const minutes = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
 })
 
 // 总注数
@@ -283,7 +287,6 @@ function closeSidebar() {
 
 // 选择玩法
 function selectPane(pane: GroupPane) {
-  // 如果当前玩法不支持多选或切换到不支持多选的玩法，先重置
   if (currentPane.value?.multiple === false || pane.multiple === false) {
     resetBets()
   }
@@ -320,12 +323,16 @@ function clearAmount() {
 
 // 刷新余额
 function refreshBalance() {
-  // TODO: 调用API刷新余额
   alert('刷新餘額功能開發中')
 }
 
 // 下注
 function placeBet() {
+  if (lotteryState.value !== 1) {
+    alert(t('game.closed'))
+    return
+  }
+
   if (!betAmount.value || parseInt(betAmount.value) <= 0) {
     alert(t('game.enterAmount'))
     return
@@ -336,7 +343,6 @@ function placeBet() {
     return
   }
 
-  // 构建确认列表
   confirmBetList.value = []
   for (const paneCode in betData.value) {
     const playIds = betData.value[paneCode]
@@ -358,11 +364,25 @@ function closeConfirmModal() {
 }
 
 // 确认下注
-function confirmBet() {
-  // TODO: 调用API下注
-  alert('下注成功！')
-  showConfirmModal.value = false
-  resetBets()
+async function confirmBet() {
+  try {
+    const result = await gameApi.placeBet({
+      gameId: gameId.value,
+      issue: currentPeriod.value,
+      betData: betData.value,
+      totalNum: totalBetCount.value,
+      totalMoney: totalBetCount.value * (parseInt(betAmount.value) || 0)
+    })
+    if (result.code === 0) {
+      alert('下注成功！')
+      showConfirmModal.value = false
+      resetBets()
+    } else {
+      alert(result.message || '下注失敗')
+    }
+  } catch (error) {
+    alert('下注失敗，請重試')
+  }
 }
 
 // 重置投注
@@ -371,55 +391,94 @@ function resetBets() {
   betAmount.value = ''
 }
 
+// 解析时间字符串为时间戳
+function parseTime(timeStr: string): number {
+  return new Date(timeStr).getTime() / 1000
+}
+
+// 获取期号数据
+async function fetchIssueData() {
+  try {
+    const result = await gameApi.getNextIssue(gameId.value)
+    if (result.code === 0 && result.data) {
+      const data: NextIssueData = result.data
+
+      currentPeriod.value = data.issue
+      prePeriod.value = data.preIssue
+
+      // 解析时间并计算倒计时
+      const serverTime = parseTime(data.serverTime)
+      const endTime = parseTime(data.endtime)
+      const lotteryTime = parseTime(data.lotteryTime)
+
+      const endDiff = endTime - serverTime
+      const lotteryDiff = lotteryTime - serverTime
+
+      countdown.value = Math.max(0, Math.floor(endDiff))
+
+      // 判断状态
+      if (endDiff < -30 * 60) {
+        lotteryState.value = -1 // 未开盘
+      } else if (endDiff > 20 * 60 && gameId.value !== 70) {
+        lotteryState.value = 0 // 距离封盘太远
+      } else if (endDiff <= 0) {
+        lotteryState.value = 0 // 已封盘
+      } else {
+        lotteryState.value = 1 // 正常
+      }
+
+      // 解析上期开奖号码
+      if (data.preNum) {
+        const nums = data.preNum.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n))
+        lastNumbers.value = nums
+      }
+    }
+  } catch (error) {
+    console.error('获取期号数据失败:', error)
+  }
+}
+
 // 启动倒计时
 function startCountdown() {
   countdownTimer = window.setInterval(() => {
     if (countdown.value > 0) {
       countdown.value--
-    } else {
-      // 模拟新期号
-      const periodNum = parseInt(currentPeriod.value.slice(-3)) + 1
-      currentPeriod.value = currentPeriod.value.slice(0, -3) + periodNum.toString().padStart(3, '0')
-      countdown.value = 120
+    }
 
-      // 模拟新开奖号码
-      lastNumbers.value = shuffleArray([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    // 当倒计时为0时，更新状态并刷新数据
+    if (countdown.value <= 0 && lotteryState.value === 1) {
+      lotteryState.value = 0
+      // 2秒后刷新数据
+      setTimeout(() => fetchIssueData(), 2000)
     }
   }, 1000)
+
+  // 每30秒刷新一次期号数据
+  refreshTimer = window.setInterval(() => {
+    fetchIssueData()
+  }, 30000)
 }
 
-// 洗牌算法
-function shuffleArray<T>(array: T[]): T[] {
-  const arr = [...array]
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]]
-  }
-  return arr
-}
+// 监听游戏ID变化
+watch(gameId, () => {
+  fetchIssueData()
+})
 
 onMounted(() => {
-  // 设置默认玩法
   if (panes.value.length > 0) {
     currentPane.value = panes.value[0]
   }
 
-  // 启动倒计时
+  fetchIssueData()
   startCountdown()
-
-  // 加载PHP CSS
-  if (!document.getElementById('main-css')) {
-    const link = document.createElement('link')
-    link.rel = 'stylesheet'
-    link.href = '/css/main.pack.min.css'
-    link.id = 'main-css'
-    document.head.appendChild(link)
-  }
 })
 
 onUnmounted(() => {
   if (countdownTimer) {
     clearInterval(countdownTimer)
+  }
+  if (refreshTimer) {
+    clearInterval(refreshTimer)
   }
 })
 </script>
