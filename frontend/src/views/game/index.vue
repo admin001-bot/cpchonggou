@@ -39,34 +39,33 @@
     <div class="lottery-content">
       <!-- 期号显示区域 -->
       <div class="period-section">
-        <div class="period-info">
-          <div class="current-period">
-            <span class="period-label">{{ t('game.currentPeriod') }}</span>
-            <span class="period-number">{{ currentPeriod }}</span>
-            <span class="period-suffix">{{ t('game.period') }}</span>
+        <!-- 上期开奖号码和结果 -->
+        <div class="last-lottery" v-if="lastNumbers.length > 0">
+          <div class="last-period-label">上期开奖</div>
+          <div class="lottery-numbers">
+            <span
+              v-for="(num, index) in lastNumbers"
+              :key="index"
+              class="lottery-ball round-6"
+              :class="'data-' + num"
+            >{{ num }}</span>
           </div>
-          <div class="countdown">
-            <span class="countdown-label">{{ t('game.closeTime') }}</span>
-            <span class="countdown-time">{{ formatCountdown }}</span>
+          <div class="result-wrap" v-if="lotteryResults.length > 0">
+            <span
+              v-for="(result, index) in lotteryResults"
+              :key="index"
+              class="result-data"
+            >{{ result }}</span>
           </div>
         </div>
-        <!-- 开奖号码显示 -->
-        <div class="lottery-numbers" v-if="lastNumbers.length > 0">
-          <span
-            v-for="(num, index) in lastNumbers"
-            :key="index"
-            class="lottery-ball round-6"
-            :class="'data-' + num"
-          >{{ num }}</span>
-        </div>
-        <!-- 开奖结果计算显示 -->
-        <div class="result-wrap" v-if="lotteryResults.length > 0">
-          <span
-            v-for="(result, index) in lotteryResults"
-            :key="index"
-            class="result-data"
-          >{{ result }}</span>
-        </div>
+      </div>
+
+      <!-- 当前期号显示 -->
+      <div class="current-issue-bar">
+        <span class="issue-text">第 <strong>{{ currentPeriod }}</strong> 期</span>
+        <span class="countdown-text" :class="{ 'lottery-ing': countdown <= 0 }">
+          {{ countdown > 0 ? formatCountdown : '开奖中' }}
+        </span>
       </div>
 
       <!-- 玩法菜单 -->
@@ -667,51 +666,52 @@ onUnmounted(() => {
 /* 期号显示区域 */
 .period-section {
   background: #fff;
-  padding: 10px;
   border-bottom: 1px solid #eee;
 }
 
-.period-info {
+.last-lottery {
+  padding: 10px;
+}
+
+.last-period-label {
+  text-align: center;
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 6px;
+}
+
+/* 当前期号显示条 */
+.current-issue-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  padding: 8px 15px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
 }
 
-.current-period {
+.issue-text {
   font-size: 14px;
 }
 
-.period-label {
-  color: #666;
+.issue-text strong {
+  font-size: 18px;
+  margin: 0 4px;
 }
 
-.period-number {
-  color: #fb2351;
-  font-weight: bold;
+.countdown-text {
   font-size: 16px;
-  margin: 0 3px;
-}
-
-.period-suffix {
-  color: #666;
-}
-
-.countdown {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.countdown-label {
-  color: #666;
-  font-size: 12px;
-}
-
-.countdown-time {
-  color: #fb2351;
   font-weight: bold;
-  font-size: 16px;
+}
+
+.countdown-text.lottery-ing {
+  color: #ffd700;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
 }
 
 /* 开奖号码 */
