@@ -59,6 +59,14 @@
             :class="'ball-' + num"
           >{{ num }}</span>
         </div>
+        <!-- 开奖结果计算显示 -->
+        <div class="result-wrap" v-if="lotteryResults.length > 0">
+          <span
+            v-for="(result, index) in lotteryResults"
+            :key="index"
+            class="result-data"
+          >{{ result }}</span>
+        </div>
       </div>
 
       <!-- 玩法菜单 -->
@@ -269,6 +277,33 @@ const totalBetCount = computed(() => {
     count += betData.value[key].length
   }
   return count
+})
+
+// 开奖结果计算（PK10游戏）
+const lotteryResults = computed(() => {
+  const nums = lastNumbers.value
+  if (!nums || nums.length < 10) return []
+
+  const results: (number | string)[] = []
+
+  // 冠亚和
+  const sum = nums[0] + nums[1]
+  results.push(sum)
+
+  // 冠亚大小
+  results.push(sum > 11 ? '大' : '小')
+
+  // 冠亚单双
+  results.push(sum % 2 === 1 ? '單' : '雙')
+
+  // 龙虎：1vs10, 2vs9, 3vs8, 4vs7, 5vs6
+  results.push(nums[0] > nums[9] ? '龍' : '虎')
+  results.push(nums[1] > nums[8] ? '龍' : '虎')
+  results.push(nums[2] > nums[7] ? '龍' : '虎')
+  results.push(nums[3] > nums[6] ? '龍' : '虎')
+  results.push(nums[4] > nums[5] ? '龍' : '虎')
+
+  return results
 })
 
 // 获取某玩法的注数
@@ -709,6 +744,38 @@ onUnmounted(() => {
 .lottery-ball.ball-8 { background: #67c23a; }
 .lottery-ball.ball-9 { background: #f56c6c; }
 .lottery-ball.ball-10 { background: #909399; }
+
+/* 开奖结果计算 */
+.result-wrap {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #eee;
+}
+
+.result-data {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 22px;
+  padding: 0 6px;
+  background: linear-gradient(180deg, #fff, #f5f5f5);
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  font-size: 12px;
+  color: #333;
+}
+
+.result-data:first-child {
+  background: linear-gradient(180deg, #fb2351, #e91e63);
+  border-color: #fb2351;
+  color: #fff;
+  font-weight: bold;
+}
 
 /* 玩法菜单 */
 .play-tabs {
