@@ -29,20 +29,32 @@ service.interceptors.response.use(
 
     // 根据业务状态码判断
     if (res.code !== 0) {
-      ElMessage.error(res.message || '请求失败')
-
-      // 401 未授权
+      // 401 未授权 - 不显示错误消息，静默跳转
       if (res.code === 401) {
         localStorage.removeItem('token')
         window.location.href = '/login'
+        return Promise.reject(new Error(res.message || '未授权'))
       }
 
+      ElMessage.error(res.message || '请求失败')
       return Promise.reject(new Error(res.message || '请求失败'))
     }
 
     return res
   },
   (error) => {
+    // 401 错误 - 不显示错误消息
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token')
+      window.location.href = '/login'
+      return Promise.reject(error)
+    }
+
+    // 404 错误 - 静默处理（可能是可选接口）
+    if (error.response?.status === 404) {
+      return Promise.reject(error)
+    }
+
     ElMessage.error(error.message || '网络错误')
     return Promise.reject(error)
   }
