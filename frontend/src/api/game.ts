@@ -84,9 +84,10 @@ export const gameApi = {
   },
 
   // 获取玩法赔率
-  getPlays(gameId?: number): Promise<{ code: number; message: string; data: Record<string, PlayInfo> }> {
+  getPlays(gameId?: number, panId?: number): Promise<{ code: number; message: string; data: Record<string, PlayInfo> }> {
     const params: any = {}
     if (gameId) params.gameId = gameId
+    if (panId) params.panId = panId
     return request.get('/game/plays', { params })
   },
 

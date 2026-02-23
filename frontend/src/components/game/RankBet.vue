@@ -2,7 +2,7 @@
   <div class="bet-view">
     <div class="bet-section" v-for="rank in ranks" :key="rank">
       <div class="section-title">{{ getRankName(rank) }}</div>
-      <div class="bet-row" v-for="row in getNumberRows(rank)" :key="row[0]">
+      <div class="bet-row" v-for="row in getNumberRows()" :key="row[0]">
         <div
           v-for="num in row"
           :key="num"
@@ -11,7 +11,7 @@
           @click="handleToggle(getPlayId(rank, num), getRankName(rank) + '-' + num)"
         >
           <span class="bet-number" :class="'data-' + num"></span>
-          <span class="bet-odds">9.85</span>
+          <span class="bet-odds">{{ getOdds(getPlayId(rank, num)).toFixed(3) }}</span>
         </div>
       </div>
     </div>
@@ -19,12 +19,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import { t } from '@/locales'
+import type { PlayInfo } from '@/api/game'
 
 interface Props {
   gameId: number
   betData: Record<string, number[]>
+  playsData: Record<string, PlayInfo>
+  getOdds: (playId: number) => number
   ranks: number[]
 }
 
@@ -38,8 +40,8 @@ function getRankName(rank: number): string {
   return t(`rank.${rank}`)
 }
 
-// 获取数字行
-function getNumberRows(rank: number) {
+// 获取数字行 - 每行2个
+function getNumberRows() {
   const rows = []
   for (let i = 1; i <= 10; i += 2) {
     rows.push([i, i + 1])
@@ -48,10 +50,14 @@ function getNumberRows(rank: number) {
 }
 
 // 获取玩法ID
+// playId格式: gameId(55) + categoryId(102-111) + sequence(01-10)
+// categoryId = 101 + rank (例如: 第1名=102, 第10名=111)
+// sequence = 号码 (1-10号对应01-10)
 function getPlayId(rank: number, num: number): number {
-  // 格式: 501(名次)(号码)
-  // 例如: 第一名的1号 = 501101, 第六名的1号 = 501601
-  return 501000 + rank * 100 + num + 6
+  const gameId = props.gameId
+  const categoryId = 101 + rank // 第1名=102, 第10名=111
+  const sequence = num // 号码1-10对应01-10
+  return gameId * 100000 + categoryId * 100 + sequence
 }
 
 // 是否选中

@@ -91,6 +91,8 @@
           <LiangMianBet
             :game-id="gameId"
             :bet-data="betData"
+            :plays-data="playsData"
+            :get-odds="getOdds"
             @toggle-bet="toggleBet"
           />
         </template>
@@ -100,6 +102,8 @@
           <GuanYaHeBet
             :game-id="gameId"
             :bet-data="betData"
+            :plays-data="playsData"
+            :get-odds="getOdds"
             @toggle-bet="toggleBet"
           />
         </template>
@@ -109,6 +113,8 @@
           <RankBet
             :game-id="gameId"
             :bet-data="betData"
+            :plays-data="playsData"
+            :get-odds="getOdds"
             :ranks="[1, 2, 3, 4, 5]"
             @toggle-bet="toggleBet"
           />
@@ -119,6 +125,8 @@
           <RankBet
             :game-id="gameId"
             :bet-data="betData"
+            :plays-data="playsData"
+            :get-odds="getOdds"
             :ranks="[6, 7, 8, 9, 10]"
             @toggle-bet="toggleBet"
           />
@@ -209,7 +217,7 @@ import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { t } from '@/locales'
 import { getGameConfig, getGamePanes, getGameList, type GroupPane } from '@/config/games'
-import { gameApi, type NextIssueData } from '@/api/game'
+import { gameApi, type NextIssueData, type PlayInfo } from '@/api/game'
 import LiangMianBet from '@/components/game/LiangMianBet.vue'
 import GuanYaHeBet from '@/components/game/GuanYaHeBet.vue'
 import RankBet from '@/components/game/RankBet.vue'
@@ -252,6 +260,15 @@ const prePeriod = ref('')
 const countdown = ref(0)
 const lastNumbers = ref<number[]>([])
 const lotteryState = ref(1)
+
+// 玩法赔率数据
+const playsData = ref<Record<string, PlayInfo>>({})
+
+// 获取玩法赔率
+function getOdds(playId: number): number {
+  const play = playsData.value[playId.toString()]
+  return play?.odds || 9.85
+}
 
 // 确认弹窗
 const showConfirmModal = ref(false)
@@ -375,45 +392,42 @@ function refreshBalance() {
 }
 
 // 根据玩法ID获取玩法名称
+// playId格式: gameId(55) + categoryId(101-111) + sequence(01-XX)
 function getPlayName(playId: number): string {
   const id = playId
+  const gameId = Math.floor(id / 100000)
+  const categoryId = Math.floor((id % 100000) / 100)
+  const sequence = id % 100
 
-  // 冠亚和大小单双 (501001-501006)
-  if (id === 501001) return `${t('rank.topSum')}${t('game.big')}`
-  if (id === 501002) return `${t('rank.topSum')}${t('game.small')}`
-  if (id === 501003) return `${t('rank.topSum')}${t('game.odd')}`
-  if (id === 501004) return `${t('rank.topSum')}${t('game.even')}`
-  if (id === 501005) return `${t('rank.topSum')}${t('game.dragon')}`
-  if (id === 501006) return `${t('rank.topSum')}${t('game.tiger')}`
-
-  // 冠亚和数字 (502003-502019)
-  if (id >= 502003 && id <= 502019) {
-    return `${t('rank.topSum')}${id - 502000}`
+  // 冠亚和 (categoryId = 101)
+  if (categoryId === 101) {
+    if (sequence === 1) return `${t('rank.topSum')}${t('game.big')}`
+    if (sequence === 2) return `${t('rank.topSum')}${t('game.small')}`
+    if (sequence === 3) return `${t('rank.topSum')}${t('game.odd')}`
+    if (sequence === 4) return `${t('rank.topSum')}${t('game.even')}`
+    // 冠亚和数字 (sequence 5-21 对应数字 3-19)
+    if (sequence >= 5 && sequence <= 21) {
+      return `${t('rank.topSum')} ${sequence - 2}`
+    }
   }
 
-  // 名次两面玩法 (501101-501606)
-  // 格式: 501(名次)(类型) 类型: 01=大,02=小,03=单,04=双,05=龙,06=虎
-  if (id >= 501101 && id <= 502000) {
-    const base = id - 501000
-    const rank = Math.floor(base / 100)
-    const type = base % 100
+  // 各名次 (categoryId = 102-111 对应 第1-10名)
+  if (categoryId >= 102 && categoryId <= 111) {
+    const rank = categoryId - 101 // categoryId 102 = 第1名
+    const rankName = t(`rank.${rank}`)
 
-    // 名次号码投注 (type 7-16 对应 1-10号)
-    if (type >= 7 && type <= 16) {
-      const num = type - 6 // 7->1, 8->2, ..., 16->10
-      return `${t(`rank.${rank}`)} ${num}${t('rank.number')}`
+    // 号码投注 (sequence 1-10)
+    if (sequence >= 1 && sequence <= 10) {
+      return `${rankName} ${sequence}${t('rank.number')}`
     }
 
-    // 名次两面玩法
-    let typeName = ''
-    if (type === 1) typeName = t('game.big')
-    else if (type === 2) typeName = t('game.small')
-    else if (type === 3) typeName = t('game.odd')
-    else if (type === 4) typeName = t('game.even')
-    else if (type === 5) typeName = t('game.dragon')
-    else if (type === 6) typeName = t('game.tiger')
-
-    return `${t(`rank.${rank}`)}${typeName}`
+    // 两面玩法 (sequence 11-16)
+    if (sequence === 11) return `${rankName}${t('game.big')}`
+    if (sequence === 12) return `${rankName}${t('game.small')}`
+    if (sequence === 13) return `${rankName}${t('game.odd')}`
+    if (sequence === 14) return `${rankName}${t('game.even')}`
+    if (sequence === 15) return `${rankName}${t('game.dragon')}`
+    if (sequence === 16) return `${rankName}${t('game.tiger')}`
   }
 
   return `玩法${playId}`
@@ -442,7 +456,7 @@ function placeBet() {
     for (const playId of playIds) {
       confirmBetList.value.push({
         name: getPlayName(playId),
-        odds: 9.85,
+        odds: getOdds(playId),
         playId
       })
     }
@@ -531,6 +545,19 @@ async function fetchIssueData() {
   }
 }
 
+// 获取玩法赔率数据
+async function fetchPlaysData() {
+  try {
+    // 使用盘口2 (ssc_played2表)
+    const result = await gameApi.getPlays(gameId.value, 2)
+    if (result.code === 0 && result.data) {
+      playsData.value = result.data
+    }
+  } catch (error) {
+    console.error('获取玩法赔率失败:', error)
+  }
+}
+
 // 启动倒计时
 function startCountdown() {
   countdownTimer = window.setInterval(() => {
@@ -563,6 +590,7 @@ onMounted(() => {
   }
 
   fetchIssueData()
+  fetchPlaysData()
   startCountdown()
 })
 

@@ -302,13 +302,21 @@ func generatePK10Numbers() []int {
 }
 
 // GetPlays 获取玩法赔率
+// 根据panId参数选择不同的盘口表：1=ssc_played, 2=ssc_played2
 func (h *GameHandler) GetPlays(c *gin.Context) {
 	gameID := c.DefaultQuery("gameId", "55")
+	panID := c.DefaultQuery("panId", "2") // 默认使用盘口2 (gamedatas.js的数据来源)
 	gameIDInt, _ := strconv.Atoi(gameID)
 
 	plays := make(map[string]PlayInfo)
 
-	rows, err := model.DB.Raw("SELECT id, name, alias, type, played_groupid, odds, rebate, minMoney, maxMoney, maxTurnMoney FROM ssc_played WHERE type = ?", gameIDInt).Rows()
+	// 根据panId选择表
+	tableName := "ssc_played"
+	if panID == "2" {
+		tableName = "ssc_played2"
+	}
+
+	rows, err := model.DB.Raw(fmt.Sprintf("SELECT id, name, alias, type, played_groupid, odds, rebate, minMoney, maxMoney, maxTurnMoney FROM %s WHERE type = ?", tableName), gameIDInt).Rows()
 	if err != nil {
 		response.Error(c, "获取玩法数据失败")
 		return
