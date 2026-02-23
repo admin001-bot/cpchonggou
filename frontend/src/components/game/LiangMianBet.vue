@@ -183,15 +183,15 @@ function handleToggle(playId: number, _name: string) {
 }
 
 .bet-item.selected {
-  background: #fff5f7;
+  background: #b3b3b3;
 }
 
 .bet-item.selected .bet-content {
-  color: #fb2351;
+  color: #fff;
 }
 
 .bet-item.selected .bet-odds {
-  color: #fb2351;
+  color: #ed3f3f;
 }
 
 .bet-content {

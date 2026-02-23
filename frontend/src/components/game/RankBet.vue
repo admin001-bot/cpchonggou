@@ -122,11 +122,11 @@ function handleToggle(playId: number, _name: string) {
 }
 
 .bet-item.selected {
-  background: #fff5f7;
+  background: #b3b3b3;
 }
 
 .bet-item.selected .bet-number {
-  box-shadow: 0 0 0 2px #fb2351;
+  box-shadow: 0 0 0 2px #fff;
 }
 
 .bet-number {

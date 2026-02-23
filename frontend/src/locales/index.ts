@@ -76,6 +76,7 @@ export const messages: Record<Locale, Record<string, string>> = {
     'rank.10': '第十名',
     'rank.topSum': '冠亞和',
     'rank.topSumNum': '冠亞和數字',
+    'rank.number': '號',
 
     // 玩法
     'play.LM': '兩面',

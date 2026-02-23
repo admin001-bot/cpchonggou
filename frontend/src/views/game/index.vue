@@ -374,6 +374,51 @@ function refreshBalance() {
   alert('刷新餘額功能開發中')
 }
 
+// 根据玩法ID获取玩法名称
+function getPlayName(playId: number): string {
+  const id = playId
+
+  // 冠亚和大小单双 (501001-501006)
+  if (id === 501001) return `${t('rank.topSum')}${t('game.big')}`
+  if (id === 501002) return `${t('rank.topSum')}${t('game.small')}`
+  if (id === 501003) return `${t('rank.topSum')}${t('game.odd')}`
+  if (id === 501004) return `${t('rank.topSum')}${t('game.even')}`
+  if (id === 501005) return `${t('rank.topSum')}${t('game.dragon')}`
+  if (id === 501006) return `${t('rank.topSum')}${t('game.tiger')}`
+
+  // 冠亚和数字 (502003-502019)
+  if (id >= 502003 && id <= 502019) {
+    return `${t('rank.topSum')}${id - 502000}`
+  }
+
+  // 名次两面玩法 (501101-501606)
+  // 格式: 501(名次)(类型) 类型: 01=大,02=小,03=单,04=双,05=龙,06=虎
+  if (id >= 501101 && id <= 502000) {
+    const base = id - 501000
+    const rank = Math.floor(base / 100)
+    const type = base % 100
+
+    // 名次号码投注 (type 7-16 对应 1-10号)
+    if (type >= 7 && type <= 16) {
+      const num = type - 6 // 7->1, 8->2, ..., 16->10
+      return `${t(`rank.${rank}`)} ${num}${t('rank.number')}`
+    }
+
+    // 名次两面玩法
+    let typeName = ''
+    if (type === 1) typeName = t('game.big')
+    else if (type === 2) typeName = t('game.small')
+    else if (type === 3) typeName = t('game.odd')
+    else if (type === 4) typeName = t('game.even')
+    else if (type === 5) typeName = t('game.dragon')
+    else if (type === 6) typeName = t('game.tiger')
+
+    return `${t(`rank.${rank}`)}${typeName}`
+  }
+
+  return `玩法${playId}`
+}
+
 // 下注
 function placeBet() {
   if (lotteryState.value !== 1) {
@@ -396,7 +441,7 @@ function placeBet() {
     const playIds = betData.value[paneCode]
     for (const playId of playIds) {
       confirmBetList.value.push({
-        name: `玩法${playId}`,
+        name: getPlayName(playId),
         odds: 9.85,
         playId
       })
