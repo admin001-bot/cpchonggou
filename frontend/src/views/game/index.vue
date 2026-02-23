@@ -41,7 +41,7 @@
       <div class="period-section">
         <!-- 上期开奖号码和结果 -->
         <div class="last-lottery" v-if="lastNumbers.length > 0">
-          <div class="last-period-label">上期开奖</div>
+          <div class="last-period-label">第 {{ prePeriod }} 期</div>
           <div class="lottery-numbers">
             <span
               v-for="(num, index) in lastNumbers"
