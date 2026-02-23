@@ -91,7 +91,14 @@ func (h *GameHandler) GetNextIssue(c *gin.Context) {
 	}
 	gameIDInt, _ := strconv.Atoi(gameID)
 
+	// 使用北京时间（UTC+8）
 	now := time.Now()
+	// 检查是否需要调整时区（如果系统时区不是北京时间）
+	_, offset := now.Zone()
+	if offset < 8*3600 {
+		// 如果时区偏移小于8小时，加上差值
+		now = now.Add(time.Duration(8*3600-offset) * time.Second)
+	}
 
 	// 游戏配置
 	var periodSeconds int64 = 300 // 每期时长（秒）
