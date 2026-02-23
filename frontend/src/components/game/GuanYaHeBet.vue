@@ -2,14 +2,14 @@
   <div class="bet-view">
     <!-- 冠亚和大小单双 -->
     <div class="bet-section">
-      <div class="section-title">冠亞和</div>
+      <div class="section-title">{{ t('rank.topSum') }}</div>
       <div class="bet-row">
         <div
           class="bet-item"
           :class="{ selected: isSelected(501001) }"
           @click="handleToggle(501001, '冠亞大')"
         >
-          <span class="bet-content">冠亞大</span>
+          <span class="bet-content">{{ t('rank.topSum') }}{{ t('game.big') }}</span>
           <span class="bet-odds">2.2</span>
         </div>
         <div
@@ -17,7 +17,7 @@
           :class="{ selected: isSelected(501002) }"
           @click="handleToggle(501002, '冠亞小')"
         >
-          <span class="bet-content">冠亞小</span>
+          <span class="bet-content">{{ t('rank.topSum') }}{{ t('game.small') }}</span>
           <span class="bet-odds">1.77</span>
         </div>
       </div>
@@ -27,7 +27,7 @@
           :class="{ selected: isSelected(501003) }"
           @click="handleToggle(501003, '冠亞單')"
         >
-          <span class="bet-content">冠亞單</span>
+          <span class="bet-content">{{ t('rank.topSum') }}{{ t('game.odd') }}</span>
           <span class="bet-odds">1.77</span>
         </div>
         <div
@@ -35,7 +35,7 @@
           :class="{ selected: isSelected(501004) }"
           @click="handleToggle(501004, '冠亞雙')"
         >
-          <span class="bet-content">冠亞雙</span>
+          <span class="bet-content">{{ t('rank.topSum') }}{{ t('game.even') }}</span>
           <span class="bet-odds">2.2</span>
         </div>
       </div>
@@ -43,7 +43,7 @@
 
     <!-- 冠亚和数字 -->
     <div class="bet-section">
-      <div class="section-title">冠亞和數字</div>
+      <div class="section-title">{{ t('rank.topSumNum') }}</div>
       <div class="bet-row" v-for="row in heNumberRows" :key="row[0]">
         <div
           v-for="num in row"
@@ -62,6 +62,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { t } from '@/locales'
 
 interface Props {
   gameId: number

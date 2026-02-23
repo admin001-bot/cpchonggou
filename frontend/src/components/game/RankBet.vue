@@ -1,14 +1,14 @@
 <template>
   <div class="bet-view">
     <div class="bet-section" v-for="rank in ranks" :key="rank">
-      <div class="section-title">{{ rankNames[rank] }}</div>
+      <div class="section-title">{{ getRankName(rank) }}</div>
       <div class="bet-row" v-for="row in getNumberRows(rank)" :key="row[0]">
         <div
           v-for="num in row"
           :key="num"
           class="bet-item"
           :class="{ selected: isSelected(getPlayId(rank, num)) }"
-          @click="handleToggle(getPlayId(rank, num), rankNames[rank] + '-' + num)"
+          @click="handleToggle(getPlayId(rank, num), getRankName(rank) + '-' + num)"
         >
           <span class="bet-number" :class="'data-' + num"></span>
           <span class="bet-odds">9.85</span>
@@ -20,6 +20,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { t } from '@/locales'
 
 interface Props {
   gameId: number
@@ -32,18 +33,9 @@ const emit = defineEmits<{
   (e: 'toggle-bet', playId: number, paneCode?: string): void
 }>()
 
-// 名次名称
-const rankNames: Record<number, string> = {
-  1: '第一名',
-  2: '第二名',
-  3: '第三名',
-  4: '第四名',
-  5: '第五名',
-  6: '第六名',
-  7: '第七名',
-  8: '第八名',
-  9: '第九名',
-  10: '第十名',
+// 获取名次名称
+function getRankName(rank: number): string {
+  return t(`rank.${rank}`)
 }
 
 // 获取数字行

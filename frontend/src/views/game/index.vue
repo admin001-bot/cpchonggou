@@ -41,7 +41,7 @@
       <div class="period-section">
         <!-- 上期开奖号码和结果 -->
         <div class="last-lottery" v-if="lastNumbers.length > 0">
-          <div class="last-period-label">第 {{ prePeriod }} 期</div>
+          <div class="last-period-label">{{ t('game.issue') }} {{ prePeriod }} {{ t('game.period') }}</div>
           <div class="lottery-numbers">
             <span
               v-for="(num, index) in lastNumbers"
@@ -55,16 +55,16 @@
               v-for="(result, index) in lotteryResults"
               :key="index"
               class="result-data"
-            >{{ result }}</span>
+            >{{ translateResult(result) }}</span>
           </div>
         </div>
       </div>
 
       <!-- 当前期号显示 -->
       <div class="current-issue-bar">
-        <span class="issue-text">第 <strong>{{ currentPeriod }}</strong> 期</span>
+        <span class="issue-text">{{ t('game.issue') }} <strong>{{ currentPeriod }}</strong> {{ t('game.period') }}</span>
         <span class="countdown-text" :class="{ 'lottery-ing': countdown <= 0 }">
-          {{ countdown > 0 ? formatCountdown : '开奖中' }}
+          {{ countdown > 0 ? formatCountdown : t('game.lotteryIng') }}
         </span>
       </div>
 
@@ -308,6 +308,20 @@ const lotteryResults = computed(() => {
 // 获取某玩法的注数
 function getBetCount(paneCode: string): number {
   return betData.value[paneCode]?.length || 0
+}
+
+// 翻译开奖结果
+function translateResult(result: number | string): string {
+  if (typeof result === 'number') return String(result)
+  switch (result) {
+    case '大': return t('game.big')
+    case '小': return t('game.small')
+    case '單': return t('game.odd')
+    case '雙': return t('game.even')
+    case '龍': return t('game.dragon')
+    case '虎': return t('game.tiger')
+    default: return result
+  }
 }
 
 // 切换侧边栏
