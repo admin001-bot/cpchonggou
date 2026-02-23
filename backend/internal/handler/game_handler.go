@@ -153,7 +153,7 @@ func (h *GameHandler) GetCurrentIssue(c *gin.Context) {
 	})
 }
 
-// GetNextIssue 获取下一期期号 - 从数据库读取
+// GetNextIssue 获取下一期期号
 func (h *GameHandler) GetNextIssue(c *gin.Context) {
 	gameID := c.Query("gameId")
 	if gameID == "" {
@@ -164,110 +164,102 @@ func (h *GameHandler) GetNextIssue(c *gin.Context) {
 	now := time.Now()
 	nowUnix := now.Unix()
 
-	// 从ssc_type表获取封盘时间
-	var gameTypeInfo struct {
-		Ftime     int    `gorm:"column:data_ftime"`
-		OnGetNoed string `gorm:"column:onGetNoed"`
+	// 游戏配置
+	var periodSeconds int64 = 300 // 每期时长（秒）
+	var ftime int64 = 30          // 封盘提前时间（秒）
+	var periodsPerDay int = 288   // 每天期数
+
+	// 根据游戏ID设置不同的配置
+	switch gameID {
+	case "55": // 幸运飞艇
+		periodSeconds = 300
+		ftime = 30
+		periodsPerDay = 288
+	case "52": // 极速飞艇
+		periodSeconds = 300
+		ftime = 10
+		periodsPerDay = 288
+	case "50": // 北京赛车
+		periodSeconds = 1200 // 20分钟
+		ftime = 60
+		periodsPerDay = 44
+	case "100": // 极速分分彩
+		periodSeconds = 60
+		ftime = 5
+		periodsPerDay = 1440
+	case "72": // 极速赛车
+		periodSeconds = 75
+		ftime = 5
+		periodsPerDay = 1152
+	case "66": // PC蛋蛋
+		periodSeconds = 180 // 3分钟
+		ftime = 20
+		periodsPerDay = 480
+	case "70", "113": // 六合彩
+		periodSeconds = 86400 // 1天
+		ftime = 1800
+		periodsPerDay = 1
 	}
-	err := model.DB.Table("ssc_type").
-		Select("data_ftime, onGetNoed").
-		Where("id = ?", gameIDInt).
-		First(&gameTypeInfo).Error
 
-	ftime := int64(60) // 默认封盘提前60秒
-	if err == nil && gameTypeInfo.Ftime > 0 {
-		ftime = int64(gameTypeInfo.Ftime)
-	}
+	// 计算当前是当天的第几期
+	// 幸运飞艇从00:00开始，每5分钟一期
+	secondsOfDay := int64(now.Hour()*3600 + now.Minute()*60 + now.Second())
+	issueNum := int(secondsOfDay / periodSeconds) + 1
 
-	// 从ssc_data_time表查询下一期数据
-	// 对于幸运飞艇等游戏，actionNo是时间戳，actionTime是期号字符串
-	var dataTime struct {
-		ActionNo   int64  `gorm:"column:actionNo"`   // 时间戳
-		ActionTime string `gorm:"column:actionTime"` // 期号
-	}
+	// 计算该期的开奖时间
+	periodStartSeconds := int64(issueNum-1) * periodSeconds
+	startHour := int(periodStartSeconds / 3600)
+	startMin := int((periodStartSeconds % 3600) / 60)
+	startSec := int(periodStartSeconds % 60)
 
-	// 查询当前时间之后的下一期
-	err = model.DB.Table("ssc_data_time").
-		Select("actionNo, actionTime").
-		Where("type = ? AND actionNo > ?", gameIDInt, nowUnix).
-		Order("actionNo ASC").
-		First(&dataTime).Error
+	lotteryTime := time.Date(now.Year(), now.Month(), now.Day(), startHour, startMin, startSec, 0, now.Location())
+	endTime := lotteryTime.Add(-time.Duration(ftime) * time.Second)
+	startTime := lotteryTime.Add(-time.Duration(periodSeconds) * time.Second)
 
-	if err != nil {
-		// 如果没有查到，尝试获取明天的第一期
-		err = model.DB.Table("ssc_data_time").
-			Select("actionNo, actionTime").
-			Where("type = ?", gameIDInt).
-			Order("actionNo ASC").
-			First(&dataTime).Error
-	}
-
-	var issue string
-	var lotteryTime time.Time
-	var endTime time.Time
-	var startTime time.Time
-
-	if err == nil {
-		// 从数据库成功获取
-		issue = dataTime.ActionTime
-		lotteryTime = time.Unix(dataTime.ActionNo, 0)
+	// 如果当前时间已经过了开奖时间，跳到下一期
+	for nowUnix >= lotteryTime.Unix() && issueNum <= periodsPerDay {
+		issueNum++
+		lotteryTime = lotteryTime.Add(time.Duration(periodSeconds) * time.Second)
 		endTime = lotteryTime.Add(-time.Duration(ftime) * time.Second)
-		startTime = endTime.Add(-time.Duration(300-ftime) * time.Second)
+		startTime = lotteryTime.Add(-time.Duration(periodSeconds) * time.Second)
+	}
+
+	// 如果超过当天最后一期，跳到明天第一期
+	if issueNum > periodsPerDay {
+		issueNum = 1
+		tomorrow := now.Add(24 * time.Hour)
+		lotteryTime = time.Date(tomorrow.Year(), tomorrow.Month(), tomorrow.Day(), 0, 0, int(periodSeconds), 0, now.Location())
+		endTime = lotteryTime.Add(-time.Duration(ftime) * time.Second)
+		startTime = lotteryTime.Add(-time.Duration(periodSeconds) * time.Second)
+	}
+
+	// 生成期号字符串
+	// 格式：YYYYMMDD + 3位期号（如20260223176）
+	dateStr := now.Format("20060102")
+	issue := fmt.Sprintf("%s%03d", dateStr, issueNum)
+
+	// 上一期期号
+	preIssue := ""
+	if issueNum > 1 {
+		preIssue = fmt.Sprintf("%s%03d", dateStr, issueNum-1)
 	} else {
-		// 数据库没有数据，使用计算方式
-		secondsOfDay := int64(now.Hour()*3600 + now.Minute()*60 + now.Second())
-		periodSeconds := int64(300) // 5分钟
-
-		periodNum := secondsOfDay / periodSeconds
-		issueNum := int(periodNum) + 1
-
-		periodStartSeconds := periodNum * periodSeconds
-		startHour := int(periodStartSeconds / 3600)
-		startMin := int((periodStartSeconds % 3600) / 60)
-
-		startTime = time.Date(now.Year(), now.Month(), now.Day(), startHour, startMin, 0, 0, now.Location())
-		endTime = startTime.Add(time.Duration(300-ftime) * time.Second)
-		lotteryTime = startTime.Add(300 * time.Second)
-
-		issue = fmt.Sprintf("%s%04d", now.Format("20060102"), issueNum)
-
-		// 如果当前时间已经过了封盘时间，计算下一期
-		if nowUnix >= endTime.Unix() {
-			startTime = startTime.Add(300 * time.Second)
-			endTime = endTime.Add(300 * time.Second)
-			lotteryTime = lotteryTime.Add(300 * time.Second)
-			issue = fmt.Sprintf("%s%04d", now.Format("20060102"), issueNum+1)
-		}
+		// 昨天最后一期
+		yesterday := now.Add(-24 * time.Hour)
+		preIssue = fmt.Sprintf("%s%03d", yesterday.Format("20060102"), periodsPerDay)
 	}
 
 	// 计算倒计时
 	endDiff := endTime.Unix() - nowUnix
 	lotteryDiff := lotteryTime.Unix() - nowUnix
 
-	// 判断状态（参考PHP逻辑）
+	// 判断状态
 	var status int
-	if endDiff < -30*60 {
-		status = -1 // 未开盘
+	if endDiff <= 0 {
+		status = 0 // 已封盘
 	} else if endDiff > 20*60 && gameIDInt != 70 {
 		status = 0 // 距离封盘时间超过20分钟，暂不开放
-	} else if endDiff <= 0 {
-		status = 0 // 已封盘
 	} else {
 		status = 1 // 正常投注
-	}
-
-	// 获取上一期期号
-	var preIssue string
-	var preDataTime struct {
-		ActionTime string `gorm:"column:actionTime"`
-	}
-	err = model.DB.Table("ssc_data_time").
-		Select("actionTime").
-		Where("type = ? AND actionNo < ?", gameIDInt, nowUnix).
-		Order("actionNo DESC").
-		First(&preDataTime).Error
-	if err == nil {
-		preIssue = preDataTime.ActionTime
 	}
 
 	response.Success(c, IssueInfo{
