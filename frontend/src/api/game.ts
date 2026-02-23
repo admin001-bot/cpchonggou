@@ -18,7 +18,9 @@ export interface IssueInfo {
   endTime: number
   lotteryTime: number
   serverTime: number
-  status: number // -1:未开盘 0:已封盘 1:销售中
+  endDiff: number      // 封盘倒计时(秒)
+  lotteryDiff: number  // 开奖倒计时(秒)
+  status: number       // -1:未开盘 0:已封盘 1:销售中
 }
 
 // 开奖历史
@@ -70,6 +72,13 @@ export const gameApi = {
     const params: any = {}
     if (gameId) params.gameId = gameId
     return request.get('/game/nextIssue', { params })
+  },
+
+  // 获取当前开奖号码
+  getCurIssue(gameId?: number): Promise<{ code: number; message: string; data: { issue: string; nums: string | number[]; hasData: boolean } }> {
+    const params: any = {}
+    if (gameId) params.gameId = gameId
+    return request.get('/game/curIssue', { params })
   },
 
   // 获取开奖历史

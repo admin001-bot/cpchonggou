@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"lottery-system/internal/config"
+	"lottery-system/internal/handler"
 	"lottery-system/internal/model"
 
 	"github.com/gin-gonic/gin"
@@ -28,6 +29,18 @@ func main() {
 	// 创建路由
 	r := gin.Default()
 
+	// CORS中间件
+	r.Use(func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Header("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+		c.Next()
+	})
+
 	// 健康检查
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
@@ -35,6 +48,10 @@ func main() {
 			"message": "Lottery System API is running",
 		})
 	})
+
+	// 初始化handler
+	userHandler := handler.NewUserHandler()
+	gameHandler := handler.NewGameHandler()
 
 	// API路由组
 	api := r.Group("/api")
@@ -48,27 +65,24 @@ func main() {
 		// 用户相关路由
 		user := api.Group("/user")
 		{
-			user.POST("/login", func(c *gin.Context) {
-				// TODO: 实现登录逻辑
-				c.JSON(200, gin.H{"code": 0, "message": "login"})
-			})
-			user.POST("/register", func(c *gin.Context) {
-				// TODO: 实现注册逻辑
-				c.JSON(200, gin.H{"code": 0, "message": "register"})
-			})
+			user.POST("/register", userHandler.Register)
+			user.POST("/login", userHandler.Login)
+			user.GET("/info", userHandler.GetUserInfo)
 		}
+
+		// 初始化接口 - 类似PHP的/api/init
+		api.GET("/init", userHandler.Init)
 
 		// 游戏相关路由
 		game := api.Group("/game")
 		{
-			game.GET("/list", func(c *gin.Context) {
-				// TODO: 实现游戏列表
-				c.JSON(200, gin.H{"code": 0, "data": []string{}})
-			})
-			game.GET("/lottery/:type", func(c *gin.Context) {
-				// TODO: 实现开奖数据
-				c.JSON(200, gin.H{"code": 0, "data": nil})
-			})
+			game.GET("/list", gameHandler.GetGameList)
+			game.GET("/issue", gameHandler.GetCurrentIssue)
+			game.GET("/nextIssue", gameHandler.GetNextIssue)
+			game.GET("/curIssue", gameHandler.GetCurIssue)
+			game.GET("/history", gameHandler.GetHistory)
+			game.GET("/plays", gameHandler.GetPlays)
+			game.POST("/bet", gameHandler.PlaceBet)
 		}
 	}
 

@@ -80,9 +80,12 @@ import { computed } from 'vue'
 interface Props {
   gameId: number
   betData: Record<string, number[]>
+  lotteryState?: number  // 1:正常 0:封盘 -1:未开盘
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  lotteryState: 1
+})
 const emit = defineEmits<{
   (e: 'toggle-bet', playId: number, paneCode?: string): void
 }>()
@@ -135,6 +138,7 @@ function isSelected(playId: number): boolean {
 
 // 切换投注
 function handleToggle(playId: number, _name: string) {
+  if (props.lotteryState !== 1) return
   emit('toggle-bet', playId, 'LM')
 }
 </script>

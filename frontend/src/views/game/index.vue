@@ -47,10 +47,13 @@
           </div>
           <div class="countdown">
             <span class="countdown-label">{{ t('game.closeTime') }}</span>
-            <span class="countdown-time">{{ formatCountdown }}</span>
+            <span class="countdown-time" :class="{ 'countdown-warning': countdown <= 30 }">{{ formatCountdown }}</span>
           </div>
         </div>
-        <!-- 开奖号码显示 -->
+        <!-- 上期开奖号码显示 -->
+        <div class="last-period" v-if="lastPeriod">
+          <span class="last-period-label">{{ lastPeriod }}期:</span>
+        </div>
         <div class="lottery-numbers" v-if="lastNumbers.length > 0">
           <span
             v-for="(num, index) in lastNumbers"
@@ -58,6 +61,9 @@
             class="lottery-ball"
             :class="'ball-' + num"
           >{{ num }}</span>
+        </div>
+        <div class="lottery-numbers loading" v-else-if="loading">
+          <span class="loading-text">載入中...</span>
         </div>
       </div>
 
@@ -78,12 +84,13 @@
       </div>
 
       <!-- 投注面板 -->
-      <div class="bet-panel">
+      <div class="bet-panel" :class="{ 'bet-disabled': lotteryState !== 1 }">
         <!-- 两面玩法 -->
         <template v-if="currentPane?.code === 'LM'">
           <LiangMianBet
             :game-id="gameId"
             :bet-data="betData"
+            :lottery-state="lotteryState"
             @toggle-bet="toggleBet"
           />
         </template>
@@ -93,6 +100,7 @@
           <GuanYaHeBet
             :game-id="gameId"
             :bet-data="betData"
+            :lottery-state="lotteryState"
             @toggle-bet="toggleBet"
           />
         </template>
@@ -103,6 +111,7 @@
             :game-id="gameId"
             :bet-data="betData"
             :ranks="[1, 2, 3, 4, 5]"
+            :lottery-state="lotteryState"
             @toggle-bet="toggleBet"
           />
         </template>
@@ -113,6 +122,7 @@
             :game-id="gameId"
             :bet-data="betData"
             :ranks="[6, 7, 8, 9, 10]"
+            :lottery-state="lotteryState"
             @toggle-bet="toggleBet"
           />
         </template>
@@ -137,7 +147,7 @@
       </div>
 
       <!-- 筹码选择 -->
-      <div class="chips-wrap" v-if="showChips">
+      <div class="chips-wrap" v-if="showChips && lotteryState === 1">
         <span class="chip-item" @click="addAmount(10)">10</span>
         <span class="chip-item" @click="addAmount(100)">100</span>
         <span class="chip-item" @click="addAmount(1000)">1000</span>
@@ -156,11 +166,12 @@
               v-model="betAmount"
               class="amount-input"
               :placeholder="t('game.enterAmount')"
+              :disabled="lotteryState !== 1"
             />
           </div>
         </div>
         <div class="bet-buttons">
-          <button class="btn btn-bet" @click="placeBet">{{ t('game.bet') }}</button>
+          <button class="btn btn-bet" @click="placeBet" :disabled="lotteryState !== 1">{{ t('game.bet') }}</button>
           <button class="btn btn-reset" @click="resetBets">{{ t('game.reset') }}</button>
         </div>
       </div>
@@ -197,11 +208,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { t, getCurrentLocale } from '@/locales'
+import { t } from '@/locales'
 import { getGameConfig, getGamePanes, getGameList, type GroupPane } from '@/config/games'
+import { gameApi, type IssueInfo } from '@/api/game'
 import LiangMianBet from '@/components/game/LiangMianBet.vue'
 import GuanYaHeBet from '@/components/game/GuanYaHeBet.vue'
 import RankBet from '@/components/game/RankBet.vue'
@@ -238,11 +250,19 @@ const betAmount = ref<string>('')
 // 显示筹码
 const showChips = ref(false)
 
+// 加载状态
+const loading = ref(true)
+
 // 期号相关
-const currentPeriod = ref('20260223001')
-const countdown = ref(120) // 秒
-const lastNumbers = ref<number[]>([5, 8, 3, 10, 1, 7, 2, 9, 4, 6])
+const currentPeriod = ref('')
+const lastPeriod = ref('')
+const countdown = ref(0) // 封盘倒计时(秒)
+const lotteryCountdown = ref(0) // 开奖倒计时(秒)
+const lastNumbers = ref<number[]>([])
 const lotteryState = ref(1) // 1: 正常, 0: 封盘, -1: 未开盘
+
+// 服务器时间偏移
+let serverTimeOffset = 0
 
 // 确认弹窗
 const showConfirmModal = ref(false)
@@ -250,12 +270,14 @@ const confirmBetList = ref<Array<{ name: string; odds: number; playId: number }>
 
 // 计时器
 let countdownTimer: number | null = null
+let refreshTimer: number | null = null
 
 // 格式化倒计时
 const formatCountdown = computed(() => {
-  const minutes = Math.floor(countdown.value / 60)
-  const seconds = countdown.value % 60
-  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+  const seconds = Math.max(0, countdown.value)
+  const minutes = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
 })
 
 // 总注数
@@ -292,6 +314,9 @@ function selectPane(pane: GroupPane) {
 
 // 切换投注
 function toggleBet(playId: number, paneCode?: string) {
+  // 封盘状态禁止投注
+  if (lotteryState.value !== 1) return
+
   const code = paneCode || currentPane.value?.code
   if (!code) return
 
@@ -326,6 +351,11 @@ function refreshBalance() {
 
 // 下注
 function placeBet() {
+  if (lotteryState.value !== 1) {
+    alert(t('game.closed'))
+    return
+  }
+
   if (!betAmount.value || parseInt(betAmount.value) <= 0) {
     alert(t('game.enterAmount'))
     return
@@ -358,11 +388,26 @@ function closeConfirmModal() {
 }
 
 // 确认下注
-function confirmBet() {
-  // TODO: 调用API下注
-  alert('下注成功！')
-  showConfirmModal.value = false
-  resetBets()
+async function confirmBet() {
+  try {
+    const result = await gameApi.placeBet({
+      gameId: gameId.value,
+      issue: currentPeriod.value,
+      betData: betData.value,
+      totalNum: totalBetCount.value,
+      totalMoney: totalBetCount.value * (parseInt(betAmount.value) || 0)
+    })
+
+    if (result.code === 0) {
+      alert('下注成功！')
+      showConfirmModal.value = false
+      resetBets()
+    } else {
+      alert(result.message || '下注失败')
+    }
+  } catch (error) {
+    alert('下注失败，请重试')
+  }
 }
 
 // 重置投注
@@ -371,32 +416,96 @@ function resetBets() {
   betAmount.value = ''
 }
 
+// 获取期号数据
+async function fetchIssueData() {
+  try {
+    const result = await gameApi.getNextIssue(gameId.value)
+    if (result.code === 0 && result.data) {
+      const data: IssueInfo = result.data
+
+      currentPeriod.value = data.issue
+      countdown.value = Math.max(0, data.endDiff)
+      lotteryCountdown.value = Math.max(0, data.lotteryDiff)
+      lotteryState.value = data.status
+
+      // 计算服务器时间偏移
+      serverTimeOffset = data.serverTime - Math.floor(Date.now() / 1000)
+
+      // 如果封盘倒计时结束，准备获取下一期
+      if (countdown.value <= 0) {
+        setTimeout(() => fetchIssueData(), 2000)
+      }
+    }
+  } catch (error) {
+    console.error('获取期号数据失败:', error)
+  }
+}
+
+// 获取上期开奖号码
+async function fetchCurIssue() {
+  try {
+    const result = await gameApi.getCurIssue(gameId.value)
+    if (result.code === 0 && result.data) {
+      lastPeriod.value = result.data.issue
+
+      // 解析开奖号码
+      if (result.data.nums) {
+        let nums: number[] = []
+        if (typeof result.data.nums === 'string') {
+          // 字符串格式：可能是逗号分隔或空格分隔
+          nums = result.data.nums.split(/[,,\s]+/).map(n => parseInt(n)).filter(n => !isNaN(n))
+        } else if (Array.isArray(result.data.nums)) {
+          nums = result.data.nums
+        }
+        lastNumbers.value = nums
+      }
+    }
+  } catch (error) {
+    console.error('获取开奖号码失败:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
 // 启动倒计时
 function startCountdown() {
   countdownTimer = window.setInterval(() => {
+    // 使用服务器时间计算
+    const serverNow = Math.floor(Date.now() / 1000) + serverTimeOffset
+
     if (countdown.value > 0) {
       countdown.value--
-    } else {
-      // 模拟新期号
-      const periodNum = parseInt(currentPeriod.value.slice(-3)) + 1
-      currentPeriod.value = currentPeriod.value.slice(0, -3) + periodNum.toString().padStart(3, '0')
-      countdown.value = 120
+    }
 
-      // 模拟新开奖号码
-      lastNumbers.value = shuffleArray([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+    if (lotteryCountdown.value > 0) {
+      lotteryCountdown.value--
+    }
+
+    // 当封盘倒计时结束
+    if (countdown.value <= 0 && lotteryState.value === 1) {
+      lotteryState.value = 0 // 设为封盘状态
+    }
+
+    // 当开奖倒计时结束，刷新数据
+    if (lotteryCountdown.value <= 0 && countdown.value <= 0) {
+      fetchIssueData()
+      fetchCurIssue()
     }
   }, 1000)
+
+  // 每30秒刷新一次期号数据
+  refreshTimer = window.setInterval(() => {
+    fetchIssueData()
+  }, 30000)
 }
 
-// 洗牌算法
-function shuffleArray<T>(array: T[]): T[] {
-  const arr = [...array]
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]]
-  }
-  return arr
-}
+// 监听游戏ID变化
+watch(gameId, () => {
+  loading.value = true
+  lastNumbers.value = []
+  fetchIssueData()
+  fetchCurIssue()
+})
 
 onMounted(() => {
   // 设置默认玩法
@@ -404,22 +513,20 @@ onMounted(() => {
     currentPane.value = panes.value[0]
   }
 
+  // 获取期号数据
+  fetchIssueData()
+  fetchCurIssue()
+
   // 启动倒计时
   startCountdown()
-
-  // 加载PHP CSS
-  if (!document.getElementById('main-css')) {
-    const link = document.createElement('link')
-    link.rel = 'stylesheet'
-    link.href = '/css/main.pack.min.css'
-    link.id = 'main-css'
-    document.head.appendChild(link)
-  }
 })
 
 onUnmounted(() => {
   if (countdownTimer) {
     clearInterval(countdownTimer)
+  }
+  if (refreshTimer) {
+    clearInterval(refreshTimer)
   }
 })
 </script>
@@ -620,12 +727,42 @@ onUnmounted(() => {
   font-size: 16px;
 }
 
+.countdown-time.countdown-warning {
+  color: #ff4d4f;
+  animation: blink 0.5s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* 上期期号 */
+.last-period {
+  margin-bottom: 5px;
+}
+
+.last-period-label {
+  color: #999;
+  font-size: 12px;
+}
+
 /* 开奖号码 */
 .lottery-numbers {
   display: flex;
   justify-content: center;
   gap: 5px;
   flex-wrap: wrap;
+}
+
+.lottery-numbers.loading {
+  justify-content: center;
+  padding: 10px;
+}
+
+.loading-text {
+  color: #999;
+  font-size: 14px;
 }
 
 .lottery-ball {
@@ -709,6 +846,11 @@ onUnmounted(() => {
   flex: 1;
   overflow-y: auto;
   background: #fff;
+}
+
+.bet-panel.bet-disabled {
+  pointer-events: none;
+  opacity: 0.6;
 }
 
 .bet-view {
@@ -823,6 +965,11 @@ onUnmounted(() => {
   border-color: #fb2351;
 }
 
+.amount-input:disabled {
+  background: #f5f5f5;
+  cursor: not-allowed;
+}
+
 .bet-buttons {
   display: flex;
   gap: 8px;
@@ -840,6 +987,11 @@ onUnmounted(() => {
 
 .btn:active {
   transform: scale(0.95);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .btn-bet {
