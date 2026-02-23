@@ -179,7 +179,7 @@ func (h *GameHandler) GetNextIssue(c *gin.Context) {
 		preIssue = fmt.Sprintf("%s%03d", yesterday.Format("20060102"), periodsPerDay)
 	}
 
-	// 获取上期开奖号码
+	// 获取上期开奖号码（与PHP一致：按期号降序排列）
 	preNum := ""
 	var lastData struct {
 		Data   string `gorm:"column:data"`
@@ -188,7 +188,7 @@ func (h *GameHandler) GetNextIssue(c *gin.Context) {
 	err := model.DB.Table("ssc_data").
 		Select("data, number").
 		Where("type = ?", gameIDInt).
-		Order("time DESC").
+		Order("number DESC").
 		First(&lastData).Error
 	if err == nil {
 		preNum = lastData.Data
