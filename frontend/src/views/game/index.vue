@@ -700,8 +700,18 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 8px 15px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #e3bac7 0%, #ed3f3f 100%);
+  background-size: 200% 200%;
   color: #fff;
+  animation: gradientScroll 3s ease infinite;
+  position: relative;
+  overflow: hidden;
+}
+
+@keyframes gradientScroll {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .issue-text {

@@ -207,8 +207,9 @@ function handleToggle(playId: number, _name: string) {
 
 .bet-odds {
   display: block;
-  font-size: 12px;
-  color: #f5a623;
+  font-size: 15px;
+  font-weight: bold;
+  color: #ed3f3f;
 }
 
 .number-item {
