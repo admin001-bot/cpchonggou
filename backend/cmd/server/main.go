@@ -52,6 +52,27 @@ func main() {
 	// 初始化handler
 	userHandler := handler.NewUserHandler()
 	gameHandler := handler.NewGameHandler()
+	betHandler := handler.NewBetHandler()
+
+	// JWT认证中间件
+	authMiddleware := func(c *gin.Context) {
+		token := c.GetHeader("Authorization")
+		if token == "" {
+			c.JSON(401, gin.H{"code": 401, "message": "请先登录"})
+			c.Abort()
+			return
+		}
+		// 这里简化处理，实际应验证JWT token
+		// 从token中解析用户ID
+		uid, err := handler.ParseToken(token)
+		if err != nil {
+			c.JSON(401, gin.H{"code": 401, "message": "登录已过期"})
+			c.Abort()
+			return
+		}
+		c.Set("userID", uid)
+		c.Next()
+	}
 
 	// API路由组
 	api := r.Group("/api")
@@ -82,7 +103,20 @@ func main() {
 			game.GET("/curIssue", gameHandler.GetCurIssue)
 			game.GET("/history", gameHandler.GetHistory)
 			game.GET("/plays", gameHandler.GetPlays)
-			game.POST("/bet", gameHandler.PlaceBet)
+			game.POST("/bet", authMiddleware, gameHandler.PlaceBet)
+		}
+
+		// 注单相关路由（需要登录）
+		bet := api.Group("/bet")
+		bet.Use(authMiddleware)
+		{
+			bet.GET("/notCount", betHandler.GetNotCount)
+			bet.GET("/notCountDetail", betHandler.GetNotCountDetail)
+			bet.GET("/bills", betHandler.GetBetBills)
+			bet.GET("/statBets", betHandler.GetStatBets)
+			bet.GET("/userBets", betHandler.GetUserBets)
+			bet.GET("/totalStatBets", betHandler.GetTotalStatBets)
+			bet.GET("/lotteryData", betHandler.GetLotteryData)
 		}
 	}
 

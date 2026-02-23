@@ -1,23 +1,20 @@
+# 服务器配置
 server:
   port: 8080
   mode: debug  # debug, release, test
 
+# 数据库配置
 database:
   host: 127.0.0.1
   port: 3306
-  database: pj
+  database: xin1986ly
   username: root
-  password: your_password
+  password: Aa123456
   charset: utf8mb4
   prefix: ssc_
 
+# JWT配置
 jwt:
-  secret: your-jwt-secret-key-change-in-production
+  secret: lottery-system-jwt-secret-key-2024
   expire: 24h
   issuer: lottery-system
-
-redis:
-  host: 127.0.0.1
-  port: 6379
-  password: ""
-  db: 0

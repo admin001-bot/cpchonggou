@@ -66,7 +66,7 @@ func AutoMigrate() error {
 		&Letter{},
 		&Link{},
 		&Params{},
-		&Content{},
+		&BankList{},
 	)
 }
 

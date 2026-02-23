@@ -49,6 +49,48 @@ const routes: RouteRecordRaw[] = [
     meta: { title: '游戏' },
   },
   {
+    path: '/game/history/:gameId',
+    name: 'GameHistory',
+    component: () => import('@/views/game/index.vue'),
+    meta: { title: '开奖结果' },
+  },
+  {
+    path: '/notcount',
+    name: 'NotCount',
+    component: () => import('@/views/game/NotCount.vue'),
+    meta: { title: '即時注單', requiresAuth: true },
+  },
+  {
+    path: '/notcount/:gameId',
+    name: 'NotCountDetail',
+    component: () => import('@/views/game/NotCountDetail.vue'),
+    meta: { title: '注單明細', requiresAuth: true },
+  },
+  {
+    path: '/settled',
+    name: 'Settled',
+    component: () => import('@/views/game/Settled.vue'),
+    meta: { title: '今日已結', requiresAuth: true },
+  },
+  {
+    path: '/week',
+    name: 'WeekRecord',
+    component: () => import('@/views/game/WeekRecord.vue'),
+    meta: { title: '下注紀錄', requiresAuth: true },
+  },
+  {
+    path: '/day/:date',
+    name: 'DayRecord',
+    component: () => import('@/views/game/DayRecord.vue'),
+    meta: { title: '日期詳情', requiresAuth: true },
+  },
+  {
+    path: '/day/:date/:gameId',
+    name: 'DayDetail',
+    component: () => import('@/views/game/DayRecord.vue'),
+    meta: { title: '遊戲詳情', requiresAuth: true },
+  },
+  {
     path: '/bank',
     component: () => import('@/views/bank/index.vue'),
     meta: { title: '資金管理', requiresAuth: true },

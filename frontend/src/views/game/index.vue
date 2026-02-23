@@ -40,17 +40,17 @@
       <!-- 期号显示区域 -->
       <div class="period-section">
         <!-- 上期开奖号码和结果 -->
-        <div class="last-lottery" v-if="lastNumbers.length > 0">
+        <div class="last-lottery">
           <div class="last-period-label">{{ t('game.issue') }} {{ prePeriod }} {{ t('game.period') }}</div>
           <div class="lottery-numbers">
             <span
-              v-for="(num, index) in lastNumbers"
+              v-for="(num, index) in displayNumbers"
               :key="index"
               class="lottery-ball round-6"
-              :class="'data-' + num"
+              :class="['data-' + num, { 'running': isLotteryRunning && !settledIndexes.includes(index) }]"
             >{{ num }}</span>
           </div>
-          <div class="result-wrap" v-if="lotteryResults.length > 0">
+          <div class="result-wrap" v-if="lotteryResults.length > 0 && !isLotteryRunning">
             <span
               v-for="(result, index) in lotteryResults"
               :key="index"
@@ -208,6 +208,13 @@
         </div>
       </div>
     </transition>
+
+    <!-- 功能弹出菜单 -->
+    <GamePopover
+      :visible="popoverVisible"
+      :game-id="gameId"
+      @close="closePopover"
+    />
   </div>
 </template>
 
@@ -221,6 +228,7 @@ import { gameApi, type NextIssueData, type PlayInfo } from '@/api/game'
 import LiangMianBet from '@/components/game/LiangMianBet.vue'
 import GuanYaHeBet from '@/components/game/GuanYaHeBet.vue'
 import RankBet from '@/components/game/RankBet.vue'
+import GamePopover from '@/components/game/GamePopover.vue'
 
 const route = useRoute()
 const userStore = useUserStore()
@@ -242,6 +250,9 @@ const userBalance = computed(() => userStore.userInfo?.balance?.toFixed(2) || '0
 // 侧边栏
 const sidebarVisible = ref(false)
 
+// 弹出菜单
+const popoverVisible = ref(false)
+
 // 当前玩法
 const currentPane = ref<GroupPane | null>(null)
 
@@ -261,6 +272,13 @@ const countdown = ref(0)
 const lastNumbers = ref<number[]>([])
 const lotteryState = ref(1)
 
+// 开奖跑动相关
+const displayNumbers = ref<number[]>([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+const isLotteryRunning = ref(false)
+const settledIndexes = ref<number[]>([])
+let lotteryRunTimer: number | null = null
+let settleTimer: number | null = null
+
 // 玩法赔率数据
 const playsData = ref<Record<string, PlayInfo>>({})
 
@@ -277,6 +295,62 @@ const confirmBetList = ref<Array<{ name: string; odds: number; playId: number }>
 // 计时器
 let countdownTimer: number | null = null
 let refreshTimer: number | null = null
+
+// 开始开奖跑动
+function startLotteryRun() {
+  isLotteryRunning.value = true
+  settledIndexes.value = []
+
+  // 每100ms随机变换号码
+  lotteryRunTimer = window.setInterval(() => {
+    const newNumbers = [...displayNumbers.value]
+    for (let i = 0; i < 10; i++) {
+      if (!settledIndexes.value.includes(i)) {
+        newNumbers[i] = Math.floor(Math.random() * 10) + 1
+      }
+    }
+    displayNumbers.value = newNumbers
+  }, 100)
+}
+
+// 停止跑动并依次定格
+function stopLotteryRun(finalNumbers: number[]) {
+  // 先停止跑动定时器
+  if (lotteryRunTimer) {
+    clearInterval(lotteryRunTimer)
+    lotteryRunTimer = null
+  }
+
+  // 依次定格每个号码，间隔200ms
+  let currentIndex = 0
+  settleTimer = window.setInterval(() => {
+    if (currentIndex < 10) {
+      settledIndexes.value.push(currentIndex)
+      displayNumbers.value[currentIndex] = finalNumbers[currentIndex]
+      currentIndex++
+    } else {
+      // 全部定格完成
+      clearInterval(settleTimer!)
+      settleTimer = null
+      isLotteryRunning.value = false
+      lastNumbers.value = [...finalNumbers]
+    }
+  }, 200)
+}
+
+// 停止所有开奖动画
+function stopAllLotteryAnimations() {
+  if (lotteryRunTimer) {
+    clearInterval(lotteryRunTimer)
+    lotteryRunTimer = null
+  }
+  if (settleTimer) {
+    clearInterval(settleTimer)
+    settleTimer = null
+  }
+  isLotteryRunning.value = false
+  settledIndexes.value = []
+}
 
 // 格式化倒计时
 const formatCountdown = computed(() => {
@@ -343,7 +417,12 @@ function translateResult(result: number | string): string {
 
 // 切换侧边栏
 function toggleSidebar() {
-  sidebarVisible.value = !sidebarVisible.value
+  popoverVisible.value = true
+}
+
+// 关闭弹出菜单
+function closePopover() {
+  popoverVisible.value = false
 }
 
 function closeSidebar() {
@@ -510,6 +589,10 @@ async function fetchIssueData() {
     if (result.code === 0 && result.data) {
       const data: NextIssueData = result.data
 
+      // 检查是否有新的开奖号码
+      const newPreNum = data.preNum
+      const oldPreNum = lastNumbers.value.join(',')
+
       currentPeriod.value = data.issue
       prePeriod.value = data.preIssue
 
@@ -519,7 +602,6 @@ async function fetchIssueData() {
       const lotteryTime = parseTime(data.lotteryTime)
 
       const endDiff = endTime - serverTime
-      const lotteryDiff = lotteryTime - serverTime
 
       countdown.value = Math.max(0, Math.floor(endDiff))
 
@@ -535,9 +617,17 @@ async function fetchIssueData() {
       }
 
       // 解析上期开奖号码
-      if (data.preNum) {
-        const nums = data.preNum.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n))
-        lastNumbers.value = nums
+      if (newPreNum) {
+        const nums = newPreNum.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n))
+
+        // 如果正在跑动且收到了新的开奖号码，依次定格
+        if (isLotteryRunning.value && nums.length === 10 && newPreNum !== oldPreNum) {
+          stopLotteryRun(nums)
+        } else if (!isLotteryRunning.value) {
+          // 不在跑动状态，直接显示号码
+          lastNumbers.value = nums
+          displayNumbers.value = [...nums]
+        }
       }
     }
   } catch (error) {
@@ -565,11 +655,13 @@ function startCountdown() {
       countdown.value--
     }
 
-    // 当倒计时为0时，更新状态并刷新数据
+    // 当倒计时为0时，开始开奖跑动
     if (countdown.value <= 0 && lotteryState.value === 1) {
       lotteryState.value = 0
-      // 2秒后刷新数据
-      setTimeout(() => fetchIssueData(), 2000)
+      // 开始跑动动画
+      if (!isLotteryRunning.value) {
+        startLotteryRun()
+      }
     }
   }, 1000)
 
@@ -601,6 +693,7 @@ onUnmounted(() => {
   if (refreshTimer) {
     clearInterval(refreshTimer)
   }
+  stopAllLotteryAnimations()
 })
 </script>
 
@@ -843,6 +936,16 @@ onUnmounted(() => {
 .lottery-ball.data-8 { background-image: url('/images/ball/8.png'); }
 .lottery-ball.data-9 { background-image: url('/images/ball/9.png'); }
 .lottery-ball.data-10 { background-image: url('/images/ball/10.png'); }
+
+/* 开奖跑动动画 */
+.lottery-ball.running {
+  animation: ballRun 0.1s ease-in-out infinite;
+}
+
+@keyframes ballRun {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
 
 /* 开奖结果计算 */
 .result-wrap {
