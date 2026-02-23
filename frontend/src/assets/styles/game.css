@@ -1,0 +1,76 @@
+/* 游戏页面补充样式 - 只添加PHP主CSS中没有的 */
+
+/* ========== 号码球图片背景 ========== */
+.lotter-view .round-7 {
+  width: 1.2rem;
+  height: 1.2rem;
+  display: inline-block;
+  line-height: 1.2rem;
+  text-align: center;
+  background-size: 1.2rem;
+  background-repeat: no-repeat;
+  background-position: center;
+  color: transparent !important;
+  font-size: 0;
+}
+
+.lotter-view .round-7.data-1 { background-image: url('/images/ball/1.png'); }
+.lotter-view .round-7.data-2 { background-image: url('/images/ball/2.png'); }
+.lotter-view .round-7.data-3 { background-image: url('/images/ball/3.png'); }
+.lotter-view .round-7.data-4 { background-image: url('/images/ball/4.png'); }
+.lotter-view .round-7.data-5 { background-image: url('/images/ball/5.png'); }
+.lotter-view .round-7.data-6 { background-image: url('/images/ball/6.png'); }
+.lotter-view .round-7.data-7 { background-image: url('/images/ball/7.png'); }
+.lotter-view .round-7.data-8 { background-image: url('/images/ball/8.png'); }
+.lotter-view .round-7.data-9 { background-image: url('/images/ball/9.png'); }
+.lotter-view .round-7.data-10 { background-image: url('/images/ball/10.png'); }
+
+.lotter-view .round-7-sm {
+  width: 0.9rem;
+  height: 0.9rem;
+  line-height: 0.9rem;
+  background-size: 0.9rem;
+  display: inline-block;
+  text-align: center;
+  background-repeat: no-repeat;
+  background-position: center;
+  color: transparent !important;
+}
+
+.lotter-view .round-7-sm.data-1 { background-image: url('/images/ball/1.png'); }
+.lotter-view .round-7-sm.data-2 { background-image: url('/images/ball/2.png'); }
+.lotter-view .round-7-sm.data-3 { background-image: url('/images/ball/3.png'); }
+.lotter-view .round-7-sm.data-4 { background-image: url('/images/ball/4.png'); }
+.lotter-view .round-7-sm.data-5 { background-image: url('/images/ball/5.png'); }
+.lotter-view .round-7-sm.data-6 { background-image: url('/images/ball/6.png'); }
+.lotter-view .round-7-sm.data-7 { background-image: url('/images/ball/7.png'); }
+.lotter-view .round-7-sm.data-8 { background-image: url('/images/ball/8.png'); }
+.lotter-view .round-7-sm.data-9 { background-image: url('/images/ball/9.png'); }
+.lotter-view .round-7-sm.data-10 { background-image: url('/images/ball/10.png'); }
+
+.lotter-view .lottery-nums {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* ========== 左侧菜单 ========== */
+.lotter-view .menu-left {
+  position: absolute;
+  left: -180px;
+  top: 0;
+  bottom: 0;
+  width: 180px;
+  background: #fff;
+  z-index: 1001;
+  transition: left 0.3s;
+}
+
+.lotter-view .menu-left.menu-open {
+  left: 0;
+}
+
+/* ========== 辅助类 ========== */
+.lotter-view .text-center { text-align: center; }
+.lotter-view .text-left { text-align: left; }
+.lotter-view .text-right { text-align: right; }
