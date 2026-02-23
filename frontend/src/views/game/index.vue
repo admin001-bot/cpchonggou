@@ -55,8 +55,8 @@
           <span
             v-for="(num, index) in lastNumbers"
             :key="index"
-            class="lottery-ball"
-            :class="'ball-' + num"
+            class="lottery-ball round-6"
+            :class="'data-' + num"
           >{{ num }}</span>
         </div>
         <!-- 开奖结果计算显示 -->
@@ -734,16 +734,26 @@ onUnmounted(() => {
   color: #fff;
 }
 
-.lottery-ball.ball-1 { background: #e6a23c; }
-.lottery-ball.ball-2 { background: #409eff; }
-.lottery-ball.ball-3 { background: #67c23a; }
-.lottery-ball.ball-4 { background: #f56c6c; }
-.lottery-ball.ball-5 { background: #909399; }
-.lottery-ball.ball-6 { background: #e6a23c; }
-.lottery-ball.ball-7 { background: #409eff; }
-.lottery-ball.ball-8 { background: #67c23a; }
-.lottery-ball.ball-9 { background: #f56c6c; }
-.lottery-ball.ball-10 { background: #909399; }
+/* PK10开奖号码图片样式 */
+.lottery-ball.round-6 {
+  width: 28px;
+  height: 28px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  color: transparent;
+}
+
+.lottery-ball.data-1 { background-image: url('/images/ball/1.png'); }
+.lottery-ball.data-2 { background-image: url('/images/ball/2.png'); }
+.lottery-ball.data-3 { background-image: url('/images/ball/3.png'); }
+.lottery-ball.data-4 { background-image: url('/images/ball/4.png'); }
+.lottery-ball.data-5 { background-image: url('/images/ball/5.png'); }
+.lottery-ball.data-6 { background-image: url('/images/ball/6.png'); }
+.lottery-ball.data-7 { background-image: url('/images/ball/7.png'); }
+.lottery-ball.data-8 { background-image: url('/images/ball/8.png'); }
+.lottery-ball.data-9 { background-image: url('/images/ball/9.png'); }
+.lottery-ball.data-10 { background-image: url('/images/ball/10.png'); }
 
 /* 开奖结果计算 */
 .result-wrap {
