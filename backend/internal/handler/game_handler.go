@@ -153,73 +153,91 @@ func (h *GameHandler) GetCurrentIssue(c *gin.Context) {
 	})
 }
 
-// GetNextIssue 获取下一期期号
+// GetNextIssue 获取下一期期号 - 从数据库读取
 func (h *GameHandler) GetNextIssue(c *gin.Context) {
 	gameID := c.Query("gameId")
 	if gameID == "" {
 		gameID = "55"
 	}
-
-	now := time.Now()
 	gameIDInt, _ := strconv.Atoi(gameID)
 
-	// 游戏配置：每期时长（秒）、封盘提前时间（秒）
-	var periodSeconds int64 = 300  // 默认5分钟
-	var ftime int64 = 60           // 封盘提前时间（开奖前1分钟封盘）
+	now := time.Now()
+	nowUnix := now.Unix()
 
-	// 根据游戏ID设置不同的周期
-	switch gameID {
-	case "55", "52", "50", "72": // 飞艇/赛车系列
-		periodSeconds = 300 // 5分钟
-		ftime = 60
-	case "100": // 极速分分彩
-		periodSeconds = 60 // 1分钟
-		ftime = 10
-	case "66": // PC蛋蛋
-		periodSeconds = 180 // 3分钟
-		ftime = 30
-	case "70", "113": // 六合彩
-		periodSeconds = 86400 // 1天
-		ftime = 1800 // 30分钟
+	// 从ssc_type表获取封盘时间
+	var gameTypeInfo struct {
+		Ftime     int    `gorm:"column:data_ftime"`
+		OnGetNoed string `gorm:"column:onGetNoed"`
+	}
+	err := model.DB.Table("ssc_type").
+		Select("data_ftime, onGetNoed").
+		Where("id = ?", gameIDInt).
+		First(&gameTypeInfo).Error
+
+	ftime := int64(60) // 默认封盘提前60秒
+	if err == nil && gameTypeInfo.Ftime > 0 {
+		ftime = int64(gameTypeInfo.Ftime)
 	}
 
-	// 计算当前是第几期
+	// 从ssc_data_time表查询下一期数据
+	// 对于幸运飞艇等游戏，actionNo是时间戳，actionTime是期号字符串
+	var dataTime struct {
+		ActionNo   int64  `gorm:"column:actionNo"`   // 时间戳
+		ActionTime string `gorm:"column:actionTime"` // 期号
+	}
+
+	// 查询当前时间之后的下一期
+	err = model.DB.Table("ssc_data_time").
+		Select("actionNo, actionTime").
+		Where("type = ? AND actionNo > ?", gameIDInt, nowUnix).
+		Order("actionNo ASC").
+		First(&dataTime).Error
+
+	if err != nil {
+		// 如果没有查到，尝试获取明天的第一期
+		err = model.DB.Table("ssc_data_time").
+			Select("actionNo, actionTime").
+			Where("type = ?", gameIDInt).
+			Order("actionNo ASC").
+			First(&dataTime).Error
+	}
+
 	var issue string
-	var issueNum int
+	var lotteryTime time.Time
+	var endTime time.Time
 	var startTime time.Time
 
-	if gameID == "70" || gameID == "113" {
-		// 六合彩特殊处理
-		issue = now.Format("2006001") // 简化处理
-		issueNum = now.YearDay()
-		startTime = time.Date(now.Year(), now.Month(), now.Day(), 21, 30, 0, 0, now.Location())
+	if err == nil {
+		// 从数据库成功获取
+		issue = dataTime.ActionTime
+		lotteryTime = time.Unix(dataTime.ActionNo, 0)
+		endTime = lotteryTime.Add(-time.Duration(ftime) * time.Second)
+		startTime = endTime.Add(-time.Duration(300-ftime) * time.Second)
 	} else {
-		// 普通彩种：根据时间计算期号
+		// 数据库没有数据，使用计算方式
 		secondsOfDay := int64(now.Hour()*3600 + now.Minute()*60 + now.Second())
-		periodNum := secondsOfDay / periodSeconds
-		issueNum = int(periodNum) + 1
+		periodSeconds := int64(300) // 5分钟
 
-		// 计算该期的开始时间
+		periodNum := secondsOfDay / periodSeconds
+		issueNum := int(periodNum) + 1
+
 		periodStartSeconds := periodNum * periodSeconds
 		startHour := int(periodStartSeconds / 3600)
 		startMin := int((periodStartSeconds % 3600) / 60)
-		startSec := int(periodStartSeconds % 60)
-		startTime = time.Date(now.Year(), now.Month(), now.Day(), startHour, startMin, startSec, 0, now.Location())
+
+		startTime = time.Date(now.Year(), now.Month(), now.Day(), startHour, startMin, 0, 0, now.Location())
+		endTime = startTime.Add(time.Duration(300-ftime) * time.Second)
+		lotteryTime = startTime.Add(300 * time.Second)
 
 		issue = fmt.Sprintf("%s%04d", now.Format("20060102"), issueNum)
-	}
 
-	endTime := startTime.Add(time.Duration(periodSeconds-ftime) * time.Second)
-	lotteryTime := startTime.Add(time.Duration(periodSeconds) * time.Second)
-
-	// 如果当前时间已经过了封盘时间，计算下一期
-	nowUnix := now.Unix()
-	if nowUnix >= endTime.Unix() {
-		startTime = startTime.Add(time.Duration(periodSeconds) * time.Second)
-		endTime = endTime.Add(time.Duration(periodSeconds) * time.Second)
-		lotteryTime = lotteryTime.Add(time.Duration(periodSeconds) * time.Second)
-		issueNum++
-		issue = fmt.Sprintf("%s%04d", now.Format("20060102"), issueNum)
+		// 如果当前时间已经过了封盘时间，计算下一期
+		if nowUnix >= endTime.Unix() {
+			startTime = startTime.Add(300 * time.Second)
+			endTime = endTime.Add(300 * time.Second)
+			lotteryTime = lotteryTime.Add(300 * time.Second)
+			issue = fmt.Sprintf("%s%04d", now.Format("20060102"), issueNum+1)
+		}
 	}
 
 	// 计算倒计时
@@ -229,23 +247,27 @@ func (h *GameHandler) GetNextIssue(c *gin.Context) {
 	// 判断状态（参考PHP逻辑）
 	var status int
 	if endDiff < -30*60 {
-		// 封盘时间差小于-30分钟，未开盘
-		status = -1
+		status = -1 // 未开盘
 	} else if endDiff > 20*60 && gameIDInt != 70 {
-		// 距离封盘时间超过20分钟，暂不开放（非六合彩）
-		status = 0
+		status = 0 // 距离封盘时间超过20分钟，暂不开放
 	} else if endDiff <= 0 {
-		// 已封盘
-		status = 0
+		status = 0 // 已封盘
 	} else {
-		// 正常投注
-		status = 1
+		status = 1 // 正常投注
 	}
 
-	// 上一期期号
-	preIssue := ""
-	if issueNum > 1 {
-		preIssue = fmt.Sprintf("%s%04d", now.Format("20060102"), issueNum-1)
+	// 获取上一期期号
+	var preIssue string
+	var preDataTime struct {
+		ActionTime string `gorm:"column:actionTime"`
+	}
+	err = model.DB.Table("ssc_data_time").
+		Select("actionTime").
+		Where("type = ? AND actionNo < ?", gameIDInt, nowUnix).
+		Order("actionNo DESC").
+		First(&preDataTime).Error
+	if err == nil {
+		preIssue = preDataTime.ActionTime
 	}
 
 	response.Success(c, IssueInfo{
