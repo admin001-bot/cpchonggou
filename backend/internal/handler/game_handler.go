@@ -668,25 +668,15 @@ func (h *GameHandler) GetHistory(c *gin.Context) {
 
     // 从数据库查询开奖历史
     type LotteryRecord struct {
-        ActionNo   string  `gorm:"column:actionNo" json:"issue"`
-        Numbers    string  `gorm:"column:lotteryNo" json:"numbers"`
-        ActionTime int64   `gorm:"column:actionTime" json:"time"`
+        ActionNo   string  `gorm:"column:number" json:"issue"`
+        Numbers    string  `gorm:"column:data" json:"numbers"`
+        ActionTime int64   `gorm:"column:time" json:"time"`
     }
 
     var records []LotteryRecord
 
-    // 查询已开奖的记录 (isDelete=0 且 lotteryNo 不为空)
-    // 使用子查询获取每个 actionNo 的最大 id，然后获取完整的记录
-    query := `SELECT a.actionNo, a.lotteryNo, a.actionTime
-              FROM ssc_bets a
-              INNER JOIN (
-                  SELECT actionNo, MAX(id) as maxId
-                  FROM ssc_bets
-                  WHERE type = ? AND lotteryNo != '' AND isDelete = 0
-                  GROUP BY actionNo
-              ) b ON a.actionNo = b.actionNo AND a.id = b.maxId
-              ORDER BY a.actionNo DESC
-              LIMIT 20`
+    // 从 ssc_data 表查询开奖历史（该表存储官方开奖结果）
+    query := "SELECT number, data, time FROM ssc_data WHERE type = ? ORDER BY number DESC LIMIT 20"
 
     result := model.DB.Raw(query, gameIDInt).Scan(&records)
 
@@ -707,7 +697,7 @@ func (h *GameHandler) GetHistory(c *gin.Context) {
     // 转换数据格式
     history := make([]gin.H, 0, len(records))
     for _, r := range records {
-        // 解析 lotteryNo 字段，格式如 "01,02,03,04,05,06,07,08,09,10"
+        // 解析 data 字段，格式如 "01,02,03,04,05,06,07,08,09,10"
         numbers := make([]int, 0)
         for _, numStr := range strings.Split(r.Numbers, ",") {
             num, err := strconv.Atoi(strings.TrimSpace(numStr))

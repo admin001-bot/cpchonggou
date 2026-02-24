@@ -3,7 +3,7 @@
     <!-- 顶部导航栏 -->
     <header class="bar bar-header bar-positive">
       <div class="nav-left-wrap">
-        <a class="logo" href="/home">
+        <a class="logo" @click.prevent="router.push('/home')">
           <img src="/images/logo-2.png" alt="logo" />
         </a>
       </div>
@@ -13,7 +13,7 @@
       <div class="nav-right-wrap">
         <!-- 已登录状态 -->
         <template v-if="isLogin">
-          <a class="user-button" href="/user">
+          <a class="user-button" @click.prevent="router.push('/user')">
             <span class="span-user">{{ username }}</span>
           </a>
           <a class="button ry-button" style="margin-top: 5px; margin-right: 5px" href="javascript:void(0)" @click="confirmLogout">
@@ -65,8 +65,8 @@
 
         <!-- 未登录状态 -->
         <template v-else>
-          <a class="button ry-button mr-5" href="/login">登入</a>
-          <a class="button ry-button mr-5" href="/register">註冊</a>
+          <a class="button ry-button mr-5" @click.prevent="router.push('/login')">登入</a>
+          <a class="button ry-button mr-5" @click.prevent="router.push('/register')">註冊</a>
           <a class="button ry-button" href="javascript:void(0)" @click="guestLogin">試玩</a>
         </template>
       </div>
@@ -95,13 +95,13 @@
       <div class="index-menu">
         <ul>
           <li>
-            <a href="/bank/deposit">
+            <a @click.prevent="router.push('/bank/deposit')">
               <img src="/images/icon01.png" />
               <p style="color: #ef4a42">存/取款</p>
             </a>
           </li>
           <li>
-            <a href="/bank/records/1">
+            <a @click.prevent="router.push('/week')">
               <img src="/images/icon02.png" />
               <p style="color: #ffa421">投註記錄</p>
             </a>
@@ -126,7 +126,7 @@
         <div class="row">
           <div v-for="game in games" :key="game.id" class="col col-33">
             <div class="gamebox">
-              <a :href="'/game/' + game.id">
+              <a @click.prevent="goToGame(game.id)">
                 <img :src="game.image" />
                 <p>{{ game.name }}</p>
               </a>
@@ -139,11 +139,11 @@
     <!-- 底部导航栏 -->
     <footer class="bar bar-footer max">
       <div class="tabs tabs-light">
-        <a class="tab-item" href="/home">
+        <a class="tab-item" :class="{ active: route.path === '/home' || route.path === '/' }" @click.prevent="router.push('/home')">
           <img src="/images/icons/home.svg" class="tab-icon" />
           <span>首頁</span>
         </a>
-        <a class="tab-item" href="/game/55">
+        <a class="tab-item" :class="{ active: route.path.startsWith('/game') }" @click.prevent="router.push('/game/55')">
           <img src="/images/icons/game.svg" class="tab-icon" />
           <span>遊戲</span>
         </a>
@@ -151,7 +151,7 @@
           <img src="/images/icons/service.svg" class="tab-icon" />
           <span>客服</span>
         </a>
-        <a class="tab-item" href="/user">
+        <a class="tab-item" :class="{ active: route.path === '/user' }" @click.prevent="router.push('/user')">
           <img src="/images/icons/user.svg" class="tab-icon" />
           <span>我的</span>
         </a>
@@ -162,10 +162,11 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 
 const skin = ref('blue')
@@ -197,6 +198,11 @@ const confirmLogout = () => {
     userStore.logout()
     router.push('/home')
   }
+}
+
+// 跳转游戏
+const goToGame = (gameId: number) => {
+  router.push('/game/' + gameId)
 }
 
 // 试玩登录

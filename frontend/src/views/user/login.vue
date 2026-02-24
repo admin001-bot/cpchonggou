@@ -83,7 +83,7 @@
         <div class="nav-item">
           <div class="nav-left-wrap">
             <div class="back">
-              <a href="/">
+              <a @click.prevent="router.push('/home')">
                 <span class="back-btn">首頁</span>
               </a>
             </div>

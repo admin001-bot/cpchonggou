@@ -3,7 +3,7 @@
     <!-- 顶部导航栏 -->
     <header class="lottery-header">
       <div class="header-left">
-        <a href="/home" class="back-btn">
+        <a @click.prevent="router.push('/home')" class="back-btn">
           <span class="game-name">{{ gameName }}-{{ t('common.home') }}</span>
         </a>
       </div>
@@ -76,9 +76,9 @@
             <h3>{{ t('game.systemMenu') }}</h3>
           </div>
           <ul class="sidebar-list">
-            <li><a href="/home">{{ t('game.returnLobby') }}</a></li>
+            <li><a @click.prevent="router.push('/home')">{{ t('game.returnLobby') }}</a></li>
             <li v-for="game in gameList" :key="game.id">
-              <a :href="'/game/' + game.id">{{ game.name }}</a>
+              <a @click.prevent="router.push('/game/' + game.id)">{{ game.name }}</a>
             </li>
           </ul>
         </div>
@@ -270,7 +270,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { t } from '@/locales'
 import { getGameConfig, getGamePanes, getGameList, type GroupPane } from '@/config/games'
@@ -281,6 +281,7 @@ import RankBet from '@/components/game/RankBet.vue'
 import GamePopover from '@/components/game/GamePopover.vue'
 
 const route = useRoute()
+const router = useRouter()
 const userStore = useUserStore()
 
 // 游戏ID

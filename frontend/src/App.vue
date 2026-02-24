@@ -1,31 +1,30 @@
 <template>
   <router-view v-slot="{ Component }">
-    <transition :name="transitionName" mode="out-in">
-      <keep-alive :include="cachedViews">
-        <component :is="Component" :key="routeKey" />
-      </keep-alive>
+    <transition :name="transitionName">
+      <component :is="Component" />
     </transition>
   </router-view>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
-const transitionName = ref('slide-left')
+const transitionName = ref('slide-forward')
 
-const routeKey = computed(() => route.fullPath)
+let history: string[] = []
 
-const cachedViews = ['Home', 'Game', 'UserCenter', 'Deposit', 'Withdraw', 'WeekRecord', 'DayRecord', 'NotCount', 'Settled']
-
-// 监听路由变化，控制滑动方向
 watch(() => route.path, (newPath) => {
-  if (newPath === '/home' || newPath === '/') {
-    transitionName.value = 'slide-right'
+  const lastPath = history[history.length - 1]
+  if (lastPath === newPath) {
+    history.pop()
+    transitionName.value = 'slide-back'
   } else {
-    transitionName.value = 'slide-left'
+    history.push(newPath)
+    transitionName.value = 'slide-forward'
   }
+  if (history.length > 5) history = history.slice(-5)
 }, { immediate: true })
 </script>
 
@@ -43,45 +42,41 @@ html, body, #app {
   background: #f5f5f5;
 }
 
-/* 页面切换动画 */
-.slide-left-enter-active,
-.slide-left-leave-active,
-.slide-right-enter-active,
-.slide-right-leave-active {
-  transition: all 0.38s cubic-bezier(0.32, 0.72, 0, 1);
-  will-change: transform, opacity;
+/* 新页面滑入 - 前进 */
+.slide-forward-enter-active {
+  animation: slideIn 0.25s ease-out;
 }
 
-/* 从右向左滑入 */
-.slide-left-enter-from {
-  transform: translateX(100%);
-  opacity: 0;
+.slide-forward-leave-active {
+  animation: fadeOut 0.15s ease-out;
 }
 
-.slide-left-leave-to {
-  transform: translateX(-25%);
-  opacity: 0.6;
+/* 新页面滑入 - 后退 */
+.slide-back-enter-active {
+  animation: slideInBack 0.25s ease-out;
 }
 
-/* 从左向右滑入 */
-.slide-right-enter-from {
-  transform: translateX(-25%);
-  opacity: 0.6;
+.slide-back-leave-active {
+  animation: fadeOutBack 0.15s ease-out;
 }
 
-.slide-right-leave-to {
-  transform: translateX(100%);
-  opacity: 0;
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
 }
 
-/* 淡入淡出 */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
+@keyframes fadeOut {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(-10%); opacity: 0.8; }
 }
 
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
+@keyframes slideInBack {
+  from { transform: translateX(-20%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes fadeOutBack {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(20%); opacity: 0.8; }
 }
 </style>

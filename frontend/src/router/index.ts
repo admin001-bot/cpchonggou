@@ -87,7 +87,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/day/:date/:gameId',
     name: 'DayDetail',
-    component: () => import('@/views/game/DayRecord.vue'),
+    component: () => import('@/views/game/DayDetail.vue'),
     meta: { title: '遊戲詳情', requiresAuth: true },
   },
   {
@@ -130,6 +130,36 @@ const routes: RouteRecordRaw[] = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+  scrollBehavior(to, from, savedPosition) {
+    // 禁用默认滚动行为，让动画更流畅
+    if (savedPosition) {
+      return savedPosition
+    }
+    return { top: 0 }
+  },
+})
+
+// 路由动画控制
+let historyStack: string[] = []
+
+router.afterEach((to) => {
+  // 记录访问历史
+  if (!historyStack.includes(to.path)) {
+    historyStack.push(to.path)
+    if (historyStack.length > 10) {
+      historyStack = historyStack.slice(-10)
+    }
+  }
+
+  // 设置transition名称
+  const fromPath = historyStack[historyStack.length - 2]
+  if (fromPath && to.path === fromPath) {
+    // 后退
+    (router as any).transitionName = 'router-view-back'
+  } else {
+    // 前进
+    (router as any).transitionName = 'router-view'
+  }
 })
 
 // 路由守卫
