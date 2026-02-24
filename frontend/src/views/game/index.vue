@@ -1001,29 +1001,27 @@ onUnmounted(() => {
   margin-bottom: 8px;
 }
 
-.lottery-ball.mini {
+/* 历史开奖中的号码球使用图片背景 */
+.period-numbers .lottery-ball {
   width: 28px;
   height: 28px;
-  font-size: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  color: transparent;
   border-radius: 50%;
-  background: #f0f0f0;
-  color: #333;
-  font-weight: 600;
 }
 
-.lottery-ball.mini.data-0 { background: #fb2351; color: #fff; }
-.lottery-ball.mini.data-1 { background: #1e88e5; color: #fff; }
-.lottery-ball.mini.data-2 { background: #4caf50; color: #fff; }
-.lottery-ball.mini.data-3 { background: #ff9800; color: #fff; }
-.lottery-ball.mini.data-4 { background: #9c27b0; color: #fff; }
-.lottery-ball.mini.data-5 { background: #00bcd4; color: #fff; }
-.lottery-ball.mini.data-6 { background: #ffeb3b; color: #333; }
-.lottery-ball.mini.data-7 { background: #795548; color: #fff; }
-.lottery-ball.mini.data-8 { background: #607d8b; color: #fff; }
-.lottery-ball.mini.data-9 { background: #e91e63; color: #fff; }
+.period-numbers .lottery-ball.data-1 { background-image: url('/images/ball/1.png'); }
+.period-numbers .lottery-ball.data-2 { background-image: url('/images/ball/2.png'); }
+.period-numbers .lottery-ball.data-3 { background-image: url('/images/ball/3.png'); }
+.period-numbers .lottery-ball.data-4 { background-image: url('/images/ball/4.png'); }
+.period-numbers .lottery-ball.data-5 { background-image: url('/images/ball/5.png'); }
+.period-numbers .lottery-ball.data-6 { background-image: url('/images/ball/6.png'); }
+.period-numbers .lottery-ball.data-7 { background-image: url('/images/ball/7.png'); }
+.period-numbers .lottery-ball.data-8 { background-image: url('/images/ball/8.png'); }
+.period-numbers .lottery-ball.data-9 { background-image: url('/images/ball/9.png'); }
+.period-numbers .lottery-ball.data-10 { background-image: url('/images/ball/10.png'); }
 
 .period-time {
   font-size: 12px;

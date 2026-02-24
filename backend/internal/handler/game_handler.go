@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"lottery-system/internal/model"
@@ -663,38 +664,51 @@ func randomString(length int) string {
 // GetHistory 开奖历史
 func (h *GameHandler) GetHistory(c *gin.Context) {
     gameID := c.DefaultQuery("gameId", "55")
-    history := []gin.H{}
-    now := time.Now()
-    minutes := now.Hour()*60 + now.Minute()
-    currentIssueNum := minutes/5 + 1
-    rand.Seed(now.Unix())
-    for i := 0; i < 10; i++ {
-        issueNum := currentIssueNum - i - 1
-        if issueNum < 1 {
-            break
+    gameIDInt, _ := strconv.Atoi(gameID)
+
+    // 从数据库查询开奖历史
+    type LotteryRecord struct {
+        ActionNo   string  `json:"issue"`
+        Numbers    string  `json:"numbers"`
+        ActionTime int64   `json:"time"`
+    }
+
+    var records []LotteryRecord
+
+    // 查询已开奖的记录 (isDelete=0 且 lotteryNo 不为空)
+    query := "SELECT actionNo, lotteryNo, actionTime FROM ssc_bets WHERE type = ? AND lotteryNo != '' AND isDelete = 0 GROUP BY actionNo ORDER BY id DESC LIMIT 20"
+
+    err := model.DB.Raw(query, gameIDInt).Scan(&records).Error
+    if err != nil {
+        response.Error(c, "查询失败")
+        return
+    }
+
+    // 如果没有数据，返回空数组
+    if len(records) == 0 {
+        response.Success(c, []gin.H{})
+        return
+    }
+
+    // 转换数据格式
+    history := make([]gin.H, 0, len(records))
+    for _, r := range records {
+        // 解析 lotteryNo 字段，格式如 "01,02,03,04,05,06,07,08,09,10"
+        numbers := make([]int, 0)
+        for _, numStr := range strings.Split(r.Numbers, ",") {
+            num, err := strconv.Atoi(strings.TrimSpace(numStr))
+            if err == nil {
+                numbers = append(numbers, num)
+            }
         }
-        var issue string
-        var numbers []int
-        switch gameID {
-        case "55", "52", "50", "72":
-            issue = fmt.Sprintf("%s%03d", now.Format("20060102"), issueNum)
-            numbers = generatePK10Numbers()
-        case "66":
-            issue = fmt.Sprintf("24%04d", issueNum)
-            n1 := rand.Intn(10)
-            n2 := rand.Intn(10)
-            n3 := rand.Intn(10)
-            numbers = []int{n1 + n2 + n3, n1, n2, n3}
-        default:
-            issue = fmt.Sprintf("%s%03d", now.Format("20060102"), issueNum)
-            numbers = []int{rand.Intn(10), rand.Intn(10), rand.Intn(10), rand.Intn(10), rand.Intn(10)}
-        }
+
         history = append(history, gin.H{
-            "issue":   issue,
+            "issue":   r.ActionNo,
             "numbers": numbers,
-            "time":    now.Unix() - int64(i*300),
+            "time":    r.ActionTime,
         })
     }
+
     response.Success(c, history)
 }
 // generatePK10Numbers 生成PK10开奖号码
