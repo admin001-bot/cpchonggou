@@ -148,15 +148,16 @@ type MemberCash struct {
 	ID        uint    `gorm:"primaryKey;autoIncrement;column:id" json:"id"`
 	UID       uint    `gorm:"column:uid;index" json:"uid"`
 	Amount    float64 `gorm:"column:amount;precision:10;scale:2" json:"amount"`
-	BankID    int     `gorm:"column:bankId" json:"bankId"`
+	BankID    uint    `gorm:"column:bankId" json:"bankId"`
 	Account   string  `gorm:"column:account;size:50" json:"account"`
-	CountName string  `gorm:"column:countname;size:100" json:"countName"`
+	Username  string  `gorm:"column:username;size:50" json:"username"`
 	State     int8    `gorm:"column:state;default:0" json:"state"`
 	Info      string  `gorm:"column:info;size:255" json:"info"`
 	IsDelete  int8    `gorm:"column:isDelete;default:0" json:"isDelete"`
-	AddTime   int64   `gorm:"column:addTime" json:"addTime"`
-	ActionUID uint    `gorm:"column:actionUid" json:"actionUid"`
-	ActionIP  string  `gorm:"column:actionIP;size:50" json:"actionIp"`
+	ActionTime   int64   `gorm:"column:actionTime" json:"actionTime"`
+	// actionUid 和 actionIP 字段数据库中不存在，使用 - 跳过
+	ActionUID uint    `gorm:"-" json:"actionUid"`
+	ActionIP  string  `gorm:"-" json:"actionIp"`
 }
 
 func (MemberCash) TableName() string {
@@ -172,9 +173,11 @@ type MemberRecharge struct {
 	State          int8    `gorm:"column:state;default:0" json:"state"`
 	Info           string  `gorm:"column:info;size:255" json:"info"`
 	IsDelete       int8    `gorm:"column:isDelete;default:0" json:"isDelete"`
-	AddTime        int64   `gorm:"column:addTime" json:"addTime"`
+	ActionTime     int64   `gorm:"column:actionTime" json:"actionTime"`
 	ActionUID      uint    `gorm:"column:actionUid" json:"actionUid"`
 	ActionIP       string  `gorm:"column:actionIP;size:50" json:"actionIp"`
+	RechargeID     string  `gorm:"column:rechargeId;size:32" json:"rechargeId"`
+	RechType       string  `gorm:"column:rechType;size:32" json:"rechType"`
 }
 
 func (MemberRecharge) TableName() string {
@@ -185,14 +188,19 @@ func (MemberRecharge) TableName() string {
 type CoinLog struct {
 	ID        uint    `gorm:"primaryKey;autoIncrement;column:id" json:"id"`
 	UID       uint    `gorm:"column:uid;index" json:"uid"`
-	Type      int     `gorm:"column:liqType" json:"type"`
-	Info      string  `gorm:"column:info;size:255" json:"info"`
-	Coin      float64 `gorm:"column:coin;precision:10;scale:2" json:"coin"`
+	Type      int     `gorm:"column:liqType;default:0" json:"type"`
+	PlayedID  int     `gorm:"column:playedId;default:0" json:"playedId"`
+	Coin      float64 `gorm:"column:coin;precision:10;scale:2;default:0" json:"coin"`
+	UserCoin  float64 `gorm:"column:userCoin;precision:10;scale:2;default:0" json:"userCoin"`
 	FCoin     float64 `gorm:"column:fcoin;precision:10;scale:2" json:"fCoin"`
-	UserCoin  float64 `gorm:"column:userCoin;precision:10;scale:2" json:"userCoin"`
-	ActionUID uint    `gorm:"column:actionUid" json:"actionUid"`
-	ActionIP  string  `gorm:"column:actionIP;size:50" json:"actionIp"`
-	ActionTime int64  `gorm:"column:actionTime" json:"actionTime"`
+	LiqType   int     `gorm:"column:liqType" json:"liqType"`
+	ActionUID int     `gorm:"column:actionUID;default:0" json:"actionUid"`
+	ActionTime int64  `gorm:"column:actionTime;default:0" json:"actionTime"`
+	ActionIP  int     `gorm:"column:actionIP;default:0" json:"actionIp"`
+	Info      string  `gorm:"column:info;size:64" json:"info"`
+	ExtField0 int64   `gorm:"column:extfield0;default:0" json:"extField0"`
+	ExtField1 string  `gorm:"column:extfield1;size:32;default:''" json:"extField1"`
+	ExtField2 string  `gorm:"column:extfield2;size:32;default:''" json:"extField2"`
 }
 
 func (CoinLog) TableName() string {

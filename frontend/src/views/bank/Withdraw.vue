@@ -1,6 +1,6 @@
 <template>
   <div class="withdraw-page">
-    <!-- Step 1: 未完善个人信息 -->
+    <!-- Step 1: 未完善个人信息 (没有真实姓名) -->
     <div v-if="step === 1" class="withdraw-step">
       <div class="step-icon">
         <img src="/images/responsive-mess.png" alt="" />
@@ -30,16 +30,29 @@
           v-model="form.amount"
           :placeholder="t('bank.enterAmount')"
           class="form-input"
+          @input="onAmountInput"
         />
         <p class="form-tip">
           {{ t('bank.minLimit') }}<span class="red">{{ withdrawConfig.minMoney }}</span>，
           {{ t('bank.maxLimit') }}<span class="red">{{ formatMoney(withdrawConfig.maxMoney) }}</span>
         </p>
+        <p v-if="timeWarning" class="form-tip time-warning">
+          {{ timeWarning }}
+        </p>
       </div>
 
       <div class="form-group bank-info">
         <div class="bank-card-info">
-          {{ bankInfo.bankName }} {{ maskCardNo(bankInfo.cardNo) }} {{ bankInfo.realName }}
+          <span class="info-label">{{ t('bank.walletName') }}：</span>
+          <span class="info-value">{{ bankInfo.countName }}</span>
+        </div>
+        <div class="bank-card-info">
+          <span class="info-label">{{ t('bank.withdrawAddress') }}：</span>
+          <span class="info-value">{{ bankInfo.account }}</span>
+        </div>
+        <div class="bank-card-info">
+          <span class="info-label">{{ t('bank.accountName') }}：</span>
+          <span class="info-value">{{ bankInfo.realName }}</span>
         </div>
       </div>
 
@@ -61,10 +74,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { ElMessage } from 'element-plus'
 import { t } from '@/locales'
+import { getBankInfo, getWithdrawConfig, withdraw, type BankInfo, type WithdrawConfig } from '@/api/bank'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -72,22 +87,28 @@ const userStore = useUserStore()
 // 步骤：1=未完善信息，2=未绑定银行卡，3=可以提款
 const step = ref(3)
 const loading = ref(false)
+const timeWarning = ref('')
 
 const form = reactive({
   amount: '',
   password: '',
 })
 
-// 后端返回的配置
-const withdrawConfig = reactive({
+// 提款配置
+const withdrawConfig = reactive<WithdrawConfig>({
   minMoney: 10,
   maxMoney: 2000000,
+  cashFromTime: '09:00',
+  cashToTime: '23:00',
+  cashMinAmount: 0,
 })
 
-// 后端返回的银行卡信息
-const bankInfo = reactive({
-  bankName: '',
-  cardNo: '',
+// 银行卡信息
+const bankInfo = reactive<BankInfo>({
+  bankId: 0,
+  account: '',
+  countName: '',
+  username: '',
   realName: '',
 })
 
@@ -95,42 +116,74 @@ const formatMoney = (n: number) => {
   return n.toLocaleString()
 }
 
-const maskCardNo = (cardNo: string) => {
-  if (!cardNo || cardNo.length < 8) return cardNo
-  return cardNo.substring(0, 4) + ' **** **** ' + cardNo.substring(cardNo.length - 4)
+// 金额输入处理
+const onAmountInput = () => {
+  // 只允许输入数字
+  if (form.amount) {
+    form.amount = String(form.amount).replace(/[^0-9.]/g, '')
+  }
 }
 
 const goCompleteProfile = () => {
   // TODO: 跳转到完善信息页面
-  alert('完善個人資訊功能開發中')
+  alert(t('bank.completeProfile'))
 }
 
 const goBindBank = () => {
   // TODO: 跳转到绑定银行卡页面
-  alert('綁定銀行卡功能開發中')
+  alert(t('bank.bindBankCard'))
 }
 
-// 获取用户银行卡信息
+// 检查提现时间
+const checkWithdrawTime = () => {
+  const now = new Date()
+  const currentTime = now.getHours() * 60 + now.getMinutes()
+
+  const [fromHour, fromMin] = withdrawConfig.cashFromTime.split(':').map(Number)
+  const [toHour, toMin] = withdrawConfig.cashToTime.split(':').map(Number)
+
+  const fromTime = fromHour * 60 + fromMin
+  let toTime = toHour * 60 + toMin
+
+  // 如果结束时间小于开始时间，说明跨天
+  if (toTime < fromTime) {
+    toTime += 24 * 60
+  }
+
+  let currentMinutes = currentTime
+  if (currentTime < fromTime && toTime > 24 * 60) {
+    currentMinutes += 24 * 60
+  }
+
+  if (currentMinutes < fromTime || currentMinutes > toTime) {
+    timeWarning.value = `${t('bank.withdrawTime')}: ${withdrawConfig.cashFromTime} - ${withdrawConfig.cashToTime}`
+    return false
+  }
+
+  timeWarning.value = ''
+  return true
+}
+
 const fetchBankInfo = async () => {
   try {
-    // TODO: 调用API获取银行卡信息
-    // const response = await bankApi.getBankInfo()
-    // if (response.code === 0) {
-    //   if (!response.data.realName) {
-    //     step.value = 1
-    //   } else if (!response.data.cardNo) {
-    //     step.value = 2
-    //   } else {
-    //     step.value = 3
-    //     Object.assign(bankInfo, response.data)
-    //   }
-    // }
+    const res = await getBankInfo()
+    if (res.code === 0 && res.data) {
+      // 检查是否完善个人信息 (realName)
+      if (!res.data.realName || res.data.realName === '') {
+        step.value = 1
+        return
+      }
 
-    // 模拟数据
-    bankInfo.bankName = '中国银行'
-    bankInfo.cardNo = '6217001234567890'
-    bankInfo.realName = userStore.userInfo?.name || '**'
-    step.value = 3
+      // 检查是否绑定银行卡 (cardNo/account)
+      if (!res.data.account || res.data.account === '') {
+        step.value = 2
+        return
+      }
+
+      // 可以提款
+      step.value = 3
+      Object.assign(bankInfo, res.data)
+    }
   } catch (error) {
     console.error('获取银行卡信息失败', error)
   }
@@ -139,41 +192,82 @@ const fetchBankInfo = async () => {
 // 获取提款配置
 const fetchWithdrawConfig = async () => {
   try {
-    // TODO: 调用API获取提款配置
-    // const response = await bankApi.getWithdrawConfig()
-    // if (response.code === 0) {
-    //   Object.assign(withdrawConfig, response.data)
-    // }
+    const res = await getWithdrawConfig()
+    if (res.code === 0 && res.data) {
+      Object.assign(withdrawConfig, res.data)
+      // 检查提现时间
+      checkWithdrawTime()
+    }
   } catch (error) {
     console.error('获取提款配置失败', error)
   }
 }
 
 const submitWithdraw = async () => {
-  if (!form.amount || parseFloat(form.amount) < withdrawConfig.minMoney) {
-    alert(t('bank.amountMinLimit'))
+  // 检查金额
+  const amount = parseFloat(form.amount)
+  if (!form.amount || isNaN(amount) || amount < withdrawConfig.minMoney) {
+    ElMessage.warning({
+      message: t('bank.amountMinLimit'),
+      duration: 2000
+    })
     return
   }
+
+  if (amount > withdrawConfig.maxMoney) {
+    ElMessage.warning({
+      message: t('bank.amountMaxLimit'),
+      duration: 2000
+    })
+    return
+  }
+
+  // 检查密码
   if (!form.password) {
-    alert(t('bank.enterPassword'))
+    ElMessage.warning({
+      message: t('bank.enterPassword'),
+      duration: 2000
+    })
+    return
+  }
+
+  // 检查提现时间
+  if (!checkWithdrawTime()) {
+    ElMessage.warning({
+      message: timeWarning.value,
+      duration: 2000
+    })
     return
   }
 
   loading.value = true
   try {
-    // TODO: 调用提款API
-    // const response = await bankApi.withdraw({
-    //   amount: parseFloat(form.amount),
-    //   password: form.password
-    // })
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    alert(t('bank.withdrawSuccess'))
-    form.amount = ''
-    form.password = ''
-    // 刷新余额
-    emit('balance-updated')
-  } catch (error) {
-    alert(t('bank.withdrawFailed'))
+    const requestData = {
+      amount: parseFloat(form.amount) || 0,
+      coinPwd: form.password
+    }
+    const res = await withdraw(requestData)
+
+    if (res.code === 0) {
+      ElMessage.success({
+        message: res.data?.message || t('bank.withdrawSuccess'),
+        duration: 2000
+      })
+      form.amount = ''
+      form.password = ''
+      // 刷新余额
+      emit('balance-updated')
+    } else {
+      ElMessage.error({
+        message: res.message || t('bank.withdrawFailed'),
+        duration: 2000
+      })
+    }
+  } catch (error: any) {
+    ElMessage.error({
+      message: error.response?.data?.message || t('bank.withdrawFailed'),
+      duration: 2000
+    })
   } finally {
     loading.value = false
   }
@@ -188,6 +282,16 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* 居中消息提示 */
+:deep(.el-message) {
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 90%;
+  z-index: 9999;
+}
+
 .withdraw-page {
   background: #fff;
   min-height: 300px;
@@ -257,6 +361,11 @@ onMounted(() => {
   color: #fb2351;
 }
 
+.form-tip.time-warning {
+  color: #ff9800;
+  font-weight: 500;
+}
+
 .bank-info {
   background: #f9f9f9;
   border-radius: 5px;
@@ -267,6 +376,14 @@ onMounted(() => {
   font-size: 14px;
   color: #333;
   line-height: 34px;
+}
+
+.bank-card-info .info-label {
+  color: #666;
+}
+
+.bank-card-info .info-value {
+  font-weight: 500;
 }
 
 .submit-btn {

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { userApi } from '@/api/user'
 
 interface UserInfo {
   uid: number
@@ -60,6 +61,25 @@ export const useUserStore = defineStore('user', () => {
     localStorage.removeItem('userInfo')
   }
 
+  // 获取用户信息
+  async function getUserInfo() {
+    try {
+      const res = await userApi.getInfo()
+      if (res.code === 0 && res.data) {
+        setUserInfo({
+          uid: res.data.uid,
+          username: res.data.username,
+          coin: res.data.coin,
+          type: res.data.type,
+        })
+        return res.data
+      }
+    } catch (error) {
+      console.error('获取用户信息失败:', error)
+    }
+    return null
+  }
+
   return {
     token,
     userInfo,
@@ -67,5 +87,6 @@ export const useUserStore = defineStore('user', () => {
     setToken,
     setUserInfo,
     logout,
+    getUserInfo,
   }
 })

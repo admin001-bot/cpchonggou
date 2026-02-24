@@ -15,6 +15,10 @@ service.interceptors.request.use(
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`
     }
+    // 默认设置 JSON 内容类型
+    if (config.data && !config.headers['Content-Type']) {
+      config.headers['Content-Type'] = 'application/json'
+    }
     return config
   },
   (error) => {
@@ -32,7 +36,14 @@ service.interceptors.response.use(
       // 401 未授权 - 不显示错误消息，静默跳转
       if (res.code === 401) {
         localStorage.removeItem('token')
-        window.location.href = '/login'
+        localStorage.removeItem('userInfo')
+        // 只在需要认证的页面跳转登录
+        const currentPath = window.location.pathname
+        const needAuthRoutes = ['/notcount', '/settled', '/week', '/day/', '/bank/']
+        const needAuth = needAuthRoutes.some(route => currentPath.startsWith(route))
+        if (needAuth) {
+          window.location.href = '/login'
+        }
         return Promise.reject(new Error(res.message || '未授权'))
       }
 
@@ -46,7 +57,14 @@ service.interceptors.response.use(
     // 401 错误 - 不显示错误消息
     if (error.response?.status === 401) {
       localStorage.removeItem('token')
-      window.location.href = '/login'
+      localStorage.removeItem('userInfo')
+      // 只在需要认证的页面跳转登录
+      const currentPath = window.location.pathname
+      const needAuthRoutes = ['/notcount', '/settled', '/week', '/day/', '/bank/']
+      const needAuth = needAuthRoutes.some(route => currentPath.startsWith(route))
+      if (needAuth) {
+        window.location.href = '/login'
+      }
       return Promise.reject(error)
     }
 

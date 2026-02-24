@@ -74,6 +74,10 @@
               <span class="label">{{ t('bank.bankCard') }}：</span>
               <span>{{ selectedItem?.bankCard }}</span>
             </div>
+            <div class="detail-row">
+              <span class="label">{{ t('bank.bankAccount') }}：</span>
+              <span>{{ selectedItem?.bankAccount }}</span>
+            </div>
           </template>
         </div>
         <button class="detail-close" @click="showDetailModal = false">{{ t('game.confirm') }}</button>
@@ -86,6 +90,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { t } from '@/locales'
+import { getWithdrawRecords, getDepositRecords, type WithdrawRecord, type DepositRecord } from '@/api/bank'
 
 const route = useRoute()
 
@@ -98,32 +103,41 @@ interface Record {
   methodName?: string
   bankName?: string
   bankCard?: string
+  bankAccount?: string
 }
 
-const type = ref(1) // 1=存款记录, 2=提款记录
+const type = ref(1) // 1=存款记录，2=提款记录
 const records = ref<Record[]>([])
 const loading = ref(false)
 const hasMore = ref(false)
 const page = ref(1)
+const pageSize = ref(20)
 const showDetailModal = ref(false)
 const selectedItem = ref<Record | null>(null)
+const totalCount = ref(0)
 
 // 状态映射
 const depositStatusMap: Record<number, string> = {
   0: t('bank.statusPending'),
   1: t('bank.statusSuccess'),
-  2: t('bank.statusFailed'),
+  2: t('bank.statusSuccess'),
+  3: t('bank.statusFailed'),
+  9: t('bank.statusSuccess'),
 }
 
 const withdrawStatusMap: Record<number, string> = {
-  0: t('bank.statusPending'),
-  1: t('bank.statusSuccess'),
-  2: t('bank.statusFailed'),
+  0: t('bank.statusPending'),    // 已到帐
+  1: t('bank.statusPending'),    // 申请中
+  2: t('bank.statusFailed'),     // 已取消
+  3: t('bank.statusSuccess'),    // 已支付
+  4: t('bank.statusFailed'),     // 提现失败
 }
 
 const formatDate = (dateStr: string) => {
   if (!dateStr) return ''
-  const date = new Date(dateStr)
+  // 处理 "2006-01-02 15:04:05" 格式
+  const date = new Date(dateStr.replace(/-/g, '/'))
+  if (isNaN(date.getTime())) return dateStr
   return `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`
 }
 
@@ -133,9 +147,17 @@ const getStatusText = (status: number) => {
 }
 
 const getStatusClass = (status: number) => {
-  if (status === 1) return 'status-success'
-  if (status === 2) return 'status-failed'
-  return 'status-pending'
+  // 存款状态：0 申请，1 手动到账，2 自动到账，3 充值失败，9 管理员充值
+  if (type.value === 1) {
+    if (status === 1 || status === 2 || status === 9) return 'status-success'
+    if (status === 3) return 'status-failed'
+    return 'status-pending'
+  } else {
+    // 提款状态：0 已到帐，1 申请中，2 已取消，3 已支付，4 已失败
+    if (status === 0 || status === 3) return 'status-success'
+    if (status === 2 || status === 4) return 'status-failed'
+    return 'status-pending'
+  }
 }
 
 const showDetail = (item: Record) => {
@@ -148,30 +170,64 @@ const loadData = async (isLoadMore = false) => {
 
   loading.value = true
   try {
-    // TODO: 调用API获取数据
-    // const response = type.value === 1
-    //   ? await bankApi.getDepositRecords({ page: page.value })
-    //   : await bankApi.getWithdrawRecords({ page: page.value })
+    if (type.value === 1) {
+      // 存款记录
+      const response = await getDepositRecords({
+        page: page.value,
+        rows: pageSize.value
+      })
 
-    // if (response.code === 0) {
-    //   if (isLoadMore) {
-    //     records.value = [...records.value, ...response.data.list]
-    //   } else {
-    //     records.value = response.data.list
-    //   }
-    //   hasMore.value = response.data.hasMore
-    // }
+      if (response.data) {
+        const depositData = response.data.data as DepositRecord[]
+        const newRecords = depositData.map((item: DepositRecord) => ({
+          id: item.id,
+          orderNo: item.orderNo,
+          time: item.addTime,
+          amount: item.rechMoney,
+          status: item.status,
+          methodName: item.rechName
+        }))
 
-    // 模拟数据
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    if (!isLoadMore) {
-      records.value = [
-        { id: 1, orderNo: 'D20260223001', time: '2026-02-23 12:30:00', amount: 100, status: 1, methodName: '支付宝转账' },
-        { id: 2, orderNo: 'D20260223002', time: '2026-02-22 10:15:00', amount: 500, status: 1, methodName: '微信转账' },
-        { id: 3, orderNo: 'D20260223003', time: '2026-02-21 08:45:00', amount: 200, status: 0, methodName: '银行转账' },
-      ]
+        if (isLoadMore) {
+          records.value = [...records.value, ...newRecords]
+        } else {
+          records.value = newRecords
+        }
+        totalCount.value = response.data.totalCount
+        hasMore.value = records.value.length < totalCount.value
+      }
+    } else {
+      // 提款记录
+      const response = await getWithdrawRecords({
+        page: page.value,
+        rows: pageSize.value
+      })
+
+      if (response.data && response.data.data) {
+        const withdrawData = response.data.data as WithdrawRecord[]
+        const newRecords = withdrawData.map((item: WithdrawRecord) => ({
+          id: item.id,
+          orderNo: item.orderNo,
+          time: item.applyTime,
+          amount: item.applyMoney,
+          status: item.checkStatus,
+          bankName: item.bankName,
+          bankCard: item.bankCard,
+          bankAccount: item.bankAccount
+        }))
+
+        if (isLoadMore) {
+          records.value = [...records.value, ...newRecords]
+        } else {
+          records.value = newRecords
+        }
+        totalCount.value = response.data.totalCount
+        hasMore.value = records.value.length < totalCount.value
+      }
     }
-    hasMore.value = false
+  } catch (error) {
+    console.error('加载记录失败:', error)
+    records.value = []
   } finally {
     loading.value = false
   }
