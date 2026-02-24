@@ -9,14 +9,64 @@
       </div>
       <div class="header-right">
         <span class="member-balance">USDT:{{ userBalance }}</span>
-        <a class="refresh-btn" @click="refreshBalance">
-          <img src="/images/icon-refresh.png" alt="refresh" />
-        </a>
+        <!-- 历史开奖按钮 -->
+        <button class="history-btn" @click="toggleHistoryDrawer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <span class="history-text">{{ t('game.history') }}</span>
+        </button>
         <button class="menu-btn" @click="toggleSidebar">
           <span class="menu-icon"></span>
         </button>
       </div>
     </header>
+
+    <!-- 历史开奖抽屉 -->
+    <transition name="drawer">
+      <div v-if="historyDrawerVisible" class="history-drawer-overlay" @click="closeHistoryDrawer">
+        <div class="history-drawer" @click.stop>
+          <div class="drawer-header">
+            <h3>{{ t('game.historyLottery') }}</h3>
+            <button class="close-btn" @click="closeHistoryDrawer">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 6L6 18M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+          <div class="drawer-content">
+            <!-- 期号列表 -->
+            <div class="period-list">
+              <div
+                v-for="item in historyList"
+                :key="item.actionNo"
+                class="period-item"
+                :class="{ active: selectedPeriod === item.actionNo }"
+                @click="selectPeriod(item)"
+              >
+                <div class="period-number">{{ item.actionNo }}</div>
+                <div class="period-numbers">
+                  <span
+                    v-for="(num, idx) in item.numbers"
+                    :key="idx"
+                    class="lottery-ball mini"
+                    :class="'data-' + num"
+                  >{{ num }}</span>
+                </div>
+                <div class="period-time">{{ formatTime(item.actionTime) }}</div>
+              </div>
+            </div>
+            <!-- 加载更多 -->
+            <div class="load-more-area" v-if="hasMoreHistory">
+              <button class="load-more-btn" @click="loadMoreHistory" :disabled="loadingMore">
+                {{ loadingMore ? t('common.loading') : t('common.loadMore') }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
 
     <!-- 侧边菜单 -->
     <transition name="slide">
@@ -250,6 +300,14 @@ const userBalance = computed(() => userStore.userInfo?.balance?.toFixed(2) || '0
 // 侧边栏
 const sidebarVisible = ref(false)
 
+// 历史开奖抽屉
+const historyDrawerVisible = ref(false)
+const historyList = ref<Array<{ actionNo: string; numbers: number[]; actionTime: number }>>([])
+const selectedPeriod = ref('')
+const hasMoreHistory = ref(true)
+const loadingMore = ref(false)
+const historyPage = ref(1)
+
 // 弹出菜单
 const popoverVisible = ref(false)
 
@@ -295,6 +353,7 @@ const confirmBetList = ref<Array<{ name: string; odds: number; playId: number }>
 // 计时器
 let countdownTimer: number | null = null
 let refreshTimer: number | null = null
+let balanceRefreshTimer: number | null = null
 
 // 开始开奖跑动
 function startLotteryRun() {
@@ -429,6 +488,97 @@ function closeSidebar() {
   sidebarVisible.value = false
 }
 
+// 历史开奖抽屉
+function toggleHistoryDrawer() {
+  historyDrawerVisible.value = !historyDrawerVisible.value
+  if (historyDrawerVisible.value) {
+    loadHistoryList()
+  }
+}
+
+function closeHistoryDrawer() {
+  historyDrawerVisible.value = false
+}
+
+async function loadHistoryList(page = 1) {
+  try {
+    loadingMore.value = true
+    const res = await gameApi.getUserBets({
+      gameId: gameId.value,
+      page,
+      rows: 20,
+      settled: '1' // 已结
+    })
+
+    if (res.code === 0 && res.data?.data) {
+      // 从注单数据中提取开奖期号和号码
+      const periodMap = new Map<string, { actionNo: string; numbers: number[]; actionTime: number }>()
+      res.data.data.forEach((item: any) => {
+        if (!periodMap.has(item.actionNo)) {
+          // 从 actionData 解析开奖号码
+          const numbers = parseActionData(item.actionData)
+          periodMap.set(item.actionNo, {
+            actionNo: item.actionNo,
+            numbers,
+            actionTime: item.actionTime
+          })
+        }
+      })
+
+      const newList = Array.from(periodMap.values())
+      if (page === 1) {
+        historyList.value = newList
+      } else {
+        historyList.value = [...historyList.value, ...newList]
+      }
+
+      hasMoreHistory.value = newList.length > 0 && page < (res.data.totalCount / 20)
+      historyPage.value = page
+    }
+  } catch (error) {
+    console.error('加载历史开奖失败:', error)
+  } finally {
+    loadingMore.value = false
+  }
+}
+
+function loadMoreHistory() {
+  if (!loadingMore.value) {
+    loadHistoryList(historyPage.value + 1)
+  }
+}
+
+function selectPeriod(item: { actionNo: string; numbers: number[]; actionTime: number }) {
+  selectedPeriod.value = item.actionNo
+  // 可以在这里做更多操作，比如显示该期详细数据
+}
+
+function formatTime(timestamp: number): string {
+  const date = new Date(timestamp * 1000)
+  const now = new Date()
+  const isToday = date.toDateString() === now.toDateString()
+
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  const seconds = String(date.getSeconds()).padStart(2, '0')
+
+  if (isToday) {
+    return `今天 ${hours}:${minutes}:${seconds}`
+  }
+  return `${date.getMonth() + 1}/${date.getDate()} ${hours}:${minutes}`
+}
+
+// 从 actionData 解析开奖号码
+function parseActionData(actionData: string): number[] {
+  // actionData 格式可能是 "第一名：1,第二名：2,..." 或直接是号码
+  // 这里需要根据实际 API 返回格式解析
+  const match = actionData.match(/(\d+)/g)
+  if (match) {
+    return match.map(n => parseInt(n)).filter(n => n >= 1 && n <= 10)
+  }
+  return []
+}
+
 // 选择玩法
 function selectPane(pane: GroupPane) {
   if (currentPane.value?.multiple === false || pane.multiple === false) {
@@ -466,8 +616,23 @@ function clearAmount() {
 }
 
 // 刷新余额
-function refreshBalance() {
-  alert('刷新餘額功能開發中')
+async function refreshBalance() {
+  const token = localStorage.getItem('token')
+  if (!token) return
+
+  try {
+    const res = await fetch('/api/user/info', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    const data = await res.json()
+    if (data.code === 0 && data.data) {
+      userStore.setUserInfo(data.data)
+    }
+  } catch (error) {
+    console.error('刷新余额失败:', error)
+  }
 }
 
 // 根据玩法ID获取玩法名称
@@ -549,22 +714,52 @@ function closeConfirmModal() {
   showConfirmModal.value = false
 }
 
+// 翻译下注消息
+function translateBetMsg(msgKey: string, msgArgs?: string[]): string {
+  if (!msgKey) return ''
+  let msg = t(msgKey)
+  // 替换参数 {0}, {1}, {2}, {3}
+  if (msgArgs) {
+    for (let i = 0; i < msgArgs.length && i < 4; i++) {
+      msg = msg.replace(`{${i}}`, msgArgs[i])
+    }
+  }
+  return msg
+}
+
 // 确认下注
 async function confirmBet() {
   try {
+    // 将 betData 转换为 PHP 格式的 betBean
+    const betBean: Array<{ playId: number; money: number }> = []
+    for (const paneCode in betData.value) {
+      const playIds = betData.value[paneCode]
+      for (const playId of playIds) {
+        betBean.push({
+          playId: playId,
+          money: parseInt(betAmount.value) || 0
+        })
+      }
+    }
+
     const result = await gameApi.placeBet({
       gameId: gameId.value,
-      issue: currentPeriod.value,
-      betData: betData.value,
-      totalNum: totalBetCount.value,
-      totalMoney: totalBetCount.value * (parseInt(betAmount.value) || 0)
+      turnNum: currentPeriod.value,
+      betBean: betBean,
+      totalNums: totalBetCount.value,
+      totalMoney: totalBetCount.value * (parseInt(betAmount.value) || 0),
+      ftime: 0
     })
-    if (result.code === 0) {
-      alert('下注成功！')
+
+    // 后端返回格式: { success, msg, msgKey, msgArgs, code }
+    const data = result as any
+    if (data.success) {
+      alert(translateBetMsg(data.msgKey) || '下注成功！')
       showConfirmModal.value = false
       resetBets()
+      refreshBalance()
     } else {
-      alert(result.message || '下注失敗')
+      alert(translateBetMsg(data.msgKey, data.msgArgs) || data.msg || '下注失敗')
     }
   } catch (error) {
     alert('下注失敗，請重試')
@@ -669,6 +864,11 @@ function startCountdown() {
   refreshTimer = window.setInterval(() => {
     fetchIssueData()
   }, 30000)
+
+  // 每30秒刷新一次余额
+  balanceRefreshTimer = window.setInterval(() => {
+    refreshBalance()
+  }, 30000)
 }
 
 // 监听游戏ID变化
@@ -693,11 +893,210 @@ onUnmounted(() => {
   if (refreshTimer) {
     clearInterval(refreshTimer)
   }
+  if (balanceRefreshTimer) {
+    clearInterval(balanceRefreshTimer)
+  }
   stopAllLotteryAnimations()
 })
 </script>
 
 <style scoped>
+/* 历史开奖按钮 */
+.history-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  border-radius: 20px;
+  padding: 6px 12px;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.history-btn:active {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.history-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.history-text {
+  font-size: 12px;
+}
+
+/* 历史开奖抽屉 */
+.history-drawer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 200;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.history-drawer {
+  width: 100%;
+  max-width: 400px;
+  height: 100%;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: linear-gradient(45deg, #fb2351, #ff4b3e);
+  color: #fff;
+}
+
+.drawer-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.close-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.drawer-content {
+  flex: 1;
+  overflow-y: auto;
+  background: #f5f5f5;
+}
+
+/* 期号列表 */
+.period-list {
+  padding: 12px;
+}
+
+.period-item {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+}
+
+.period-item:active {
+  transform: scale(0.98);
+}
+
+.period-item.active {
+  border-color: #fb2351;
+  background: #fff5f6;
+}
+
+.period-number {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.period-numbers {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.lottery-ball.mini {
+  width: 28px;
+  height: 28px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #f0f0f0;
+  color: #333;
+  font-weight: 600;
+}
+
+.lottery-ball.mini.data-0 { background: #fb2351; color: #fff; }
+.lottery-ball.mini.data-1 { background: #1e88e5; color: #fff; }
+.lottery-ball.mini.data-2 { background: #4caf50; color: #fff; }
+.lottery-ball.mini.data-3 { background: #ff9800; color: #fff; }
+.lottery-ball.mini.data-4 { background: #9c27b0; color: #fff; }
+.lottery-ball.mini.data-5 { background: #00bcd4; color: #fff; }
+.lottery-ball.mini.data-6 { background: #ffeb3b; color: #333; }
+.lottery-ball.mini.data-7 { background: #795548; color: #fff; }
+.lottery-ball.mini.data-8 { background: #607d8b; color: #fff; }
+.lottery-ball.mini.data-9 { background: #e91e63; color: #fff; }
+
+.period-time {
+  font-size: 12px;
+  color: #999;
+  text-align: right;
+}
+
+/* 加载更多 */
+.load-more-area {
+  padding: 16px;
+  text-align: center;
+}
+
+.load-more-btn {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  padding: 8px 24px;
+  color: #666;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.load-more-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 抽屉动画 */
+.drawer-enter-active,
+.drawer-leave-active {
+  transition: opacity 0.3s;
+}
+
+.drawer-enter-from,
+.drawer-leave-to {
+  opacity: 0;
+}
+
+.drawer-enter-active .history-drawer,
+.drawer-leave-active .history-drawer {
+  transition: transform 0.3s;
+}
+
+.drawer-enter-from .history-drawer,
+.drawer-leave-to .history-drawer {
+  transform: translateX(100%);
+}
+
 /* 页面容器 */
 .lottery-page {
   min-height: 100vh;
@@ -741,15 +1140,6 @@ onUnmounted(() => {
 .member-balance {
   color: #ffd700;
   font-size: 14px;
-}
-
-.refresh-btn {
-  cursor: pointer;
-}
-
-.refresh-btn img {
-  width: 18px;
-  height: 18px;
 }
 
 .menu-btn {
