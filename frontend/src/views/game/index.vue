@@ -503,36 +503,23 @@ function closeHistoryDrawer() {
 async function loadHistoryList(page = 1) {
   try {
     loadingMore.value = true
-    const res = await gameApi.getUserBets({
-      gameId: gameId.value,
-      page,
-      rows: 20,
-      settled: '1' // 已结
-    })
+    // 使用 getHistory API 获取开奖历史
+    const res = await gameApi.getHistory(gameId.value)
 
-    if (res.code === 0 && res.data?.data) {
-      // 从注单数据中提取开奖期号和号码
-      const periodMap = new Map<string, { actionNo: string; numbers: number[]; actionTime: number }>()
-      res.data.data.forEach((item: any) => {
-        if (!periodMap.has(item.actionNo)) {
-          // 从 actionData 解析开奖号码
-          const numbers = parseActionData(item.actionData)
-          periodMap.set(item.actionNo, {
-            actionNo: item.actionNo,
-            numbers,
-            actionTime: item.actionTime
-          })
-        }
-      })
+    if (res.code === 0 && res.data) {
+      const newList = res.data.map((item: any) => ({
+        actionNo: item.issue,
+        numbers: item.numbers,
+        actionTime: item.time
+      }))
 
-      const newList = Array.from(periodMap.values())
       if (page === 1) {
         historyList.value = newList
       } else {
         historyList.value = [...historyList.value, ...newList]
       }
 
-      hasMoreHistory.value = newList.length > 0 && page < (res.data.totalCount / 20)
+      hasMoreHistory.value = false // 历史数据一次性加载
       historyPage.value = page
     }
   } catch (error) {
@@ -566,17 +553,6 @@ function formatTime(timestamp: number): string {
     return `今天 ${hours}:${minutes}:${seconds}`
   }
   return `${date.getMonth() + 1}/${date.getDate()} ${hours}:${minutes}`
-}
-
-// 从 actionData 解析开奖号码
-function parseActionData(actionData: string): number[] {
-  // actionData 格式可能是 "第一名：1,第二名：2,..." 或直接是号码
-  // 这里需要根据实际 API 返回格式解析
-  const match = actionData.match(/(\d+)/g)
-  if (match) {
-    return match.map(n => parseInt(n)).filter(n => n >= 1 && n <= 10)
-  }
-  return []
 }
 
 // 选择玩法
