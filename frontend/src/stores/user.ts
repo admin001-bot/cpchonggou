@@ -11,6 +11,10 @@ interface UserInfo {
   phone: string
   email: string
   userType: number
+  type: number
+  hasFundPwd: boolean
+  grade: number
+  fanDian: number
 }
 
 // 从localStorage加载用户信息
@@ -48,6 +52,10 @@ export const useUserStore = defineStore('user', () => {
       phone: info.phone || '',
       email: info.email || '',
       userType: info.type || info.userType || 0,
+      type: info.type || info.userType || 0,
+      hasFundPwd: info.hasFundPwd || false,
+      grade: info.grade || 1,
+      fanDian: info.fanDian || 0,
     }
     // 保存到localStorage
     localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
@@ -71,6 +79,9 @@ export const useUserStore = defineStore('user', () => {
           username: res.data.username,
           coin: res.data.coin,
           type: res.data.type,
+          hasFundPwd: res.data.hasFundPwd,
+          grade: res.data.grade,
+          fanDian: res.data.fanDian,
         })
         return res.data
       }

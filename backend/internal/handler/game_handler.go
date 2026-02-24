@@ -668,19 +668,33 @@ func (h *GameHandler) GetHistory(c *gin.Context) {
 
     // 从数据库查询开奖历史
     type LotteryRecord struct {
-        ActionNo   string  `json:"issue"`
-        Numbers    string  `json:"numbers"`
-        ActionTime int64   `json:"time"`
+        ActionNo   string  `gorm:"column:actionNo" json:"issue"`
+        Numbers    string  `gorm:"column:lotteryNo" json:"numbers"`
+        ActionTime int64   `gorm:"column:actionTime" json:"time"`
     }
 
     var records []LotteryRecord
 
     // 查询已开奖的记录 (isDelete=0 且 lotteryNo 不为空)
-    query := "SELECT actionNo, lotteryNo, actionTime FROM ssc_bets WHERE type = ? AND lotteryNo != '' AND isDelete = 0 GROUP BY actionNo ORDER BY id DESC LIMIT 20"
+    // 使用子查询获取每个 actionNo 的最大 id，然后获取完整的记录
+    query := `SELECT a.actionNo, a.lotteryNo, a.actionTime
+              FROM ssc_bets a
+              INNER JOIN (
+                  SELECT actionNo, MAX(id) as maxId
+                  FROM ssc_bets
+                  WHERE type = ? AND lotteryNo != '' AND isDelete = 0
+                  GROUP BY actionNo
+              ) b ON a.actionNo = b.actionNo AND a.id = b.maxId
+              ORDER BY a.actionNo DESC
+              LIMIT 20`
 
-    err := model.DB.Raw(query, gameIDInt).Scan(&records).Error
-    if err != nil {
-        response.Error(c, "查询失败")
+    result := model.DB.Raw(query, gameIDInt).Scan(&records)
+
+    // 如果没有数据或查询失败，返回空数组
+    if result.Error != nil {
+        // 记录错误日志
+        fmt.Println("查询历史开奖失败:", result.Error.Error())
+        response.Success(c, []gin.H{})
         return
     }
 
