@@ -544,7 +544,7 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
                 "extfield0":  lastInsertID,
                 "extfield1":  serializeID,
                 "actionTime": currentTime,
-                "actionIP":   clientIP,
+                "actionIP":   0, // ssc_coin_log.actionIP 是 int 类型，PHP 传入 0
             }
 
             var currentUserCoin float64
