@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "puppeteer-browser": {
+      "command": "node",
+      "args": ["C:/Users/Administrator/Desktop/chonggou/mcp-browser/index.js"]
+    }
+  }
+}

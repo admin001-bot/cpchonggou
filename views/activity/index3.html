@@ -1,0 +1,185 @@
+<ion-view class="m-index" view-title="">
+	<ion-nav-buttons side="left">
+		<a class="logo" href="#/home"><img ng-src="{{appConfig.logoUrl}}"></a>
+	</ion-nav-buttons>
+
+
+	<ion-content >
+
+		<style>
+
+			.activity_details_table table{
+				width: 100%;
+				border-collapse: collapse;
+				border:2px solid #AA884E;
+				margin: 10px 0;
+			}
+			.activity_details_1_table td{
+				border:2px solid #AA884E;
+				text-align: center;
+				height:20px;
+				line-height: 20px;
+				padding:5px;
+			}
+		</style>
+		<!-- 优惠活动 BEGIN -->
+		<div class="activity">
+			<div class="head">
+				<div class="title"><img src="/images/icon-activity.png">優惠活動</div>
+				<a href="#/activitylist">更多&gt;&gt;</a>
+			</div>
+
+			<div class="activity-list">
+				<p>全場回饋</p><img src="/images/slide/zc/201807032155567876.png">
+				<div class="activity_details_1 activity_details" style="display: block;">
+					<p class="activity_title">
+                    <span>活動內容</span>
+                </p><span class="text_yellow">每週回饋-現金貴增</span><br/>
+                <p>
+                    週週救援彩金大回饋！每週一至每週日，與您相約！
+                </p>
+                <p class="text_yellow">
+                    更新於2018年<span>6月</span><span>28日</span>
+                </p>
+                <p class="activity_title">
+                    <span>活動詳情</span>
+                </p>
+                <p>
+                    自北京時間<span class="text_yellow">2018年6月28日起</span>，當天負獲利金額達100元或以上，<br/>即可在隔天<span class="text_yellow">免費領取</span>救援彩金，最高可達<span class="text_yellow">1088</span>元！
+                </p>
+                <div class="activity_details_1_table activity_details_table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>
+                                    起始時間
+                                </th>
+                                <th>
+                                    負獲利金額
+                                </th>
+                                <th>
+                                    救援彩金
+                                </th>
+                                <th>
+                                    提款要求
+                                </th>
+                                <th>
+                                    派送時間
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td rowspan="7">
+                                    <p>
+                                        美東時間
+                                    </p>
+                                    <p>
+                                        2018年6月28日起
+                                    </p>
+                                    <p>
+                                        <br/>
+                                    </p>
+                                </td>
+                                <td>
+                                    100
+                                </td>
+                                <td>
+                                    3
+                                </td>
+                                <td rowspan="7">
+                                    4倍流水,即可出款
+                                </td>
+                                <td rowspan="7">
+                                    當日負獲利100元以上，可於隔日12:00-24:00申領<br/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    500
+                                </td>
+                                <td>
+                                    15
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    1000
+                                </td>
+                                <td>
+                                    30
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    5000
+                                </td>
+                                <td>
+                                    150
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    10000
+                                </td>
+                                <td>
+                                    300
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    50000
+                                </td>
+                                <td>
+                                    1088
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    100000
+                                </td>
+                                <td>
+                                    1088
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text_yellow">
+                    【活動說明】
+                </p>
+                <p>
+                    會員自2018年6月28日起，若當日出現總負盈利，可於次日12:00-24:00分向網站申請總負盈利的3%救援金，封頂金額1088元;
+                </p>
+                <p class="activity_title">
+                    <span>優惠規則與條款：</span>
+                </p>
+                <p>
+                    1.本活動所獲救援金支持投注全網所有遊戲;
+                </p>
+                <p>
+                    2.<span style="white-space: normal;">申請完畢後，請留意您帳戶的金額變化，若救援金金未到賬，請及時聯絡線上客服</span>;
+                </p>
+                <p>
+                    3.為避免文字理解差異，網站保留對活動的最終解釋權;以及再無通知的情況下修改，終止活動的權利;
+                </p>
+			</div>
+		</div>	</div>
+		<!-- 优惠活动 END -->
+
+		<div class="copyright">
+			<!-- <a class="computer" target="_blank" ng-href="{{appConfig.webUrl}}">电脑版</a> -->
+			<p>{{appConfig.copyright}}</p>
+		</div>
+	</ion-content>
+
+	<ion-footer-bar class="max">
+		<ion-tabs class="tabs-icon-top tabs-light">
+			<ion-tab title="首頁" icon-off="icon-home" icon-on="icon-home" href="#/home"></ion-tab>
+			<ion-tab title="遊戲大廳" icon-off="icon-youxi" icon-on="icon-youxi" href="#/lottery/list"></ion-tab>
+			<ion-tab title="資金管理" icon-off="icon-29" icon-on="icon-29" href="#/bank/deposit"></ion-tab>
+			<!-- <ion-tab title="优惠活动" icon-off="icon-29" icon-on="icon-29" href="#/bank/deposit"></ion-tab> -->
+			<ion-tab title="我的" icon-off="icon-yonghu" icon-on="icon-yonghu" href="#/ucenter/index"></ion-tab>
+		</ion-tabs>
+	</ion-footer-bar>
+</ion-view>

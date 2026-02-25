@@ -1,0 +1,105 @@
+<ion-view class="m-index" view-title="">
+	<ion-nav-buttons side="left">
+		<a class="logo" href="#/home"><img ng-src="{{appConfig.logoUrl}}"></a>
+	</ion-nav-buttons>
+
+
+	<ion-content >
+
+		<style>
+
+
+			.activity_details_table table{
+				width: 100%;
+				border-collapse: collapse;
+				border:2px solid #AA884E;
+				margin: 10px 0;
+			}
+
+			.activity_details_1_table td{
+				border:2px solid #AA884E;
+				text-align: center;
+				height:20px;
+				line-height: 20px;
+				padding:5px;
+			}
+			.activity_details_2_table tbody tr td{
+				height:15px;
+				padding: 6px 0;
+				border:2px solid #AA884E;
+				text-align: center;
+			}
+		</style>
+		<!-- 优惠活动 BEGIN -->
+		<div class="activity">
+			<div class="head">
+				<div class="title"><img src="/images/icon-activity.png">优惠活动</div>
+				<a href="#/activitylist">更多&gt;&gt;</a>
+			</div>
+
+			<div class="activity-list">
+
+
+
+				<p>全場回饋</p><img src="/images/slide/zc/201807032154105347.png">
+
+			<div class="activity_details_2 activity_details">
+                <p class="activity_title">
+                    <span>活動內容</span>
+                </p>
+                <p>
+                    1、會員自2018年5月18日起，會員無論是從網頁版、WAP版、APP版每日首次銀行卡轉帳儲值，即儲值金額的1%彩金。
+                </p>
+                <p>
+                    2、微信、支付寶轉銀行卡的用戶也享有相同的優惠。
+                </p>
+                <p>
+                    3、儲值本金+贈送彩金只需2倍流水即可申請提領。
+                </p>
+                <p class="activity_title">
+                    <span>線上支付流程如下</span>
+                </p><span class="text_yellow" style="font-size: 14px">① 登陸會員帳號 → ② 點選【線上儲值】→ ③ 選擇【付款模式】 → ④ 填寫存款金額並選擇銀行 → ⑤ 登入網銀進行轉帳付款 → ⑥ 完成轉帳 → ⑦ 系統受到款項後將自動為您新增額度</span>
+                <p class="activity_title">
+                    <span>優惠規則與條款</span>
+                </p>
+                <p>
+                    1.此優惠活動不論新舊會員皆可參與，相同的電子郵件信箱、QQ號、微訊號、電話號碼、IP地址的會員，每天只有一次贈送機會；
+                </p>
+                <p>
+                    2.會員選擇使用公司存款1元或以上，均可獲得1%的彩金回饋，公司入款優惠無需申請，存款後即可立即獲贈;
+                </p>
+                <p>
+                    3.會員選擇使用線上付款進行存款1元或以上，皆可獲得1%的彩金回饋，線上支付優惠無需申請，系統會在您存款金額到帳後一併為您存入會員帳號內;
+                </p>
+                <p>
+                    4.本公司的所有優惠特為玩家而設，若發現會員利用非法程序下注或是下注套利等行為，網站有權將過往所得之優惠全部收回，並取消會員帳號;
+                </p>
+                <p>
+                    5.儲值完畢後，請留意您帳戶的金額變化，若贈送彩金未到賬，請及時聯絡線上客服;
+                </p>
+                <p>
+                    6.為避免文字理解差異，網站保留對活動的最終解釋權;以及再無通知的情況下修改，終止活動的權利;
+                </p>
+            </div>
+            
+            
+			</div>
+		</div>
+			<!-- 优惠活动 END -->
+
+		<div class="copyright">
+			<!-- <a class="computer" target="_blank" ng-href="{{appConfig.webUrl}}">电脑版</a> -->
+			<p>{{appConfig.copyright}}</p>
+		</div>
+	</ion-content>
+
+	<ion-footer-bar class="max">
+		<ion-tabs class="tabs-icon-top tabs-light">
+			<ion-tab title="首頁" icon-off="icon-home" icon-on="icon-home" href="#/home"></ion-tab>
+			<ion-tab title="遊戲大廳" icon-off="icon-youxi" icon-on="icon-youxi" href="#/lottery/list"></ion-tab>
+			<ion-tab title="資金管理" icon-off="icon-29" icon-on="icon-29" href="#/bank/deposit"></ion-tab>
+			<!-- <ion-tab title="优惠活动" icon-off="icon-29" icon-on="icon-29" href="#/bank/deposit"></ion-tab> -->
+			<ion-tab title="我的" icon-off="icon-yonghu" icon-on="icon-yonghu" href="#/ucenter/index"></ion-tab>
+		</ion-tabs>
+	</ion-footer-bar>
+</ion-view>

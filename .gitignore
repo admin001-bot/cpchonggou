@@ -31,3 +31,25 @@ Thumbs.db
 *.rar
 *.zip
 *.tar.gz
+
+# 依赖目录
+node_modules/
+vendor/
+
+# 构建输出
+dist/
+build/
+*.min.js
+
+# 后端二进制文件
+backend/server
+*.exe
+
+# 数据库文件
+*.sql
+
+# 本地配置
+.claude/settings.local.json
+
+# 其他
+nul

@@ -1,0 +1,89 @@
+<ion-view view-title="資金管理">
+	<ion-nav-buttons side="left">
+    	<a class="button button-icon icon-prepage" ng-click="back();"></a>
+  	</ion-nav-buttons>
+<ion-content class="m-center m-info m-cash">
+<div class="cash-top">
+	<div class="row sub-header">
+		<div class="col col-33">
+			<img class="avatar" src="/images/avatar.png">
+		</div>
+		<div class="col col-66">
+			<h5>{{My.getUserName()}}</h5>
+			<p >
+				使用者餘額：<span  style=""><span class="money">{{My.getMoney()}}</span>USDT</span>
+				<a class="refresh" ng-click="refreshMoney();"><img src="/images/icon-refresh.png"></a>
+			</p>
+		</div>
+	</div>
+	<div class="tabs-striped tabs-top">
+		<div class="tabs tabs-theme">
+			<a class="tab-item tab-item-25" href="#/bank/deposit"><span>存款</span></a>
+			<a class="tab-item tab-item-25 active" href="#/bank/withdraw"><span>提款</span></a>
+			<a class="tab-item tab-item-25" href="#/bank/trans/1"><span>存款記錄</span></a>
+			<a class="tab-item tab-item-25" href="#/bank/trans/2"><span>提款記錄</span></a>
+		</div>
+	</div>
+</div>
+<div class="withdraw" ng-if="withdrawStep==1">
+	<div class="row row-center responsive-sm">
+		<div class="col responsive-mess"></div>
+		<div class="col-100 responsive-txt">
+			您還沒完善個人資訊
+		</div>
+		<div class="col responsive-btn">
+			<a ng-click="showRealNameModal('完善個人資訊', withdrawPageGetBankCallback)" class="button button-block button-positive">完善個人資訊</a>
+		</div>
+	</div>
+</div>
+
+<div class="withdraw" ng-if="withdrawStep==2">
+	<div class="row row-center responsive-sm">
+		<div class="col responsive-recard"></div>
+		<div class="col-100 responsive-txt">您還未綁定出款銀行卡</div>
+		<div class="col responsive-btn">
+			<a href="#/bank/bank" class="button button-block button-positive">綁定銀行卡</a>
+		</div>
+	</div>
+</div>
+
+<div ng-if="withdrawStep==3" class="withdraw">
+	<div class="tab-bable">
+		<div class="tab-content">
+			<div class="tab-pane active">
+				<div class="item item-input">
+					<input type="tel" name="applyMoney" required ng-model="withdrawData.applyMoney" reset-field
+						ng-keyup="parseIntMoneyInWithdrawPage($event)" placeholder="請填寫提款金額">
+				</div>
+				<p class="item-warn text-light">單筆下限10，上限2000000</p>
+			<!-- 	<div class="item item-input">
+					<input class="uc-set-scroll" />
+				</div> -->
+				<div class="item item-input">
+					<label style="height: 34px; vertical-align: middle; font-size: 14px; line-height: 34px;"
+						ng-bind="bankname + ' ' + My.getBank().cardNo + ' ' + My.getFullName()"/>
+				</div>
+				<div class="item item-input">
+					<input type="password" required
+						maxlength="20" ng-model="withdrawData.withdrawPwd"
+						placeholder="請填寫提款密碼">
+				</div>
+				<button id="btnWithdraw"
+					class="button button-block button-positive"
+					ng-click="withdrawSubmit()">確認提交</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script id="realname-template" type="text/ng-template">
+	<div class="info-mdf-tip">請務必填寫真實姓名(<span class="text-assertive">填寫後不可修改</span>)</div>
+	<div class="row">
+		<div class="col">
+			<div class="item item-input"><input type="text" class="txt-info reset-field" name="realname" ng-model="modalData.realname" ng-pattern="/[\u4e00-\u9fa5]{2,5}$/" placeholder="真實姓名"></div>
+		</div>
+	</div>
+</script>
+
+</ion-content>
+</ion-view>

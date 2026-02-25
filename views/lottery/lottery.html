@@ -1,0 +1,81 @@
+<ion-view>
+	<ion-nav-buttons side="left">
+    	<button onclick="javascript:window.location.href='#/home'" menu-toggle="left" class="button button-icon button-clear"><span class="game-name">{{game.name}}-首頁</span></button>
+  	</ion-nav-buttons>
+  	
+	<ion-nav-buttons side="right">
+		<span class="member-balance ng-binding">USDT:{{My.getMoney()}}</span>
+		<a class="refresh" onclick="location.reload();">
+            <img src="/images/icon-refresh.png">
+        </a>
+    	<button class="button button-icon icon icon-liebiao" ng-click="showPoper($event);"></button>
+	</ion-nav-buttons>
+
+	<ion-side-menus class="lotter-view">
+		<ion-side-menu side="left" class="menu-left view" width="180">
+			<header class="bar bar-header bar-stable">
+	  	          <h1 class="title">系統選單</h1></header>
+			<ion-content class="has-header">
+			    <ion-list>
+					<ion-item nav-clear menu-close href="#/lottery/list">返回大廳</ion-item>
+					<div ng-repeat="game in gameList">
+	            		<ion-item nav-clear menu-close href="#/lottery/index/{{game.id}}">{{game.name}}</ion-item>
+	            	</div>
+	          </ion-list>
+		  	</ion-content>
+		</ion-side-menu>
+	 		
+		<ion-side-menu-content>
+			<ion-nav-bar class="bar-positive"></ion-nav-bar>
+	
+		  	<ion-content class="lottery-content has-header" scroll="false">
+			    <div class="cur-lottery">
+			    	<div class="perio"></div>
+			    	
+			    	<div class="lottery-bet">
+			    		<div class="cur-menus">
+			    			<ion-content delegate-handle="menus" class="lottery-menu">
+			    				<ul>
+									<li class="nav" ng-repeat="pane in panes" ng-class="{active:currPane.code==pane.code}" ><a class="item col" ng-click="selectCate(pane);">{{pane.name}}<span class="smallround" ng-class="{'menus-choose':betData[pane.code].length>0}"></span></a></li>
+								</ul>
+			    			</ion-content>
+			    			
+			    			<div ng-include="contentTpl"></div>
+			    		</div>
+			    	</div>
+			    </div>
+			    
+		  	</ion-content>
+		  	
+		  	<ion-footer-bar class="bar bar-footer">
+			<div id="chouma_wrap" style="display: block; height: 59px; display:none; ">
+    <span class="chouma_case" style="left: 0;" ng-click="changeMoney(10);"></span>
+    <span class="chouma_case" style="left:20%;" ng-click="changeMoney(100);"></span>
+    <span class="chouma_case" style="left:40%;" ng-click="changeMoney(1000);"></span>
+    <span class="chouma_case" style="left:60%;" ng-click="changeMoney(10000);"></span>
+    <span class="chouma_case" style="left:80%;" ng-click="changeMoney('');"></span>
+</div>
+		  		<div class="row">
+		  			<div class="col col-25">
+		  				<div class="inputbox">
+		  					<div class="text-left pb5">選取<span class="text-yellow">{{shareData.betCount}}</span>注</div>
+		  					<div class="inputbox cel">
+		  						<input type="tel" class="inputbox textinput" ng-model="shareData.betMoney" placeholder="輸入金額" />
+		  					</div>
+		  				</div>
+		  			</div>
+		  			
+		  			<div class="col " style="text-align: right;">
+		  				<!--<button class="button button-small button-chouma" style="margin-right: 10px;" ng-click="show_chouma();">籌碼</button>					-->
+		  				<button class="button button-small button-bet" style="margin-right: 10px;" ng-click="bet($event)">下注</button>
+		  				<button class="button button-small button-reset" ng-click="reset()">重置</button>
+		  			</div>
+		  		</div>
+		  		
+		  		<div ng-show="shareData.lotteryState == 0" class="close-pan"><div class="tip">已封盤</div></div>
+		  		<div ng-show="shareData.lotteryState == -1" class="close-pan"><div class="tip">未開盤</div></div>
+		  	</ion-footer-bar>
+	 		
+		</ion-side-menu-content>
+	</ion-side-menus>
+</ion-view>

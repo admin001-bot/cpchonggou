@@ -1,0 +1,122 @@
+<?php 
+$pagenum=$_GET['page'];
+$pagesize=$_GET['rows'];
+$list=$this->getPage("select * from {$this->prename}push_message order by addTime desc",$pagenum,$pagesize);
+
+$allarr=array();
+$allarr['data']=array();
+$allarr['totalCount']=0;
+$allarr['otherData']=null;
+$listarr=array();
+
+foreach($list['data'] as $v){
+	//推送全部会员
+	if($v['pushObj']==0){
+		$listarr['id']=$v['mid'];
+		$listarr['title']=$v['title'];
+		$listarr['operatorName']=$v['operator'];
+		$listarr['addDate']=date("Y-m-d H:i",$v['addTime']);
+		$listarr['content']=$v['content'];
+		//获取已读信息人员名单,已读的不提示新消息，未读的提示新消息
+		$listarr['isReadName']="(未读)";//默认未读
+		$name=$v['isReadName'];
+		if($name!=""){
+			$arr = explode(',',$name);
+			for($index=0;$index<count($arr);$index++){
+				if($arr[$index]==$this->user['username']){
+					$listarr['isReadName']="";
+				}
+			} 
+		}	
+		array_push($allarr['data'], $listarr);			
+	}
+	
+	//推送部分会员
+	if($v['pushObj']==1){//如果当前元素推送对象为部分会员
+		//获取当前元素的部分会员名单
+		$member_name = $v['part'];
+		$member_arr = explode(',',$member_name);
+		$listarr['isReadName']="(未读)";//默认未读
+ 		foreach($member_arr as $m){//遍历部分会员数组
+			if($this->user['username']==$m){//匹配当前登录用户是否在要推送的名单内									
+				$listarr['id']=$v['mid'];
+				$listarr['title']=$v['title'];
+				$listarr['operatorName']=$v['operator'];
+				$listarr['addDate']=date("Y-m-d H:i",$v['addTime']);
+				$listarr['content']=$v['content'];
+				//获取已读信息人员名单,已读的不提示新消息，未读的提示新消息
+				$name=$v['isReadName'];
+				if($name!=""){
+					$arr = explode(',',$name);
+					for($index=0;$index<count($arr);$index++){
+						if($arr[$index]==$this->user['username']){
+							$listarr['isReadName']="";
+						}
+					} 
+				}
+				array_push($allarr['data'], $listarr);
+			}
+		}
+	}
+	
+	//推送代理
+	if($v['pushObj']==3){
+		//查询当前登录用户是不是代理
+		$uid = $this->user['uid'];
+		$sql = "select type from {$this->prename}members where uid = $uid";		
+		$info =$this->getRow($sql);
+		$listarr['isReadName']="(未读)";//默认未读
+		foreach($info as $i){
+			if($i['type']==1){				
+				$listarr['id']=$v['mid'];
+				$listarr['title']=$v['title'];
+				$listarr['operatorName']=$v['operator'];
+				$listarr['addDate']=date("Y-m-d H:i",$v['addTime']);
+				$listarr['content']=$v['content'];
+				//获取已读信息人员名单,已读的不提示新消息，未读的提示新消息
+				$name=$v['isReadName'];
+				if($name!=""){
+					$arr = explode(',',$name);
+					for($index=0;$index<count($arr);$index++){
+						if($arr[$index]==$this->user['username']){
+							$listarr['isReadName']="";
+						}
+					} 
+				}
+				array_push($allarr['data'], $listarr);
+			}
+		}
+	}
+	
+	
+	//推送在线会员
+	if($v['pushObj']==2){
+		//查询当前用户是不是在线状态
+		$uid = $this->user['uid'];
+		$online_sql = "select * from {$this->prename}member_session where isOnLine=1 AND ".time()." - accessTime < ".$GLOBALS['conf']['member']['sessionTime']." and uid = $uid";
+		$info =$this->getRow($online_sql);
+		$listarr['isReadName']="(未读)";//默认未读
+		if(!empty($info)){ //不为空就是在线，为空不在线				
+				$listarr['id']=$v['mid'];
+				$listarr['title']=$v['title'];
+				$listarr['operatorName']=$v['operator'];
+				$listarr['addDate']=date("Y-m-d H:i",$v['addTime']);
+				$listarr['content']=$v['content'];
+				//获取已读信息人员名单,已读的不提示新消息，未读的提示新消息
+				$name=$v['isReadName'];
+				if($name!=""){
+					$arr = explode(',',$name);
+					for($index=0;$index<count($arr);$index++){
+						if($arr[$index]==$this->user['username']){
+							$listarr['isReadName']="";
+						}
+					} 
+				}
+				array_push($allarr['data'], $listarr);
+		}
+	}
+}
+
+$allarr['totalCount']=count($allarr['data']);
+echo json_encode($allarr);
+?>

@@ -1,0 +1,81 @@
+<ion-view view-title="線上支付">
+<ion-view view-title="線上支付">
+<ion-nav-bar class="bar-positive">
+
+	<ion-nav-buttons side="left">
+    	<a class="button button-icon icon-prepage" ng-click="back();"></a>
+  	</ion-nav-buttons>
+  	
+	<ion-content>
+
+	<div class="item-online">
+		<form id="onlinepay-form" name="onlinepayForm" novalidate action="/userrech/onlinePay.do"
+		 method="post" target="_blank">
+			<input name="x-session-token" type="hidden" ng-value="xSessionToken" />
+			<input name="token" type="hidden" ng-value="xSessionToken" />
+			<div class="item item-input">
+				<input type="text" name="amount" ng-model="onlinepayData.depositMoney"
+				 placeholder="請填寫存款金額" 
+				 ng-keyup="parseFloatMoneyInDepositPage($event)" required class="reset-field">
+			</div>
+			<!--<p class="item-warn text-light">单笔下限<span class="red">10</span>,单笔上限<span class="red">50000</span></p>-->
+		
+			<div class="item item-select">
+				<!--<select name="payId" ng-model="onlinepayData.bank" ng-options="v.code as v.name for v in bankMap[onlinepayData.payWay.onlineType] track by v.code" required>
+					<option value="">选择支付银行</option>
+				</select>-->
+				<select name="payId">
+				<option value="qq">QQ錢包</option>
+				<!--option value="UNIONPAY">银联扫码</option>
+				<option value="UNIONWAPPAY">银联H5</option>
+				<option value="FASTPAY">快捷支付</option>
+				<option value="QQPAYWAP">手机QQ钱包</option>
+				<option value="WEIXINWAP">微信支付</option>
+				<option value="ALIPAYWAP">支付宝</option>
+				<option value="JDPAYWAP">京东支付</option>
+				
+				 <!--option value="wx">微信支付</option>
+				  <option value="zfb">支付宝</option>
+			    <option value="qq">QQ钱包</option>
+				 <option value="ICBC">工商银行</option>
+				 <option value="ABC">农业银行</option>
+				 <option value="CMB">招商银行</option>
+				 <option value="CIB">兴业银行</option>
+				
+				 <option value="BOC">中国银行</option>
+				  <option value="BOCO">交通银行</option>
+				 <option value="SPDB">浦发银行</option>
+				 <option value="CMBC">民生银行</option>
+				 <option value="HXB">华夏银行</option>
+				 <option value="CEB">光大银行</option>
+				 <option value="BCCB">北京银行</option>
+				 
+				 <option value="SHB">上海银行</option>
+				 <option value="PSBC">邮政储蓄</option>
+				 <option value="PINGANBANK">平安银行</option>
+				 <option value="CCB">建设银行</option-->
+				</select>
+			</div>
+			<input ng-disabled="onlinepayForm.$invalid" type="button" ng-click="onlinePay()" class="button button-block button-positive button-positive-theme" value="開始儲值">
+		</form>
+	</div>
+	</ion-content>
+	
+<script id="submitData-template" type="text/ng-template">
+	<p>支付方式: 線上支付</p>
+	<p>支付金額: <font color="red">¥{{onlinepayData.depositMoney}}</font></p>
+	<p>1.成功付款後將會自動到賬。</p>
+	<p>2.長時間無反應，請聯絡客服。</p>
+</script>
+
+
+</ion-view>
+<ion-footer-bar class="max">
+		<ion-tabs class="tabs-icon-top tabs-light"> 
+			<ion-tab title="首頁"     icon-off="icon-home1"   icon-on="icon-home1"   href="/index.php"></ion-tab>
+			<ion-tab title="遊戲大廳" icon-off="icon-youxi1"  icon-on="icon-youxi1"  href="#/lottery/list"></ion-tab>
+			<ion-tab title="資金管理" icon-off="icon-29s"     icon-on="icon1-29s"    href="#/bank/deposit"></ion-tab>
+			<ion-tab title="會員中心" icon-off="icon-yonghus" icon-on="icon-yonghus" href="#/ucenter/index"></ion-tab>
+			
+		</ion-tabs>
+</ion-footer-bar>

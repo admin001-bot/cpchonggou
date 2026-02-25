@@ -1,0 +1,47 @@
+<ion-view view-title="額度轉換">
+<ion-nav-buttons side="left">
+   	<a class="button button-icon icon-prepage" href="#/home"></a>
+</ion-nav-buttons>
+
+<ion-content class="m-center m-info m-cash" scroll="false">
+	<div class="cash-top">
+		<div class="row sub-header">
+			<div class="col col-33">
+				<img class="avatar" src="/images/avatar.png">
+			</div>
+			<div class="col col-66">
+				<h5>{{My.getUserName()}}</h5>
+				<p >
+					使用者餘額：<span  style=""><span class="money">{{My.getMoney()}}</span>USD</span>
+					<a class="refresh" ng-click="refreshMoney();"><img src="/images/icon-refresh.png"></a>
+				</p>
+			</div>
+		</div>
+		<div class="tabs-striped tabs-top">
+			<div class="tabs tabs-theme">
+				<a class="tab-item tab-item-25 " href="#/bank/deposit1"><span >額度轉換</span></a>
+					<a class="tab-item tab-item-25 active" href="#/bank/orderList">轉換記錄</a>
+				
+			</div>
+		</div>
+	</div>
+
+	<div class="tab-content text-center table-list t-white">
+		<div class="row text-center no-title pm">
+			<div class="col col-40 radiu">時間</div>
+			<div class="col col-30 radiu">金額</div>
+			<div class="col col-30 radiu">操作</div>
+		</div><ion-content class="list" style="top: 8rem">
+			<div ng-repeat="item in dataList" class="row text-center" >
+				<div class="col col-40 text-center tal ti">{{item.update_time}}</div>
+				<div class="col col-30 text-center tal ti">{{item.order_value}}</div>
+				<div class="col col-30 text-center tal ti">{{item.about}}</div>
+			</div>
+			
+			<div ng-if="dataList.length == 0" class="empty-tip">暫無數據</div>
+			<div ng-show="!dataList" class="spinner-warp"><ion-spinner class="spinner spinner-ios"></ion-spinner></div>
+			<ion-infinite-scroll ng-if="isMore" on-infinite="queryData()" icon="ion-loading-c" distance="1%"></ion-infinite-scroll>
+		</ion-content>
+	</div>
+</ion-content>
+</ion-view>

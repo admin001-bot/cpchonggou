@@ -1,0 +1,14 @@
+{
+  "name": "mcp-chrome-devtools",
+  "version": "1.0.0",
+  "description": "MCP server for Chrome DevTools Protocol",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "puppeteer": "^23.0.0"
+  }
+}

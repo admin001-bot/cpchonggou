@@ -1,0 +1,73 @@
+<ion-view class="m-index" view-title="">
+	<ion-nav-buttons side="left">
+		<a class="logo" href="#/home"><img ng-src="{{appConfig.logoUrl}}"></a>
+	</ion-nav-buttons>
+
+
+	<ion-content >
+		<style>
+
+			.activity_details_table table{
+				width: 100%;
+				border-collapse: collapse;
+				border:2px solid #AA884E;
+				margin: 10px 0;
+			}
+			.activity_details_1_table td{
+				border:2px solid #AA884E;
+				text-align: center;
+				height:20px;
+				line-height: 20px;
+				padding:5px;
+			}
+		</style>
+		<!-- 优惠活动 BEGIN -->
+		<div class="activity">
+			<div class="head">
+				<div class="title"><img src="/images/icon-activity.png">優惠活動</div>
+				<a href="#/activitylist">更多&gt;&gt;</a>
+			</div>
+
+			<div class="activity-list">
+				<p>全場回饋</p><img src="/images/slide/zc/201807032205111343.png">
+
+				<div class="activity_details_3 activity_details" style="display: block;">
+					<p class="activity_title">
+                    <span>活動詳情</span>
+                </p>
+                <p>
+                    作為尊貴的網站聯盟合營夥伴，您可以利用您的資源最快賺取高額佣金，<br/>由這一秒鐘開始，您將輕鬆實現成功和財富的夢想。
+                </p>
+                <p class="activity_title">
+                    <span>代理合作模式</span>
+                </p>
+                <p>
+                    A：依純獲利比例分紅<br/>1.一個月內公司在您的代理帳號內純贏利達到1000元-50000元，可享其中15%的佣金。<br/>2.一個月內公司在您的代理帳號內純贏利達到50001元-100000元，可享其中20%的佣金。<br/>3.一個月內公司在您的代理帳號內純贏利達到100001元-200000元，可享其中25%的佣金。<br/>4.一個月內公司在您的代理帳號內純贏利達到200001元-500000元，可享其中30%的佣金。<br/>5.一個月內公司在您的代理帳號內純贏利達到500001元-1000000元，可享其中35%的佣金。<br/>6.一個月內公司在您的代理帳號內純贏利達到1000001-2000000元，可享其中40%的佣金。<br/>7.一個月內公司在您的代理帳號內純贏利達到2000001-5000000元，可享其中45%的佣金。<br/>8.一個月內公司在您的代理帳號內純贏利達到5000001元-10000000元，可享其中50%的佣金。<br/>9.一個月內公司在您的代理帳號內純贏利達到10000001元，可享其中55%的佣金。<br/>純盈利是扣除出款入款手續費用資金風險費（合計10%）+平台維護抽成（10%）+公司運維成本費用（5-10%極為優秀可以申請5%）+返水優惠費用後剩下的盈利為純盈利！ （費用和累積虧損大於派彩時無佣金，派彩負數時自動累積）<br/>B：代理依實際輸贏佔成，輸贏按佔成比例分攤，扣除反水，扣除平台費用，扣除優惠活動費用,平台佔幾成承擔幾成的平台費用反水費用活動費用<br/>1.代理佔成必須繳交100萬合作押金<br/>2.代理佔成最大比例為90%<br/>3.平台費用為客戶出款入款風險資金統計為10%，平台抽成10%，公司維運成本（5-10%極為優秀可以申請5%）<br/>4.代理佔成每個月1-5號結算獲利或虧損，虧損部分必須在每個月5號之前打款到公司帳戶，若無打款從押金直接扣除並開除代理資格<br/>例：代理佔成90%，月結報表為獲利100萬，反水10萬，實際獲利是90萬，扣除平台費用90萬*0.3=27萬，扣除優惠活動費用1萬那麼代理佔成可分（100-10-27-1）*0.9+(10+27+1)*0.1=59.6萬<br/>例：代理佔成90%，月結報表為虧損100萬，反水10萬，實際虧損是110萬，加上平台費用110萬*0.3=33萬，加上優惠活動1萬，那麼代理需支付（110+33+1）*0.9-(10+33+1)*0.1=125.2萬
+                </p>
+                <p class="activity_title">
+                    <span>代理申請</span>
+                </p>
+                <p>
+                    聯絡線上客服，並填寫各項資料。提供您的帳號，24小時由專員與您聯絡開通。
+                </p>
+				</div>
+			</div>
+		</div>
+		<!-- 优惠活动 END -->
+
+		<div class="copyright">
+			<!-- <a class="computer" target="_blank" ng-href="{{appConfig.webUrl}}">电脑版</a> -->
+			<p>{{appConfig.copyright}}</p>
+		</div>
+	</ion-content>
+
+	<ion-footer-bar class="max">
+		<ion-tabs class="tabs-icon-top tabs-light">
+			<ion-tab title="首頁" icon-off="icon-home" icon-on="icon-home" href="#/home"></ion-tab>
+			<ion-tab title="遊戲大廳" icon-off="icon-youxi" icon-on="icon-youxi" href="#/lottery/list"></ion-tab>
+			<ion-tab title="資金管理" icon-off="icon-29" icon-on="icon-29" href="#/bank/deposit"></ion-tab>
+			<!-- <ion-tab title="优惠活动" icon-off="icon-29" icon-on="icon-29" href="#/bank/deposit"></ion-tab> -->
+			<ion-tab title="我的" icon-off="icon-yonghu" icon-on="icon-yonghu" href="#/ucenter/index"></ion-tab>
+		</ion-tabs>
+	</ion-footer-bar>
+</ion-view>

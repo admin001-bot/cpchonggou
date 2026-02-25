@@ -1,0 +1,120 @@
+<ion-view class="m-index" view-title="">
+	<ion-nav-buttons side="left">
+		<a class="logo" href="#/home"><img ng-src="{{appConfig.logoUrl}}"></a>
+	</ion-nav-buttons>
+
+
+	<ion-content >
+		<style>
+
+			.activity_details_table table{
+				width: 100%;
+				border-collapse: collapse;
+				border:2px solid #AA884E;
+				margin: 10px 0;
+			}
+			.activity_details_1_table td{
+				border:2px solid #AA884E;
+				text-align: center;
+				height:20px;
+				line-height: 20px;
+				padding:5px;
+			}
+		</style>
+		<!-- 优惠活动 BEGIN -->
+		<div class="activity">
+			<div class="head">
+				<div class="title"><img src="/images/icon-activity.png">优惠活动</div>
+				<a href="#/activitylist">更多&gt;&gt;</a>
+			</div>
+
+			<div class="activity-list">
+
+				<p>全場回饋</p><img src="/images/slide/zc/201807032204306540.png">
+
+				<div class="activity_details_3 activity_details" style="display: block;">
+									<p>
+                    為答謝新舊會員，現公司決定只要有介紹朋友到【網站】進行註冊，充值並投注的會員即可得到豐厚的推薦彩金及代理同等待遇。
+                </p>
+                <p class="activity_title">
+                    <span>活動內容</span>
+                </p>
+                <p>
+                    <span style="white-space: nowrap;">推薦好友儲值</span>
+                </p>
+                <p>
+                    <span style="white-space: nowrap;">第一周累計存款：</span>
+                </p>
+                <p>
+                    <span style="white-space: nowrap;">1000&nbsp; &nbsp; 送18&nbsp; 5000&nbsp; 送58&nbsp;&nbsp;</span>
+                </p>
+                <p>
+                    <span style="white-space: nowrap;">10000&nbsp; 送88&nbsp; 50000送188&nbsp;&nbsp;</span>
+                </p>
+                <p>
+                    <span style="white-space: nowrap;">100000送388</span>
+                </p>
+                <p>
+                    <span style="white-space: nowrap;"><br/></span>
+                </p>
+                <p>
+                    <span style="white-space: nowrap;">第二週累計打碼量：</span>
+                </p>
+                <p>
+                    <span style="white-space: nowrap;">10000可獲得38元返傭，</span>
+                </p>
+                <p>
+                    <span style="white-space: nowrap;">每增加一萬打碼量加送38元，最高688元。</span>
+                </p>
+                <p>
+                    <span style="white-space: nowrap;"><br/></span>
+                </p>
+                <p>
+                    <span style="white-space: nowrap;">推薦好友人數達5個人，且享有代理同等待遇，待遇如下：</span>
+                </p>
+                <p>
+                    <span style="white-space: nowrap;">每週累計打碼量10000以上可返38元佣金，最高1088元。</span>
+                </p>
+                <p>
+                    <span style="white-space: nowrap;">註：以上活動每週三結算一次，以此類推。</span>
+                </p>
+                <p>
+                    <br/>
+                </p>
+                <p class="activity_title">
+                    <span>規則和條款</span>
+                </p>
+                <p>
+                    1：所有優惠活動以及人民幣【CNY】為結算金額，以北京時間為計時區間。
+                </p>
+                <p>
+                    2：【網站】的所有優惠特為玩家而設，如發現任何團體或個人，以不誠實方式套取紅利或任何威脅、濫用公司優惠等行為，公司保留凍結、取消該團體或個人帳戶及帳戶餘額的權利。
+                </p>
+                <p>
+                    3：若會員對活動有爭議時，為確保雙方利益，杜絕身分盜用行為，【網站】有權要求會員提供充足有效的文件，以確認是否享有此優惠的資源。
+                </p>
+                <p>
+                    4：當參與優惠會員未能完全遵守、或違反、或濫用任何有關公司優惠或推廣的條款，又或我們又任何證據有任何團隊或個人投下一連串的關聯賭注，籍以造成無論賽果怎樣都可以確保可從該存款紅利或其他推廣活動提供的優惠獲利，【網站】保留權利向此團隊或個人停止、取消優惠或索回已支付的全部優惠紅利。此外，公司亦保留權利向這些客戶扣去相當於優惠紅利價值的行政費用，以補償我們的行政成本。
+                </p>
+
+			</div>
+			</div>
+		</div>
+		<!-- 优惠活动 END -->
+
+		<div class="copyright">
+			<!-- <a class="computer" target="_blank" ng-href="{{appConfig.webUrl}}">电脑版</a> -->
+			<p>{{appConfig.copyright}}</p>
+		</div>
+	</ion-content>
+
+	<ion-footer-bar class="max">
+		<ion-tabs class="tabs-icon-top tabs-light">
+			<ion-tab title="首頁" icon-off="icon-home" icon-on="icon-home" href="#/home"></ion-tab>
+			<ion-tab title="遊戲大廳" icon-off="icon-youxi" icon-on="icon-youxi" href="#/lottery/list"></ion-tab>
+			<ion-tab title="資金管理" icon-off="icon-29" icon-on="icon-29" href="#/bank/deposit"></ion-tab>
+			<!-- <ion-tab title="优惠活动" icon-off="icon-29" icon-on="icon-29" href="#/bank/deposit"></ion-tab> -->
+			<ion-tab title="我的" icon-off="icon-yonghu" icon-on="icon-yonghu" href="#/ucenter/index"></ion-tab>
+		</ion-tabs>
+	</ion-footer-bar>
+</ion-view>

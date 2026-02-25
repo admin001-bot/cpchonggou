@@ -1,0 +1,70 @@
+<ion-view view-title="額度轉換">
+	<ion-nav-buttons side="left">
+    	<a class="button button-icon icon-prepage" ng-click="back();"></a>
+  	</ion-nav-buttons>
+  	
+	<ion-content class="m-center m-info m-cash">
+		<div class="cash-top">
+			<div class="row sub-header">
+				<div class="col col-33">
+					<img class="avatar" src="/images/avatar.png">
+				</div>
+				<div class="col col-66">
+					<h5>{{My.getUserName()}}</h5>
+					<p ng-click="getWallet()" >
+						使用者餘額：<span  style=""><span class="money">{{My.getMoney()}}</span>USDT</span>
+						<a class="refresh" ng-click="refreshMoney();"><img src="/images/icon-refresh.png"></a>
+					</p>
+				</div>
+			</div>
+			<div class="tabs-striped tabs-top">
+				<div class="tabs tabs-theme">
+					<a class="tab-item tab-item-25 active" href="#/bank/deposit1"><span >額度轉換</span></a>
+					<a class="tab-item tab-item-25" href="#/bank/orderList">轉換記錄</a>
+					<!-- <a class="tab-item tab-item-25" href="#/bank/withdraw"><span >取款</span></a>
+					<a class="tab-item tab-item-25" href="#/bank/trans/2">取款记录</a> -->
+				</div>
+			</div>
+		</div>
+
+			<div class="wallet">
+				<span>我的錢包</span>
+			<span >{{My.getMoney()}}</span>
+			</div>
+			<div class="wallet">
+				<span>AG</span>
+			<span class="reloadMoney"  id='AG' ng-click="loadBalance('AG')">點擊查詢</span>
+			<span class="inmoney" ng-click="inmoney('AG')">轉入</span>
+			<span class="outmoney" ng-click="outamount('AG')">轉出</span>
+			</div>
+			<div class="wallet">
+				<span>MG</span>
+			<span class="reloadMoney"   id='MG' ng-click="loadBalance('MG')">點擊查詢</span>
+			<span class="inmoney" ng-click="inmoney('MG')">轉入</span>
+			<span class="outmoney" ng-click="outamount('MG')">轉出</span>
+			</div>
+			<!--div class="wallet">
+				<span>PT</span>
+			<span class="reloadMoney"  id='PT' ng-click="loadBalance('PT')">点击查询</span>
+			<span class="inmoney" ng-click="inmoney('PT')">转入</span>
+			<span class="outmoney" ng-click="outamount('PT')">转出</span>
+			</div>
+			<div class="wallet">
+				<span>申博</span>
+			<span class="reloadMoney" id='SunBet'  ng-click="loadBalance('SunBet')">点击查询</span>
+			<span class="inmoney" ng-click="inmoney('SunBet')">转入</span>
+			<span class="outmoney" ng-click="outamount('SunBet')">转出</span>
+			</div-->
+			<div class="wallet">
+				<span>BBIN</span>
+			<span class="reloadMoney" id='BB'  ng-click="loadBalance('BB')">點擊查詢</span>
+			<span class="inmoney" ng-click="inmoney('BB')">轉入</span>
+			<span class="outmoney" ng-click="outamount('BB')">轉出</span>
+			</div>
+
+
+			
+	</ion-content>
+</ion-view>
+
+
