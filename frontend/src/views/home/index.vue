@@ -186,7 +186,7 @@ const games = ref([
   { id: 50, name: '北京賽車', image: '/images/index/g-bjpk10.png' },
   { id: 122, name: '五分時時彩', image: '/images/index/amssc.png' },
   { id: 52, name: '極速飛艇', image: '/images/index/msft.png' },
-  { id: 66, name: 'PC蛋蛋', image: '/images/index/pcdd.png' },
+  { id: 66, name: 'PC 蛋蛋', image: '/images/index/pcdd.png' },
   { id: 100, name: '極速分分彩', image: '/images/index/jsffc.png' },
   { id: 72, name: '極速賽車', image: '/images/index/jssc.png' },
   { id: 113, name: '極速六合彩', image: '/images/index/mspk10.png' },
@@ -219,7 +219,7 @@ const startSlideShow = () => {
 
 // 页面加载时初始化
 onMounted(async () => {
-  // 加载PHP主CSS（仅首页使用）
+  // 加载 PHP 主 CSS（仅首页使用）
   if (!document.getElementById('main-css')) {
     const link = document.createElement('link')
     link.rel = 'stylesheet'
@@ -228,7 +228,7 @@ onMounted(async () => {
     document.head.appendChild(link)
   }
 
-  // 登录后从localStorage恢复用户信息
+  // 登录后从 localStorage 恢复用户信息
   const token = localStorage.getItem('token')
   const userInfoStr = localStorage.getItem('userInfo')
   if (token) {
@@ -288,10 +288,15 @@ onUnmounted(() => {
   if (slideTimer) {
     clearInterval(slideTimer)
   }
+  // 移除 PHP CSS 文件，避免影响其他页面样式
+  const mainCss = document.getElementById('main-css')
+  if (mainCss) {
+    mainCss.remove()
+  }
 })
 </script>
 
-<style>
+<style scoped>
 /* 全局样式 */
 .m-index {
   min-height: 100vh;
