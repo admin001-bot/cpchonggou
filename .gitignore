@@ -49,7 +49,7 @@ backend/server
 *.sql
 
 # 本地配置
-.claude/settings.local.json
+# .claude/settings.local.json 保留此文件
 
 # 其他
 nul

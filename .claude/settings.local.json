@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node:*)",
+      "Bash(npm install:*)",
+      "Bash(npm search:*)",
+      "WebSearch",
+      "Bash(curl:*)",
+      "Bash(tr >:*)",
+      "Bash(cd:*)",
+      "Bash(tail:*)",
+      "Bash(which mysql:*)",
+      "Bash(which go:*)",
+      "Bash(which node:*)",
+      "Bash(docker:*)",
+      "Bash(echo 系统信息::*)",
+      "Bash(cat:*)",
+      "Bash(cd C:/Users/Administrator/Desktop/chonggou && docker-compose -f docker-compose.dev.yml up --build -d 2>&1)",
+      "Bash(go version:*)",
+      "Bash(mysql:*)",
+      "Bash(cd C:/Users/Administrator/Desktop/chonggou && docker-compose -f docker-compose.dev.yml up -d 2>&1)",
+      "Bash(cp:*)",
+      "Bash(echo Go not in PATH:*)",
+      "Bash(cd C:/Users/Administrator/Desktop/chonggou && docker-compose -f docker-compose.dev.yml build backend 2>&1)",
+      "Bash(cd C:/Users/Administrator/Desktop/chonggou && docker-compose -f docker-compose.dev.yml up -d --build backend 2>&1)",
+      "Bash(head:*)",
+      "Bash(netstat:*)",
+      "Bash(tasklist:*)",
+      "Bash(sleep 3:*)",
+      "Bash(docker-compose -f C:/Users/Administrator/Desktop/chonggou/docker-compose.dev.yml stop backend && docker-compose -f C:/Users/Administrator/Desktop/chonggou/docker-compose.dev.yml rm -f backend && docker-compose -f C:/Users/Administrator/Desktop/chonggou/docker-compose.dev.yml up -d backend 2>&1)",
+      "Bash(docker-compose restart:*)",
+      "WebFetch(domain:sj.lisb-oa.online)",
+      "Bash(cd /c/Users/Administrator/Desktop/chonggou/backend && go build -o /dev/null ./... 2>&1)"
+    ]
+  }
+}
