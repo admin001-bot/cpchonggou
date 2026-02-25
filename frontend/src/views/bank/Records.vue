@@ -138,7 +138,11 @@ const formatDate = (dateStr: string) => {
   // 处理 "2006-01-02 15:04:05" 格式
   const date = new Date(dateStr.replace(/-/g, '/'))
   if (isNaN(date.getTime())) return dateStr
-  return `${date.getMonth() + 1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`
+  const month = date.getMonth() + 1
+  const day = date.getDate()
+  const hours = date.getHours()
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  return `${month}/${day} ${hours}:${minutes}`
 }
 
 const getStatusText = (status: number) => {

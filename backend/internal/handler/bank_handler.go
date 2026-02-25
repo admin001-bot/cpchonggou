@@ -308,7 +308,7 @@ func (h *BankHandler) Withdraw(c *gin.Context) {
 	cash := model.MemberCash{
 		UID:        uid,
 		Amount:     amount,
-		BankID:     bank.ID,
+		BankID:     uint(bank.BankID), // 使用 bankId 字段（银行列表的 ID），而不是 member_bank 的自增 ID
 		Account:    bank.Account,
 		Username:   bank.Username,
 		State:      0, // 待审核
@@ -462,20 +462,21 @@ func (h *BankHandler) GetWithdrawRecords(c *gin.Context) {
 
 	// 分页查询
 	offset := (page - 1) * pageSize
-	var records []struct {
-		ID         uint    `json:"id"`
-		UID        uint    `json:"uid"`
-		Amount     float64 `json:"amount"`
-		ActionTime int64   `json:"actionTime"`
-		State      int8    `json:"state"`
-		BankName   string  `json:"bankName"`
-		Account    string  `json:"account"`
-		Username   string  `json:"username"`
-		CountName  string  `json:"countName"`
+	type Record struct {
+		ID         uint    `gorm:"column:id"`
+		UID        uint    `gorm:"column:uid"`
+		Amount     float64 `gorm:"column:amount"`
+		ActionTime int64   `gorm:"column:actionTime"`
+		State      int8    `gorm:"column:state"`
+		BankName   string  `gorm:"column:bankName"`
+		Account    string  `gorm:"column:account"`
+		Username   string  `gorm:"column:username"`
+		CountName  string  `gorm:"column:countname"`
 	}
+	var records []Record
 
 	model.DB.Table(model.TableMemberCash + " c").
-		Select("b.name bankName, c.id, c.uid, c.amount, c.actionTime, c.state, c.account, d.countname, u.username").
+		Select("b.name as bankName, c.id, c.uid, c.amount, c.actionTime, c.state, c.account, d.countname, u.username").
 		Joins("JOIN "+model.TableBankList+" b ON b.isDelete=0 AND c.bankId=b.id").
 		Joins("JOIN "+model.TableMembers+" u ON c.uid=u.uid").
 		Joins("JOIN "+model.TableMemberBank+" d ON c.uid=d.uid").

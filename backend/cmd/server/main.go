@@ -53,6 +53,7 @@ func main() {
 	userHandler := handler.NewUserHandler()
 	gameHandler := handler.NewGameHandler()
 	betHandler := handler.NewBetHandler()
+	bankHandler := handler.NewBankHandler()
 
 	// JWT认证中间件
 	authMiddleware := func(c *gin.Context) {
@@ -117,6 +118,17 @@ func main() {
 			bet.GET("/userBets", betHandler.GetUserBets)
 			bet.GET("/totalStatBets", betHandler.GetTotalStatBets)
 			bet.GET("/lotteryData", betHandler.GetLotteryData)
+		}
+
+		// 银行/提款相关路由（需要登录）
+		bank := api.Group("/bank")
+		bank.Use(authMiddleware)
+		{
+			bank.GET("/info", bankHandler.GetBankInfo)
+			bank.GET("/withdrawConfig", bankHandler.GetWithdrawConfig)
+			bank.POST("/withdraw", bankHandler.Withdraw)
+			bank.GET("/records", bankHandler.GetWithdrawRecords)
+			bank.GET("/depositRecords", bankHandler.GetDepositRecords)
 		}
 	}
 
