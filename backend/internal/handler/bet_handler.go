@@ -90,8 +90,8 @@ func (h *BetHandler) GetNotCount(c *gin.Context) {
 	var result []NotCountItem
 	for _, game := range gameTypes {
 		var count struct {
-			TotalNums  int
-			TotalMoney float64
+			TotalNums  int     `gorm:"column:totalNums"`
+			TotalMoney float64 `gorm:"column:totalMoney"`
 		}
 		// 查询未结算注单 (lotteryNo为空)
 		model.DB.Table("ssc_bets").
@@ -120,22 +120,22 @@ func (h *BetHandler) GetNotCountDetail(c *gin.Context) {
 	gameID, _ := strconv.Atoi(c.Query("gameId"))
 
 	var bets []struct {
-		ID           int
-		Uid          int
-		Username     string
-		PlayedId     int
-		PlayedGroup  int
-		Odds         float64
-		Rebate       float64
-		ActionTime   int64
-		ActionNo     string
-		Type         int
-		Money        float64
-		TotalNums    int
-		WjorderId    string
-		LotteryNo    string
-		KjTime       int64
-		BetInfo      string
+		ID          int     `gorm:"column:id"`
+		Uid         int     `gorm:"column:uid"`
+		Username    string  `gorm:"column:username"`
+		PlayedId    int     `gorm:"column:playedId"`
+		PlayedGroup int     `gorm:"column:playedGroup"`
+		Odds        float64 `gorm:"column:odds"`
+		Rebate      float64 `gorm:"column:rebate"`
+		ActionTime  int64   `gorm:"column:actionTime"`
+		ActionNo    string  `gorm:"column:actionNo"`
+		Type        int     `gorm:"column:type"`
+		Money       float64 `gorm:"column:money"`
+		TotalNums   int     `gorm:"column:totalNums"`
+		WjorderId   string  `gorm:"column:wjorderId"`
+		LotteryNo   string  `gorm:"column:lotteryNo"`
+		KjTime      int64   `gorm:"column:kjTime"`
+		BetInfo     string  `gorm:"column:betInfo"`
 	}
 
 	query := model.DB.Table("ssc_bets").
@@ -146,6 +146,7 @@ func (h *BetHandler) GetNotCountDetail(c *gin.Context) {
 	query.Order("id desc").Limit(100).Find(&bets)
 
 	var result []NotCountDetailItem
+	var totalBetMoney, totalResultMoney float64
 	for _, bet := range bets {
 		// 获取玩法名称
 		var playName string
@@ -174,13 +175,16 @@ func (h *BetHandler) GetNotCountDetail(c *gin.Context) {
 			OpenTime:    time.Unix(bet.KjTime, 0).Format("2006-01-02 15:04:05"),
 			BetInfo:     bet.BetInfo,
 		})
+
+		totalBetMoney += betMoney
+		totalResultMoney += resultMoney
 	}
 
 	response.Success(c, gin.H{
 		"data": result,
 		"otherData": gin.H{
-			"totalBetMoney": 0,
-			"totalResultMoney": 0,
+			"totalBetMoney": totalBetMoney,
+			"totalResultMoney": totalResultMoney,
 		},
 	})
 }

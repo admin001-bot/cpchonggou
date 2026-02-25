@@ -107,8 +107,8 @@ const loading = ref(false)
 const isRefreshing = ref(false)
 const dataList = ref<BetDetailItem[]>([])
 const totalBetMoney = ref(0)
-const gameId = Number(route.params.gameId)
-const gameName = route.query.name as string || ''
+const gameId = ref(Number(route.params.gameId) || 0)
+const gameName = ref((route.query.name as string) || '')
 
 // 下拉刷新相关
 let refreshStartY = 0

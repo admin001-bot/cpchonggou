@@ -163,7 +163,7 @@ function formatMoney(money: number): string {
 
 function goDetail(gameId: number, name: string, count: number) {
   if (count > 0) {
-    router.push({ name: 'NotCountDetail', params: { gameId }, query: { name } })
+    router.push(`/notcount/${gameId}?name=${encodeURIComponent(name)}`)
   }
 }
 
