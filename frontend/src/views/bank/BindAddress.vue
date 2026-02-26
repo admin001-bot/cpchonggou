@@ -116,6 +116,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { t } from '@/locales'
 import { bankApi, type BankInfo } from '@/api/bank'
+import { useToastStore } from '@/stores/toast'
+import { useToastStore } from '@/stores/toast'
 
 // 协议列表
 const protocols = ref([
@@ -137,6 +139,7 @@ const formData = ref({
 })
 
 const boundAddress = ref<BankInfo | null>(null)
+const toastStore = useToastStore()
 
 const canSubmit = computed(() => {
   return selectedProtocol.value && formData.value.walletName && formData.value.address
@@ -154,11 +157,11 @@ const formatAddress = (address: string) => {
 }
 
 const showMessage = (msg: string, type: 'success' | 'error' = 'success') => {
-  message.value = msg
-  messageType.value = type
-  setTimeout(() => {
-    message.value = ''
-  }, 3000)
+  toastStore.show({
+    type,
+    title: type === 'success' ? '成功' : '错误',
+    message: msg
+  })
 }
 
 const fetchBankInfo = async () => {
