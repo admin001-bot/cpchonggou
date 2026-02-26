@@ -551,3 +551,105 @@ func (h *UserHandler) SetCoinPassword(c *gin.Context) {
 		"message": tishi,
 	})
 }
+
+// GuestLoginResponse 游客登录响应
+type GuestLoginResponse struct {
+	Token     string `json:"token"`
+	UID       uint   `json:"uid"`
+	Username  string `json:"username"`
+	Nickname  string `json:"nickname"`
+	Coin      string `json:"coin"`
+	TestFlag  int    `json:"testFlag"`
+	FanDian   float32 `json:"fanDian"`
+}
+
+// GuestLogin 游客登录 - 根据 PHP Api::guestlogindo 逻辑实现
+func (h *UserHandler) GuestLogin(c *gin.Context) {
+	username := strings.TrimSpace(c.PostForm("username"))
+	password := strings.TrimSpace(c.PostForm("password"))
+
+	// 验证用户名密码必须是 !guest!
+	if username != "!guest!" || password != "!guest!" {
+		response.Error(c, i18n.T("login.invalid_credentials"))
+		return
+	}
+
+	// 生成游客用户名：guest_ + 时间戳
+	currentTime := time.Now().Unix()
+	guestUsername := fmt.Sprintf("guest_%d", currentTime)
+
+	// 密码 MD5 加密
+	hashedPassword := md5Hash(password)
+
+	// 获取客户端 IP
+	clientIP := c.ClientIP()
+
+	// 创建游客用户
+	guest := model.GuestMembers{
+		Username:   guestUsername,
+		Nickname:   guestUsername,
+		Name:       guestUsername,
+		Password:   hashedPassword,
+		Coin:       2000, // 游客初始资金 2000
+		Fcoin:      0,
+		RegIP:      clientIP,
+		RegTime:    currentTime,
+		UpdateTime: time.Now(),
+		TestFlag:   1, // 标记为游客
+		IsDelete:   0,
+		Admin:      0,
+		Enable:     1,
+	}
+
+	// 保存游客用户
+	if err := model.DB.Create(&guest).Error; err != nil {
+		response.Error(c, i18n.T("register.failed"))
+		return
+	}
+
+	// 获取创建的用户
+	var createdGuest model.GuestMembers
+	if err := model.DB.Where("username = ?", guestUsername).First(&createdGuest).Error; err != nil {
+		response.Error(c, i18n.T("login.invalid_credentials"))
+		return
+	}
+
+	// 创建会话
+	session := model.MemberSession{
+		UID:        createdGuest.UID,
+		Username:   createdGuest.Username,
+		SessionKey: c.SessionID(),
+		LoginTime:  currentTime,
+		AccessTime: currentTime,
+		LoginIP:    clientIP,
+		Os:         c.GetHeader("sec-ch-ua-platform"),
+		Browser:    c.GetHeader("sec-ch-ua"),
+		IsOnLine:   1,
+	}
+
+	// 保存会话
+	if err := model.DB.Create(&session).Error; err != nil {
+		response.Error(c, i18n.T("login.failed"))
+		return
+	}
+
+	// 生成 token
+	token := md5Hash(guestUsername + password + time.Now().String())
+
+	// 保存 token 到内存
+	saveToken(token, int(createdGuest.UID))
+
+	// 获取最大返点
+	var fanDian float32
+	model.DB.Table("ssc_params").Where("name = ?", "fanDianMax").Select("value").Scan(&fanDian)
+
+	response.Success(c, GuestLoginResponse{
+		Token:     token,
+		UID:       createdGuest.UID,
+		Username:  createdGuest.Username,
+		Nickname:  createdGuest.Nickname,
+		Coin:      fmt.Sprintf("%.2f", createdGuest.Coin),
+		TestFlag:  int(createdGuest.TestFlag),
+		FanDian:   fanDian,
+	})
+}

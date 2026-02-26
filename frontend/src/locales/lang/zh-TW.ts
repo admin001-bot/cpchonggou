@@ -544,6 +544,7 @@ export default {
   'login.failed': '登錄失敗',
   'login.failedRetry': '登錄失敗，請稍後重試',
   'login.guestComingSoon': '免費試玩功能開發中',
+  'login.guestSuccess': '試玩成功',
   'login.username': '請輸入用戶名',
   'login.password': '請輸入密碼',
   'login.loggingIn': '登錄中...',

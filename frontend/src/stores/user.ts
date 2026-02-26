@@ -15,9 +15,10 @@ interface UserInfo {
   hasFundPwd: boolean
   grade: number
   fanDian: number
+  testFlag?: number  // 是否为游客用户
 }
 
-// 从localStorage加载用户信息
+// 从 localStorage 加载用户信息
 function loadUserInfoFromStorage(): UserInfo | null {
   try {
     const stored = localStorage.getItem('userInfo')
@@ -35,7 +36,7 @@ export const useUserStore = defineStore('user', () => {
   const userInfo = ref<UserInfo | null>(loadUserInfoFromStorage())
   const isLoggedIn = computed(() => !!token.value && !!userInfo.value)
 
-  // 设置Token
+  // 设置 Token
   function setToken(newToken: string) {
     token.value = newToken
     localStorage.setItem('token', newToken)
@@ -56,8 +57,9 @@ export const useUserStore = defineStore('user', () => {
       hasFundPwd: info.hasFundPwd || false,
       grade: info.grade || 1,
       fanDian: info.fanDian || 0,
+      testFlag: info.testFlag || 0,
     }
-    // 保存到localStorage
+    // 保存到 localStorage
     localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
   }
 

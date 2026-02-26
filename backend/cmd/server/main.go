@@ -97,6 +97,7 @@ func main() {
 		{
 			user.POST("/register", userHandler.Register)
 			user.POST("/login", userHandler.Login)
+			user.POST("/guestLogin", userHandler.GuestLogin)
 			user.GET("/info", userHandler.GetUserInfo)
 		}
 

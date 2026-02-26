@@ -180,8 +180,37 @@ const handleLogin = async () => {
   }
 }
 
-const guestLogin = () => {
-  alert(t('login.guestComingSoon'))
+const guestLogin = async () => {
+  try {
+    const res = await userApi.guestLogin()
+
+    if (res.code === 0 && res.data) {
+      // 保存 token
+      userStore.setToken(res.data.token)
+      // 保存用户信息
+      const userInfo = {
+        uid: res.data.uid,
+        username: res.data.username,
+        nickname: res.data.nickname || res.data.username,
+        name: '',
+        balance: parseFloat(res.data.coin) || 2000,
+        phone: '',
+        email: '',
+        userType: 0,
+        testFlag: res.data.testFlag || 1
+      }
+      userStore.setUserInfo(userInfo)
+      // 保存到 localStorage
+      localStorage.setItem('userInfo', JSON.stringify(userInfo))
+      // 跳转到首页
+      router.push('/')
+    } else {
+      alert(res.message || t('login.failed'))
+    }
+  } catch (error: any) {
+    console.error('Guest login failed:', error)
+    alert(error.response?.data?.message || t('login.failedRetry'))
+  }
 }
 
 const toggleLanguage = () => {

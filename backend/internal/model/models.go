@@ -273,3 +273,43 @@ type BankList struct {
 func (BankList) TableName() string {
 	return TableBankList
 }
+
+// GuestMembers 游客用户 (对应 ssc_guestmembers 表)
+type GuestMembers struct {
+	UID        uint    `gorm:"primaryKey;autoIncrement;column:id" json:"uid"`
+	Username   string  `gorm:"column:username;size:32;uniqueIndex" json:"username"`
+	Nickname   string  `gorm:"column:nickname;size:32" json:"nickname"`
+	Name       string  `gorm:"column:name;size:32" json:"name"`
+	Password   string  `gorm:"column:password;size:32" json:"password"`
+	Coin       float64 `gorm:"column:coin;precision:10;scale:2;default:0" json:"coin"`
+	Fcoin      float64 `gorm:"column:fcoin;precision:10;scale:2;default:0" json:"fcoin"`
+	RegIP      string  `gorm:"column:regIP;size:32" json:"regIP"`
+	RegTime    int64   `gorm:"column:regTime" json:"regTime"`
+	UpdateTime time.Time `gorm:"column:updateTime" json:"updateTime"`
+	TestFlag   int8    `gorm:"column:testFlag;default:1" json:"testFlag"`
+	IsDelete   int8    `gorm:"column:isDelete;default:0" json:"isDelete"`
+	Admin      int8    `gorm:"column:admin;default:0" json:"admin"`
+	Enable     int8    `gorm:"column:enable;default:1" json:"enable"`
+}
+
+func (GuestMembers) TableName() string {
+	return TableGuestMembers
+}
+
+// MemberSession 用户会话 (对应 ssc_member_session 表)
+type MemberSession struct {
+	ID         uint   `gorm:"primaryKey;autoIncrement;column:id" json:"id"`
+	UID        uint   `gorm:"column:uid;index" json:"uid"`
+	Username   string `gorm:"column:username;size:32" json:"username"`
+	SessionKey string `gorm:"column:session_key;size:128" json:"sessionKey"`
+	LoginTime  int64  `gorm:"column:loginTime" json:"loginTime"`
+	AccessTime int64  `gorm:"column:accessTime" json:"accessTime"`
+	LoginIP    string `gorm:"column:loginIP;size:32" json:"loginIP"`
+	Os         string `gorm:"column:os;size:50" json:"os"`
+	Browser    string `gorm:"column:browser;size:50" json:"browser"`
+	IsOnLine   int8   `gorm:"column:isOnLine;default:1" json:"isOnLine"`
+}
+
+func (MemberSession) TableName() string {
+	return TableMemberSession
+}

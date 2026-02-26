@@ -1,6 +1,6 @@
 import { request } from './index'
 
-// 用户相关API
+// 用户相关 API
 
 // 注册请求参数
 export interface RegisterParams {
@@ -39,7 +39,7 @@ export interface UserInfo {
   type: number
 }
 
-// 用户信息 (与PHP一致)
+// 用户信息 (与 PHP 一致)
 export interface InitData {
   token: string
   uid: number
@@ -55,7 +55,18 @@ export interface InitData {
   serverTime: number
 }
 
-// 用户API
+// 游客登录响应
+export interface GuestLoginResponse {
+  token: string
+  uid: number
+  username: string
+  nickname: string
+  coin: string
+  testFlag: number
+  fanDian: number
+}
+
+// 用户 API
 export const userApi = {
   // 注册
   register(params: RegisterParams): Promise<{ code: number; message: string; data: RegisterResponse }> {
@@ -67,7 +78,19 @@ export const userApi = {
     return request.post('/user/login', params)
   },
 
-  // 初始化 - 类似PHP的/api/init
+  // 游客登录
+  guestLogin(): Promise<{ code: number; message: string; data: GuestLoginResponse }> {
+    return request.post('/user/guestLogin', {
+      username: '!guest!',
+      password: '!guest!'
+    }, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    })
+  },
+
+  // 初始化 - 类似 PHP 的/api/init
   init(): Promise<{ code: number; message: string; data: InitData }> {
     return request.get('init')
   },
