@@ -52,8 +52,7 @@
                     <span
                       v-for="(num, idx) in item.numbers.slice(0, 5)"
                       :key="idx"
-                      class="lottery-ball mini ssc-ball"
-                      :class="'data-' + (num === 0 ? 10 : num)"
+                      class="lottery-ball ssc-ball mini"
                     >{{ num }}</span>
                   </template>
                   <!-- PC 蛋蛋显示 3 个球 -->
@@ -61,15 +60,15 @@
                     <span
                       v-for="(num, idx) in item.numbers.slice(0, 3)"
                       :key="idx"
-                      class="lottery-ball mini round"
+                      class="lottery-ball round mini"
                     >{{ num }}</span>
                   </template>
-                  <!-- 其他游戏正常显示 -->
+                  <!-- 其他游戏正常显示（使用图片背景） -->
                   <template v-else>
                     <span
                       v-for="(num, idx) in item.numbers"
                       :key="idx"
-                      class="lottery-ball mini"
+                      class="lottery-ball round-6 mini"
                       :class="'data-' + num"
                     >{{ num }}</span>
                   </template>
@@ -595,23 +594,14 @@ const lotteryResults = computed(() => {
     // 总和单双
     results.push(totalSum % 2 === 1 ? '單' : '雙')
 
-    // 龙虎：10 组对阵（球 1vs 球 2, 球 1vs 球 3, ... 球 4vs 球 5）
+    // 龙虎：只显示第一组（第一球 VS 第二球）
     // 龙：前者大，虎：后者大，和：相等
-    const matchups = [
-      [0, 1], [0, 2], [0, 3], [0, 4],  // 球 1vs 球 2, 球 1vs 球 3, 球 1vs 球 4, 球 1vs 球 5
-      [1, 2], [1, 3], [1, 4],           // 球 2vs 球 3, 球 2vs 球 4, 球 2vs 球 5
-      [2, 3], [2, 4],                   // 球 3vs 球 4, 球 3vs 球 5
-      [3, 4]                            // 球 4vs 球 5
-    ]
-
-    for (const [i, j] of matchups) {
-      if (calcNums[i] > calcNums[j]) {
-        results.push('龍')
-      } else if (calcNums[i] < calcNums[j]) {
-        results.push('虎')
-      } else {
-        results.push('和')
-      }
+    if (calcNums[0] > calcNums[1]) {
+      results.push('龍')
+    } else if (calcNums[0] < calcNums[1]) {
+      results.push('虎')
+    } else {
+      results.push('和')
     }
 
     return results
@@ -1246,8 +1236,23 @@ onUnmounted(() => {
   margin-bottom: 8px;
 }
 
-/* 历史开奖中的号码球使用图片背景 */
 .period-numbers .lottery-ball {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  background: linear-gradient(135deg, #e0f0ff, #b0d0ff);
+  border: 2px solid #8ab4f8;
+  box-shadow: 0 2px 4px rgba(138,180,248,0.3);
+}
+
+/* PK10 类型使用图片背景 */
+.period-numbers .lottery-ball.round-6 {
   width: 28px;
   height: 28px;
   background-size: contain;
@@ -1255,26 +1260,8 @@ onUnmounted(() => {
   background-position: center;
   color: transparent;
   border-radius: 50%;
-}
-
-/* 历史开奖中时时彩球样式（浅色圆球） */
-.period-numbers .lottery-ball.ssc-ball {
-  background: linear-gradient(135deg, #e0f0ff, #b0d0ff);
-  border: 2px solid #8ab4f8;
-  box-shadow: 0 2px 4px rgba(138,180,248,0.3);
-  color: #333;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-/* 历史开奖中 PC 蛋蛋球样式 */
-.period-numbers .lottery-ball.round {
-  background: linear-gradient(135deg, #e0f0ff, #b0d0ff);
-  border: 2px solid #8ab4f8;
-  box-shadow: 0 2px 4px rgba(138,180,248,0.3);
-  color: #333;
-  font-size: 14px;
-  font-weight: 600;
+  border: none;
+  box-shadow: none;
 }
 
 .period-numbers .lottery-ball.data-1 { background-image: url('/images/ball/1.png'); }
