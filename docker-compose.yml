@@ -4,52 +4,183 @@ services:
   # MySQL 数据库
   mysql:
     image: mysql:8.0
-    container_name: lottery-mysql
-    restart: unless-stopped
+    container_name: lottery_mysql
+    restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root123456
-      MYSQL_DATABASE: pj
-      MYSQL_USER: pj
-      MYSQL_PASSWORD: pj
-    ports:
-      - "3306:3306"
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-lottery_root_123}
+      MYSQL_DATABASE: lottery
+      MYSQL_USER: lottery
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-lottery_user_123}
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./pj_2026-02-11_20-33-42_mysql_data_O7c6z.sql:/docker-entrypoint-initdb.d/init.sql
-    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "3306:3306"
+    networks:
+      - lottery_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
 
-  # Go 后端
+  # Redis 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: lottery_redis
+    restart: always
+    command: redis-server --requirepass ${REDIS_PASSWORD:-redis_123}
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    networks:
+      - lottery_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # 后端服务
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: lottery-backend
-    restart: unless-stopped
+    container_name: lottery_backend
+    restart: always
+    environment:
+      # 数据库配置
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: lottery
+      DB_PASSWORD: ${MYSQL_PASSWORD:-lottery_user_123}
+      DB_NAME: lottery
+
+      # Redis 配置
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-redis_123}
+
+      # JWT 配置
+      JWT_SECRET: ${JWT_SECRET:-your_super_secret_jwt_key_change_in_production}
+      JWT_EXPIRE_HOURS: 24
+
+      # 应用配置
+      APP_ENV: production
+      APP_PORT: 8080
+      LOG_LEVEL: info
+
+      # 日志收集配置
+      LOG_COLLECTOR_URL: http://logstash:5044
+    volumes:
+      - ./logs/backend:/app/logs
+      - ./backend/config:/app/config:ro
     ports:
       - "8080:8080"
-    environment:
-      - DB_HOST=mysql
-      - DB_PORT=3306
-      - DB_NAME=pj
-      - DB_USER=pj
-      - DB_PASS=pj
     depends_on:
-      - mysql
-    volumes:
-      - ./backend:/app
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - lottery_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "10"
 
-  # Vue 前端
+  # 前端服务
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: lottery-frontend
-    restart: unless-stopped
+    container_name: lottery_frontend
+    restart: always
+    environment:
+      # API 地址
+      VUE_APP_API_URL: http://localhost:8080/api
+      VUE_APP_WS_URL: ws://localhost:8080/ws
+
+      # 环境配置
+      NODE_ENV: production
     ports:
-      - "3000:3000"
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+    networks:
+      - lottery_network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "10"
+
+  # Elasticsearch 日志存储
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: lottery_elasticsearch
+    restart: always
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - lottery_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Logstash 日志收集
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.11.0
+    container_name: lottery_logstash
+    restart: always
+    volumes:
+      - ./elk/logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - ./elk/logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./logs:/logs:ro
+    environment:
+      - "LS_JAVA_OPTS=-Xms256m -Xmx256m"
+    ports:
+      - "5044:5044"
+      - "5000:5000/tcp"
+      - "5000:5000/udp"
+      - "9600:9600"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - lottery_network
+
+  # Kibana 日志可视化
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    container_name: lottery_kibana
+    restart: always
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - "i18n.locale=zh-CN"
+    ports:
+      - "5601:5601"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - lottery_network
 
 volumes:
   mysql_data:
+  redis_data:
+  elasticsearch_data:
+
+networks:
+  lottery_network:
+    driver: bridge

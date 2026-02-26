@@ -1,0 +1,6 @@
+http.host: "0.0.0.0"
+xpack.monitoring.enabled: false
+
+# 配置管道
+config.reload.automatic: true
+config.reload.interval: 3s

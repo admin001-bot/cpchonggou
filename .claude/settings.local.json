@@ -33,7 +33,8 @@
       "Bash(cd /c/Users/Administrator/Desktop/chonggou/backend && go build -o /dev/null ./... 2>&1)",
       "Bash(cd C:/Users/Administrator/Desktop/chonggou/frontend && npm run 2>&1)",
       "Bash(cd C:\\\\Users\\\\Administrator\\\\Desktop\\\\chonggou:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(grep:*)"
     ]
   }
 }
