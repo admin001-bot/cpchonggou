@@ -259,6 +259,9 @@ const submitWithdraw = async () => {
     }
     const res = await withdraw(requestData)
 
+    // 调试日志：查看后端返回的完整数据结构
+    console.log('提款响应:', res)
+
     if (res.code === 0) {
       toastStore.show({
         type: 'success',
@@ -271,17 +274,35 @@ const submitWithdraw = async () => {
       // 刷新余额
       emit('balance-updated')
     } else {
+      // 优先显示后端返回的具体错误信息
+      // 可能的字段：res.message, res.data?.message, res.msg, res.error
+      const errorMessage = res.message
+        || res.data?.message
+        || res.msg
+        || res.error
+        || t('bank.withdrawFailed')
+
+      console.log('错误信息:', errorMessage, '原始响应:', res)
+
       toastStore.show({
         type: 'error',
         title: '提款失败',
-        message: res.message || t('bank.withdrawFailed')
+        message: errorMessage
       })
     }
   } catch (error: any) {
+    // 网络错误或其他异常
+    const errorMsg = error.response?.data?.message
+      || error.response?.data?.msg
+      || error.message
+      || t('bank.withdrawFailed')
+
+    console.log('异常错误:', error, errorMsg)
+
     toastStore.show({
       type: 'error',
       title: '提款失败',
-      message: error.response?.data?.message || t('bank.withdrawFailed')
+      message: errorMsg
     })
   } finally {
     loading.value = false
