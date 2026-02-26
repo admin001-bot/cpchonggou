@@ -32,7 +32,8 @@
       "WebFetch(domain:sj.lisb-oa.online)",
       "Bash(cd /c/Users/Administrator/Desktop/chonggou/backend && go build -o /dev/null ./... 2>&1)",
       "Bash(cd C:/Users/Administrator/Desktop/chonggou/frontend && npm run 2>&1)",
-      "Bash(cd C:\\\\Users\\\\Administrator\\\\Desktop\\\\chonggou:*)"
+      "Bash(cd C:\\\\Users\\\\Administrator\\\\Desktop\\\\chonggou:*)",
+      "Bash(git add:*)"
     ]
   }
 }
