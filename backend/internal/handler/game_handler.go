@@ -172,7 +172,8 @@ func (h *GameHandler) GetNextIssue(c *gin.Context) {
 	startSec := int(periodStartSeconds % 60)
 	lotteryTime := time.Date(now.Year(), now.Month(), now.Day(), startHour, startMin, startSec, 0, now.Location())
 	nowUnix := now.Unix()
-	for nowUnix >= lotteryTime.Unix() && issueNum <= periodsPerDay {
+	// 修复：当时间正好等于开奖时间时，应该还是当前期，不是下一期
+	for nowUnix > lotteryTime.Unix() && issueNum <= periodsPerDay {
 		issueNum++
 		lotteryTime = lotteryTime.Add(time.Duration(periodSeconds) * time.Second)
 	}
@@ -664,7 +665,8 @@ func getGameActionInfo(gameID int) (ftime int64, actionTime int64, actionNo stri
     startSec := int(periodStartSeconds % 60)
     lotteryTime := time.Date(now.Year(), now.Month(), now.Day(), startHour, startMin, startSec, 0, now.Location())
     nowUnix := now.Unix()
-    for nowUnix >= lotteryTime.Unix() && issueNum <= periodsPerDay {
+    // 修复：当时间正好等于开奖时间时，应该还是当前期，不是下一期
+    for nowUnix > lotteryTime.Unix() && issueNum <= periodsPerDay {
         issueNum++
         lotteryTime = lotteryTime.Add(time.Duration(periodSeconds) * time.Second)
     }
