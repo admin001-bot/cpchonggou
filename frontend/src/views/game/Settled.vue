@@ -55,7 +55,7 @@
             <div class="bet-info-right">
               <div class="bet-content-display">
                 <div class="content-label">{{ t('game.betContent') }}</div>
-                <div class="content-value">{{ item.content || '-' }}</div>
+                <div class="content-value">{{ getFullContent(item) }}</div>
               </div>
               <div class="bet-amount">
                 <div class="amount-label">{{ t('game.betAmount') }}</div>
@@ -146,6 +146,79 @@ function parseDetail(detail: string) {
   if (rebateMatch) rebate = rebateMatch[1]
 
   return { playName, odds, rebate }
+}
+
+// 获取完整的下注内容（包含名次信息）
+function getFullContent(item: SettledItem): string {
+  const playName = parseDetail(item.detail).playName
+  const content = item.content || ''
+
+  // 如果 content 已经包含完整信息，直接返回
+  if (content.includes('第') && (content.includes('名') || content.includes('球'))) {
+    return content
+  }
+
+  // 根据玩法名称判断是否需要添加名次前缀
+  // PK10 类型游戏（幸运飞艇、北京赛车、极速飞艇、极速赛车）
+  const pk10Games = [55, 50, 52, 72] // 游戏 ID
+  const currentGameId = getCurrentGameId(item.turnNum)
+
+  if (pk10Games.includes(currentGameId)) {
+    // 冠亚和玩法
+    if (playName.includes('冠亚和')) {
+      return `${playName}${content}`
+    }
+    // 各名次玩法：玩法名称通常包含 "大"、"小"、"单"、"双"、"龙"、"虎"
+    if (['大', '小', '单', '双', '龙', '虎'].includes(content)) {
+      // 从玩法名称中提取名次，如 "第一名大" -> 玩法名称可能是 "冠军大" 或类似
+      // 如果玩法名称已经包含名次信息，直接使用
+      if (playName.match(/(冠军|亚军|第三|第四|第五|第六|第七|第八|第九|第十)/)) {
+        return `${playName}`
+      }
+      // 否则需要添加名次前缀
+      return `${content}`
+    }
+  }
+
+  // 时时彩类型游戏（五分时时彩、极速分分彩）
+  const sscGames = [122, 100] // 游戏 ID
+  if (sscGames.includes(currentGameId)) {
+    // 总和玩法
+    if (playName.includes('总和') || playName.includes('总')) {
+      return `${playName}${content}`
+    }
+    // 各球玩法：玩法名称可能包含 "第一球"、"第二球" 等
+    if (playName.match(/(第一球|第二球|第三球|第四球|第五球)/)) {
+      return `${playName}${content}`
+    }
+  }
+
+  // PC 蛋蛋类型
+  const pcdGames = [66]
+  if (pcdGames.includes(currentGameId)) {
+    return `${playName}${content}`
+  }
+
+  // 默认返回：玩法名称 + 内容
+  return `${playName}${content}`
+}
+
+// 从期号中获取游戏 ID（通过 turnNum 格式：游戏名称<br>期号）
+function getCurrentGameId(turnNum: string): number {
+  const parts = turnNum.split('<br>')
+  const gameName = parts[0] || ''
+
+  // 根据游戏名称判断游戏 ID
+  if (gameName.includes('幸运飞艇')) return 55
+  if (gameName.includes('北京赛车')) return 50
+  if (gameName.includes('极速飞艇')) return 52
+  if (gameName.includes('极速赛车')) return 72
+  if (gameName.includes('五分时时彩')) return 122
+  if (gameName.includes('极速分分彩')) return 100
+  if (gameName.includes('PC 蛋蛋')) return 66
+  if (gameName.includes('极速六合')) return 113
+
+  return 55 // 默认
 }
 
 async function loadData() {

@@ -66,7 +66,7 @@
               <div class="play-name">{{ item.playName }}</div>
               <div class="play-detail">
                 <span class="odds-badge">@{{ item.odds.toFixed(2) }}</span>
-                <span class="bet-info">{{ item.betInfo }}</span>
+                <span class="bet-info">{{ getFullBetInfo(item) }}</span>
                 <span class="content-badge" v-if="item.content">{{ item.content }}</span>
               </div>
             </div>
@@ -136,6 +136,12 @@ onUnmounted(() => {
     clearTimeout(refreshTimer)
   }
 })
+
+// 获取完整的下注信息（后端已返回完整内容，直接使用 betInfo 或 content）
+function getFullBetInfo(item: BetDetailItem): string {
+  // 优先使用 betInfo，如果没有则使用 content
+  return item.betInfo || item.content || ''
+}
 
 async function loadData() {
   loading.value = true

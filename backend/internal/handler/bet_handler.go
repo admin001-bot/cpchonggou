@@ -156,8 +156,19 @@ func (h *BetHandler) GetNotCountDetail(c *gin.Context) {
 		var playName string
 		model.DB.Table("ssc_played").Select("name").Where("id = ?", bet.PlayedId).Scan(&playName)
 
+		// 获取玩法组名称
+		var groupName string
+		model.DB.Table("ssc_played_group").Select("name").Where("id = ?", bet.PlayedGroup).Scan(&groupName)
+
+		// 获取游戏名称
+		var gameName string
+		model.DB.Table("ssc_type").Select("title").Where("id = ?", bet.Type).Scan(&gameName)
+
 		betMoney := bet.Money * float64(bet.TotalNums)
 		resultMoney := bet.Money*bet.Odds - betMoney + betMoney*bet.Rebate
+
+		// 构建完整的下注内容
+		fullContent := buildFullContent(gameName, groupName, playName, bet.ActionData)
 
 		result = append(result, NotCountDetailItem{
 			ID:          bet.ID,
@@ -178,7 +189,7 @@ func (h *BetHandler) GetNotCountDetail(c *gin.Context) {
 			LotteryNo:   bet.LotteryNo,
 			OpenTime:    time.Unix(bet.KjTime, 0).Format("2006-01-02 15:04:05"),
 			BetInfo:     bet.BetInfo,
-			Content:     bet.ActionData,
+			Content:     fullContent,
 		})
 
 		totalBetMoney += betMoney
@@ -204,9 +215,11 @@ func (h *BetHandler) GetBetBills(c *gin.Context) {
 	gameID, _ := strconv.Atoi(c.Query("gameId"))
 
 	// 今天0点时间戳
-	todayStart := time.Now().Format("2006-01-02") + " 00:00:00"
-	todayStartUnix, _ := time.Parse("2006-01-02 15:04:05", todayStart)
-	todayStartInt := todayStartUnix.Unix()
+	// 使用北京时间（Asia/Shanghai）
+	loc, _ := time.LoadLocation("Asia/Shanghai")
+	now := time.Now().In(loc)
+	todayStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc)
+	todayStartInt := todayStart.Unix()
 
 	var bets []struct {
 		ID          int
@@ -253,6 +266,10 @@ func (h *BetHandler) GetBetBills(c *gin.Context) {
 		var gameName string
 		model.DB.Table("ssc_type").Select("title").Where("id = ?", bet.Type).Scan(&gameName)
 
+		// 获取玩法组名称（包含名次信息，如"冠军"、"亚军"等）
+		var groupName string
+		model.DB.Table("ssc_played_group").Select("name").Where("id = ?", bet.PlayedGroup).Scan(&groupName)
+
 		var betMoney float64
 		if bet.BetInfo != "" {
 			betMoney = bet.Money * float64(bet.TotalNums)
@@ -262,10 +279,13 @@ func (h *BetHandler) GetBetBills(c *gin.Context) {
 
 		resultMoney := bet.Bonus - betMoney + betMoney*bet.Rebate
 
+		// 构建完整的下注内容
+		fullContent := buildFullContent(gameName, groupName, playName, bet.Content)
+
 		result = append(result, SettledItem{
 			TurnNum:     gameName + "<br>" + bet.ActionNo,
 			Detail:      playName + "<br>@" + fmt.Sprintf("%.2f", bet.Odds) + "<br>#" + fmt.Sprintf("%.3f", bet.Rebate),
-			Content:     bet.Content,
+			Content:     fullContent,
 			Money:       betMoney,
 			ResultMoney: resultMoney,
 			Rebate:      bet.Rebate,
@@ -290,13 +310,16 @@ func (h *BetHandler) GetStatBets(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	uid := userID.(int)
 
+	// 使用北京时间（Asia/Shanghai）
+	loc, _ := time.LoadLocation("Asia/Shanghai")
+	now := time.Now().In(loc)
 	startDate := c.Query("startDate")
 	endDate := c.Query("endDate")
 
 	if startDate == "" || endDate == "" {
 		// 默认最近7天
-		endDate = time.Now().Format("2006-01-02")
-		startDate = time.Now().AddDate(0, 0, -6).Format("2006-01-02")
+		endDate = now.Format("2006-01-02")
+		startDate = now.AddDate(0, 0, -6).Format("2006-01-02")
 	}
 
 	// 调试日志
@@ -310,19 +333,22 @@ func (h *BetHandler) GetStatBets(c *gin.Context) {
 		RewardRebate float64
 	}
 
-	// 将日期字符串转为时间戳范围（使用本地时区）
-	loc, _ := time.LoadLocation("Asia/Shanghai")
+	// 将日期字符串转为时间戳范围（使用北京时间）
 	startTime, _ := time.ParseInLocation("2006-01-02", startDate, loc)
 	endTime, _ := time.ParseInLocation("2006-01-02", endDate, loc)
 	endTime = endTime.Add(24*time.Hour - 1*time.Second) // 到当天的最后一秒
 
 	// 从 ssc_bets 表实时统计（不再依赖 report 表）
+	// 使用 kjTime（开奖时间）来统计，而不是 actionTime（投注时间）
 	model.DB.Table("ssc_bets").
-		Select("DATE(FROM_UNIXTIME(actionTime)) as statDate, COUNT(*) as betCount, SUM(money * totalNums) as betMoney, SUM(bonus - money * totalNums + money * totalNums * rebate) as rewardRebate").
-		Where("isDelete = 0 AND uid = ? AND actionTime >= ? AND actionTime <= ?", uid, startTime.Unix(), endTime.Unix()).
-		Group("statDate").
+		Select("DATE(FROM_UNIXTIME(kjTime, '+8')) as statDate, COUNT(*) as betCount, SUM(money * totalNums) as betMoney, SUM(bonus - money * totalNums + money * totalNums * rebate) as rewardRebate").
+		Where("isDelete = 0 AND uid = ? AND lotteryNo != '' AND kjTime >= ? AND kjTime <= ?", uid, startTime.Unix(), endTime.Unix()).
+		Group("DATE(FROM_UNIXTIME(kjTime, '+8'))").
 		Order("statDate DESC").
 		Find(&stats)
+
+	// 调试日志
+	fmt.Printf("[GetStatBets] stats count=%d, stats=%+v\n", len(stats), stats)
 
 	// 构建结果
 	var result []WeekRecordItem
@@ -493,9 +519,11 @@ func (h *BetHandler) GetLotteryData(c *gin.Context) {
 	gameID, _ := strconv.Atoi(c.Query("gameId"))
 
 	// 今天0点
-	todayStart := time.Now().Format("2006-01-02") + " 00:00:00"
-	todayStartUnix, _ := time.Parse("2006-01-02 15:04:05", todayStart)
-	todayStartInt := todayStartUnix.Unix()
+	// 使用北京时间（Asia/Shanghai）
+	loc, _ := time.LoadLocation("Asia/Shanghai")
+	now := time.Now().In(loc)
+	todayStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, loc)
+	todayStartInt := todayStart.Unix()
 
 	// 未结算金额
 	var unbalancedMoney float64
@@ -507,7 +535,7 @@ func (h *BetHandler) GetLotteryData(c *gin.Context) {
 	}
 	query.Scan(&unbalancedMoney)
 
-	// 今日已结算金额和奖金
+	// 今日已结算金额和奖金（使用 kjTime 开奖时间）
 	var settled struct {
 		TotalBet   float64
 		TotalBonus float64
@@ -515,7 +543,7 @@ func (h *BetHandler) GetLotteryData(c *gin.Context) {
 	}
 	query2 := model.DB.Table("ssc_bets").
 		Select("SUM(money * totalNums) as totalBet, SUM(bonus) as totalBonus, SUM(money * totalNums * rebate) as totalRebate").
-		Where("isDelete = 0 AND lotteryNo != '' AND uid = ? AND actionTime >= ?", uid, todayStartInt)
+		Where("isDelete = 0 AND lotteryNo != '' AND uid = ? AND kjTime >= ? AND kjTime <= ?", uid, todayStartInt, time.Now().Unix())
 	if gameID > 0 {
 		query2 = query2.Where("type = ?", gameID)
 	}
@@ -523,6 +551,9 @@ func (h *BetHandler) GetLotteryData(c *gin.Context) {
 
 	// 今日输赢 = 总奖金 - 已结算投注金额 + 退水
 	totalTotalMoney := settled.TotalBonus - settled.TotalBet + settled.TotalRebate
+
+	// 调试日志
+	fmt.Printf("[GetLotteryData] uid=%d, gameID=%d, settled=%+v, totalTotalMoney=%.2f\n", uid, gameID, settled, totalTotalMoney)
 
 	// 用户余额
 	var balance float64
@@ -533,4 +564,101 @@ func (h *BetHandler) GetLotteryData(c *gin.Context) {
 		"unbalancedMoney": unbalancedMoney,
 		"totalTotalMoney": totalTotalMoney,
 	})
+}
+
+// buildFullContent 构建完整的下注内容（包含名次/球位信息）
+func buildFullContent(gameName, groupName, playName, content string) string {
+	// 如果 content 已经包含完整信息，直接返回
+	if containsAny(content, []string{"第", "名", "球"}) {
+		return content
+	}
+
+	// 根据玩法组名称构建完整内容
+	// PK10 类型游戏：玩法组名称包含 "冠军"、"亚军"、"第三名" 等
+	pk10Groups := []string{"冠军", "亚军", "第三", "第四", "第五", "第六", "第七", "第八", "第九", "第十"}
+	for _, group := range pk10Groups {
+		if contains(groupName, group) {
+			// 冠亚和玩法
+			if contains(playName, "冠亚和") || contains(playName, "总和") {
+				return fmt.Sprintf("%s%s", playName, content)
+			}
+			// 各名次玩法：返回 "第一名大"、"第二名单" 等
+			rankName := getRankName(group)
+			return fmt.Sprintf("%s%s", rankName, content)
+		}
+	}
+
+	// 时时彩类型游戏：玩法组名称包含 "第一球"、"第二球" 等
+	sscBalls := []string{"第一球", "第二球", "第三球", "第四球", "第五球"}
+	for _, ball := range sscBalls {
+		if contains(groupName, ball) {
+			if contains(playName, "总和") {
+				return fmt.Sprintf("%s%s", playName, content)
+			}
+			return fmt.Sprintf("%s%s", ball, content)
+		}
+	}
+
+	// PC 蛋蛋类型
+	if contains(gameName, "PC 蛋蛋") {
+		return fmt.Sprintf("%s%s", playName, content)
+	}
+
+	// 默认返回：玩法名称 + 内容
+	return fmt.Sprintf("%s%s", playName, content)
+}
+
+// getRankName 将组名转换为名次名称
+func getRankName(group string) string {
+	rankMap := map[string]string{
+		"冠军": "第一名",
+		"亚军": "第二名",
+		"第三名": "第三名",
+		"第四名": "第四名",
+		"第五名": "第五名",
+		"第六名": "第六名",
+		"第七名": "第七名",
+		"第八名": "第八名",
+		"第九名": "第九名",
+		"第十名": "第十名",
+	}
+
+	for rankKey, rankName := range rankMap {
+		if contains(group, rankKey) {
+			return rankName
+		}
+	}
+	return group
+}
+
+// contains 检查 substr 是否在 s 中
+func contains(s, substr string) bool {
+	return len(s) > 0 && len(substr) > 0 && indexOf(s, substr) >= 0
+}
+
+// indexOf 返回 substr 在 s 中第一次出现的位置，如果不存在则返回 -1
+func indexOf(s, substr string) int {
+	for i := 0; i <= len(s)-len(substr); i++ {
+		match := true
+		for j := 0; j < len(substr); j++ {
+			if s[i+j] != substr[j] {
+				match = false
+				break
+			}
+		}
+		if match {
+			return i
+		}
+	}
+	return -1
+}
+
+// containsAny 检查 s 是否包含 anyOf 中的任意子串
+func containsAny(s string, anyOf []string) bool {
+	for _, substr := range anyOf {
+		if contains(s, substr) {
+			return true
+		}
+	}
+	return false
 }

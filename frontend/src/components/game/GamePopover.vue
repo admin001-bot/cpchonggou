@@ -90,8 +90,9 @@ async function loadLotteryData() {
   loading.value = true
   try {
     const res = await betApi.getLotteryData(props.gameId)
-    if (res.code === 0) {
+    if (res.code === 0 && res.data) {
       lotteryData.value = res.data
+      console.log('lotteryData:', lotteryData.value)
     }
   } catch (e) {
     console.error('加载游戏数据失败', e)
