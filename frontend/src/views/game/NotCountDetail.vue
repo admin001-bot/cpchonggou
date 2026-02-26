@@ -139,7 +139,7 @@ onUnmounted(() => {
 async function loadData() {
   loading.value = true
   try {
-    const res = await betApi.getNotCountDetail(gameId)
+    const res = await betApi.getNotCountDetail(gameId.value)
     if (res.code === 0) {
       // 处理嵌套的响应格式
       const data = res.data as any
