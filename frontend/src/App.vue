@@ -4,15 +4,33 @@
       <component :is="Component" />
     </transition>
   </router-view>
+
+  <!-- 全局全屏 Toast -->
+  <FullscreenToast
+    :visible="toastStore.isVisible"
+    :type="toastStore.currentType"
+    :title="toastStore.currentTitle"
+    :message="toastStore.currentMessage"
+    :duration="toastStore.currentDuration"
+    :show-progress="toastStore.shouldShowProgress"
+    @close="toastStore.close"
+  />
 </template>
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import FullscreenToast from '@/components/FullscreenToast/index.vue'
+import { useToastStore } from '@/stores/toast'
 
+// 路由动画
 const route = useRoute()
 const transitionName = ref('slide-forward')
 
+// Toast store
+const toastStore = useToastStore()
+
+// 路由动画
 let history: string[] = []
 
 watch(() => route.path, (newPath) => {

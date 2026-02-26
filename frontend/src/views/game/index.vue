@@ -47,8 +47,17 @@
               >
                 <div class="period-number">{{ item.actionNo }}</div>
                 <div class="period-numbers">
+                  <!-- 六合彩类型显示 7 个球（6 个正码 +1 个特码） -->
+                  <template v-if="gameConfig?.group === 'group7'">
+                    <span
+                      v-for="(num, idx) in item.numbers.slice(0, 7)"
+                      :key="idx"
+                      class="lottery-ball lhc-ball mini"
+                      :class="'data-' + num"
+                    >{{ num }}</span>
+                  </template>
                   <!-- 时时彩类型显示 5 个球（浅色圆球） -->
-                  <template v-if="gameConfig?.group === 'group2'">
+                  <template v-else-if="gameConfig?.group === 'group2'">
                     <span
                       v-for="(num, idx) in item.numbers.slice(0, 5)"
                       :key="idx"
@@ -114,8 +123,22 @@
           <div class="lottery-numbers">
 
             <!-- 开奖号码显示 -->
+            <!-- 六合彩特殊显示：6 个正码 + 分隔符 + 1 个特码 -->
+            <template v-if="gameConfig?.group === 'group7'">
+              <span
+                v-for="(num, index) in displayNumbers.slice(0, 6)"
+                :key="index"
+                class="lottery-ball lhc-ball"
+                :class="['data-' + (num === 0 ? 10 : num), { 'running': isLotteryRunning && !settledIndexes.includes(index) }]"
+              >{{ num }}</span>
+              <span class="special-separator">+</span>
+              <span
+                class="lottery-ball lhc-ball special-ball"
+                :class="['data-' + (displayNumbers[6] === 0 ? 10 : displayNumbers[6]), { 'running': isLotteryRunning && !settledIndexes.includes(6) }]"
+              >{{ displayNumbers[6] }}</span>
+            </template>
             <!-- PC 蛋蛋特殊显示：3 个球 + 等号 + 总和 -->
-            <template v-if="gameConfig?.group === 'group8'">
+            <template v-else-if="gameConfig?.group === 'group8'">
               <span
                 v-for="(num, index) in displayNumbers.slice(0, 3)"
                 :key="index"
@@ -266,7 +289,7 @@
           />
         </template>
         <!-- PC 蛋蛋 - 混合玩法 -->
-        <template v-if="gameConfig?.group === 'group8' && currentPane?.code === 'HH'">
+        <template v-else-if="gameConfig?.group === 'group8' && currentPane?.code === 'HH'">
           <HunHeBet
             :plays-data="playsData"
             :selected-bets="betData['HH'] || []"
@@ -283,10 +306,51 @@
           />
         </template>
 
+        <!-- 六合彩 - 特码玩法 -->
+        <template v-else-if="gameConfig?.group === 'group7' && currentPane?.code === 'TM'">
+          <TeMaBet
+            :plays-data="playsData"
+            :selected-bets="betData['TM'] || []"
+            @toggle-bet="(playId: number) => toggleBet(playId, 'TM')"
+          />
+        </template>
+
+        <!-- 六合彩 - 特肖玩法 -->
+        <template v-else-if="gameConfig?.group === 'group7' && currentPane?.code === 'TX'">
+          <TeXiaoBet
+            :plays-data="playsData"
+            :selected-bets="betData['TX'] || []"
+            @toggle-bet="(playId: number) => toggleBet(playId, 'TX')"
+          />
+        </template>
+
+        <!-- 六合彩 - 色波玩法 -->
+        <template v-else-if="gameConfig?.group === 'group7' && currentPane?.code === 'SB'">
+          <SeBoBet
+            :plays-data="playsData"
+            :selected-bets="betData['SB'] || []"
+            @toggle-bet="(playId: number) => toggleBet(playId, 'SB')"
+          />
+        </template>
+
+        <!-- 时时彩 - 番滩玩法 -->
+        <template v-else-if="gameConfig?.group === 'group2' && currentPane?.code === 'FANTAN'">
+          <div class="bet-view">
+            <div class="coming-soon">{{ t('play.FANTAN') }}</div>
+          </div>
+        </template>
+
+        <!-- 时时彩 - 百家乐玩法 -->
+        <template v-else-if="gameConfig?.group === 'group2' && currentPane?.code === 'BAIJIALE'">
+          <div class="bet-view">
+            <div class="coming-soon">{{ t('play.BAIJIALE') }}</div>
+          </div>
+        </template>
+
         <!-- 默认投注面板 -->
         <template v-else>
           <div class="bet-view">
-            <div class="coming-soon">{{ t('game.comingSoon') }}</div>
+            <div class="coming-soon">{{ t('game.selectPlay') }}</div>
           </div>
         </template>
       </div>
@@ -383,6 +447,8 @@ import RankBet from '@/components/game/RankBet.vue'
 import GamePopover from '@/components/game/GamePopover.vue'
 import HunHeBet from '@/components/game/HunHeBet.vue'
 import TeMaBet from '@/components/game/TeMaBet.vue'
+import TeXiaoBet from '@/components/game/TeXiaoBet.vue'
+import SeBoBet from '@/components/game/SeBoBet.vue'
 import AllBallsBet from '@/components/game/AllBallsBet.vue'
 import QzhBet from '@/components/game/QzhBet.vue'
 import LongHuBet from '@/components/game/LongHuBet.vue'
@@ -450,6 +516,9 @@ function getInitialNumbers(): number[] {
   if (config?.group === 'group8') {
     return [0, 0, 0] // PC 蛋蛋 3 个球
   }
+  if (config?.group === 'group7') {
+    return [0, 0, 0, 0, 0, 0, 0] // 六合彩 7 个球（6 正码 +1 特码）
+  }
   return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] // PK10 类型 10 个球
 }
 
@@ -461,6 +530,9 @@ function getBallCount(): number {
   }
   if (config?.group === 'group8') {
     return 3 // PC 蛋蛋 3 个球
+  }
+  if (config?.group === 'group7') {
+    return 7 // 六合彩 7 个球
   }
   return 10 // PK10 类型 10 个球
 }
@@ -573,6 +645,43 @@ const lotteryResults = computed(() => {
   const nums = lastNumbers.value
   if (!nums || nums.length === 0) return []
 
+  // 六合彩类型（7 个球：6 个正码 + 1 个特码）
+  if (gameConfig.value?.group === 'group7') {
+    if (nums.length < 7) return []
+
+    const results: (number | string)[] = []
+
+    // 总和（7 个球相加）
+    const totalSum = nums.reduce((a, b) => a + b, 0)
+    results.push(totalSum)
+
+    // 总和大小（六合彩总和范围：7-343，中间值约 175）
+    results.push(totalSum >= 175 ? '大' : '小')
+
+    // 总和单双
+    results.push(totalSum % 2 === 1 ? '單' : '雙')
+
+    // 特码（第 7 个球）
+    const specialCode = nums[6]
+    results.push('特碼')
+
+    // 特码大小
+    results.push(specialCode >= 25 ? '大' : '小')
+
+    // 特码单双
+    results.push(specialCode % 2 === 1 ? '單' : '雙')
+
+    // 特码色波
+    const color = getLhcColor(specialCode)
+    if (color) results.push(color)
+
+    // 特码生肖
+    const zodiac = getLhcZodiac(specialCode)
+    if (zodiac) results.push(zodiac)
+
+    return results
+  }
+
   // 时时彩类型（5 个球）
   if (gameConfig.value?.group === 'group2') {
     const validNums = nums.slice(0, 5).filter(n => !isNaN(n))
@@ -632,6 +741,37 @@ const lotteryResults = computed(() => {
   return results
 })
 
+// 获取六合彩色波
+const getLhcColor = (num: number): string => {
+  const redWave = [1, 2, 7, 8, 12, 13, 18, 19, 23, 24, 29, 30, 34, 35, 40, 45, 46]
+  const blueWave = [3, 4, 9, 10, 14, 15, 20, 25, 26, 31, 36, 37, 41, 42, 47, 48]
+  const greenWave = [5, 6, 11, 16, 17, 21, 22, 27, 28, 32, 33, 38, 39, 43, 44, 49]
+
+  if (redWave.includes(num)) return '紅波'
+  if (blueWave.includes(num)) return '藍波'
+  if (greenWave.includes(num)) return '綠波'
+  return ''
+}
+
+// 获取六合彩生肖
+const getLhcZodiac = (num: number): string => {
+  const zodiacMap: Record<number, string> = {
+    1: '羊', 13: '羊', 25: '羊', 37: '羊', 49: '羊',
+    12: '猴', 24: '猴', 36: '猴', 48: '猴',
+    11: '雞', 23: '雞', 35: '雞', 47: '雞',
+    10: '狗', 22: '狗', 34: '狗', 46: '狗',
+    9: '豬', 21: '豬', 33: '豬', 45: '豬',
+    8: '鼠', 20: '鼠', 32: '鼠', 44: '鼠',
+    7: '牛', 19: '牛', 31: '牛', 43: '牛',
+    6: '虎', 18: '虎', 30: '虎', 42: '虎',
+    5: '兔', 17: '兔', 29: '兔', 41: '兔',
+    4: '龍', 16: '龍', 28: '龍', 40: '龍',
+    3: '蛇', 15: '蛇', 27: '蛇', 39: '蛇',
+    2: '馬', 14: '馬', 26: '馬', 38: '馬'
+  }
+  return zodiacMap[num] || ''
+}
+
 // 获取某玩法的注数
 function getBetCount(paneCode: string): number {
   return betData.value[paneCode]?.length || 0
@@ -657,6 +797,24 @@ function translateResult(result: number | string): string {
     case '雙': return t('game.even')
     case '龍': return t('game.dragon')
     case '虎': return t('game.tiger')
+    case '和': return t('game.draw')
+    case '紅波': return t('lhc.redWave')
+    case '藍波': return t('lhc.blueWave')
+    case '綠波': return t('lhc.greenWave')
+    case '特碼': return t('lhc.specialCode')
+    // 生肖
+    case '羊': return t('lhc.goat')
+    case '猴': return t('lhc.monkey')
+    case '雞': return t('lhc.rooster')
+    case '狗': return t('lhc.dog')
+    case '豬': return t('lhc.pig')
+    case '鼠': return t('lhc.rat')
+    case '牛': return t('lhc.ox')
+    case '虎': return t('lhc.tiger')
+    case '兔': return t('lhc.rabbit')
+    case '龍': return t('lhc.dragon')
+    case '蛇': return t('lhc.snake')
+    case '馬': return t('lhc.horse')
     default: return result
   }
 }
@@ -1609,6 +1767,71 @@ onUnmounted(() => {
     transform: scale(1.1);
     opacity: 0.8;
   }
+}
+
+/* 六合彩球号样式 - 7 个球（6 个正码 + 1 个特码） */
+.lottery-ball.lhc-ball {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1;
+}
+
+/* 六合彩特码球稍微大一点 */
+.lottery-ball.lhc-ball.special-ball {
+  width: 36px;
+  height: 36px;
+  font-size: 16px;
+  background: linear-gradient(135deg, #ffd700, #ffb700) !important;
+  border: 2px solid #ffd700;
+  box-shadow: 0 2px 8px rgba(255,215,0,0.5);
+}
+
+/* 六合彩特码分隔符 */
+.special-separator {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 8px;
+  font-size: 18px;
+  color: #999;
+  font-weight: bold;
+}
+
+/* 六合彩球号颜色（根据号码） */
+.lottery-ball.lhc-ball.data-1,
+.lottery-ball.lhc-ball.data-13,
+.lottery-ball.lhc-ball.data-25,
+.lottery-ball.lhc-ball.data-37,
+.lottery-ball.lhc-ball.data-49 {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+  border: 2px solid #ff6b6b;
+}
+
+.lottery-ball.lhc-ball.data-2,
+.lottery-ball.lhc-ball.data-14,
+.lottery-ball.lhc-ball.data-26,
+.lottery-ball.lhc-ball.data-38 {
+  background: linear-gradient(135deg, #4ecdc4, #44a08d);
+  border: 2px solid #4ecdc4;
+}
+
+.lottery-ball.lhc-ball.data-3,
+.lottery-ball.lhc-ball.data-15,
+.lottery-ball.lhc-ball.data-27,
+.lottery-ball.lhc-ball.data-39 {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border: 2px solid #667eea;
+}
+
+/* 时时彩球号跑动动画 */
+.lottery-ball.ssc-ball.running {
+  animation: ssc-ball-pulse 0.5s ease-in-out infinite;
 }
 
 /* 等号样式 */

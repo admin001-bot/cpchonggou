@@ -77,12 +77,13 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { ElMessage } from 'element-plus'
+import { useToastStore } from '@/stores/toast'
 import { t } from '@/locales'
 import { getBankInfo, getWithdrawConfig, withdraw, type BankInfo, type WithdrawConfig } from '@/api/bank'
 
 const router = useRouter()
 const userStore = useUserStore()
+const toastStore = useToastStore()
 
 // 步骤：1=未完善信息，2=未绑定银行卡，3=可以提款
 const step = ref(3)
@@ -126,12 +127,18 @@ const onAmountInput = () => {
 
 const goCompleteProfile = () => {
   // TODO: 跳转到完善信息页面
-  alert(t('bank.completeProfile'))
+  toastStore.show({
+    type: 'info',
+    message: t('bank.completeProfile')
+  })
 }
 
 const goBindBank = () => {
   // TODO: 跳转到绑定银行卡页面
-  alert(t('bank.bindBankCard'))
+  toastStore.show({
+    type: 'info',
+    message: t('bank.bindBankCard')
+  })
 }
 
 // 检查提现时间
@@ -207,35 +214,39 @@ const submitWithdraw = async () => {
   // 检查金额
   const amount = parseFloat(form.amount)
   if (!form.amount || isNaN(amount) || amount < withdrawConfig.minMoney) {
-    ElMessage.warning({
-      message: t('bank.amountMinLimit'),
-      duration: 2000
+    toastStore.show({
+      type: 'warning',
+      title: '金额过低',
+      message: t('bank.amountMinLimit')
     })
     return
   }
 
   if (amount > withdrawConfig.maxMoney) {
-    ElMessage.warning({
-      message: t('bank.amountMaxLimit'),
-      duration: 2000
+    toastStore.show({
+      type: 'warning',
+      title: '金额过高',
+      message: t('bank.amountMaxLimit')
     })
     return
   }
 
   // 检查密码
   if (!form.password) {
-    ElMessage.warning({
-      message: t('bank.enterPassword'),
-      duration: 2000
+    toastStore.show({
+      type: 'warning',
+      title: '需要密码',
+      message: t('bank.enterPassword')
     })
     return
   }
 
   // 检查提现时间
   if (!checkWithdrawTime()) {
-    ElMessage.warning({
-      message: timeWarning.value,
-      duration: 2000
+    toastStore.show({
+      type: 'warning',
+      title: '非提现时间',
+      message: timeWarning.value
     })
     return
   }
@@ -249,24 +260,28 @@ const submitWithdraw = async () => {
     const res = await withdraw(requestData)
 
     if (res.code === 0) {
-      ElMessage.success({
+      toastStore.show({
+        type: 'success',
+        title: '提款成功',
         message: res.data?.message || t('bank.withdrawSuccess'),
-        duration: 2000
+        duration: 3000
       })
       form.amount = ''
       form.password = ''
       // 刷新余额
       emit('balance-updated')
     } else {
-      ElMessage.error({
-        message: res.message || t('bank.withdrawFailed'),
-        duration: 2000
+      toastStore.show({
+        type: 'error',
+        title: '提款失败',
+        message: res.message || t('bank.withdrawFailed')
       })
     }
   } catch (error: any) {
-    ElMessage.error({
-      message: error.response?.data?.message || t('bank.withdrawFailed'),
-      duration: 2000
+    toastStore.show({
+      type: 'error',
+      title: '提款失败',
+      message: error.response?.data?.message || t('bank.withdrawFailed')
     })
   } finally {
     loading.value = false
@@ -282,15 +297,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* 居中消息提示 */
-:deep(.el-message) {
-  position: fixed;
-  top: 20%;
-  left: 50%;
-  transform: translateX(-50%);
-  max-width: 90%;
-  z-index: 9999;
-}
+/* 移除了 Element Plus 消息提示样式，使用自定义 Toast */
 
 .withdraw-page {
   background: #fff;
