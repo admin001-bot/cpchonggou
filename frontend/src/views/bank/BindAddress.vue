@@ -117,7 +117,6 @@ import { ref, computed, onMounted } from 'vue'
 import { t } from '@/locales'
 import { bankApi, type BankInfo } from '@/api/bank'
 import { useToastStore } from '@/stores/toast'
-import { useToastStore } from '@/stores/toast'
 
 // 协议列表
 const protocols = ref([
