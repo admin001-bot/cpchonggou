@@ -39,21 +39,30 @@ var ZhTW = map[string]string{
 	"withdraw.password_error":   "資金密碼錯誤",
 	"withdraw.time_error":       "當前不在提現時間內",
 	"withdraw.consumption":      "消費比例不足，需要達到%d%%",
+	"withdraw.consumption_detail": "消費比例不足，需要達到%d%% (已消費：%.2f, 要求：%.2f)",
 	"withdraw.failed":           "提現申請失敗",
 	"withdraw.time_range":       "提現時間：從%s到%s",
 	"withdraw.success_message":  "申請提現成功，請等待客服人員審核",
+	"withdraw.apply":            "提現申請",
 	"bank.last4":                "尾號",
 	"deposit.system":            "系統儲值",
 	"deposit.admin":             "管理員儲值",
 	"withdraw.freeze_info":      "提現 [%d] 資金凍結",
 
+	// 银行相关
+	"bank.bindTip":           "您已綁定銀行卡",
+	"bank.bindFailed":        "綁定銀行卡失敗",
+	"bank.bindSuccess":        "綁定銀行卡成功",
+
 	// 通用消息
 	"common.error":      "系統錯誤",
+	"common.success":     "操作成功",
 	"common.unauthorized": "未授權",
 
 	// 登录
 	"login.success":             "登錄成功",
 	"login.failed":              "登錄失敗",
+	"login.enterUsernamePassword": "請輸入用戶名和密碼",
 	"login.invalid_credentials": "用戶名或密碼錯誤",
 	"login.account_disabled":    "賬號已被禁用",
 	"login.guest_disabled":      "試玩功能已關閉",

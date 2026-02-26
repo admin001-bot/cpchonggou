@@ -39,21 +39,30 @@ var En = map[string]string{
 	"withdraw.password_error":  "Invalid fund password",
 	"withdraw.time_error":      "Not within withdrawal hours",
 	"withdraw.consumption":     "Consumption ratio insufficient, need %d%%",
+	"withdraw.consumption_detail": "Consumption ratio insufficient, need %d%% (Consumed: %.2f, Required: %.2f)",
 	"withdraw.failed":          "Withdrawal request failed",
 	"withdraw.time_range":      "Withdrawal time: from %s to %s",
 	"withdraw.success_message": "Withdrawal request submitted, please wait for staff review",
+	"withdraw.apply":            "Withdrawal request",
 	"bank.last4":               "Last 4 digits",
 	"deposit.system":           "System Deposit",
 	"deposit.admin":            "Admin Deposit",
 	"withdraw.freeze_info":     "Withdraw [%d] Fund Frozen",
 
+	// Bank related
+	"bank.bindTip":           "You have already bound a bank card",
+	"bank.bindFailed":        "Bind bank card failed",
+	"bank.bindSuccess":        "Bind bank card successful",
+
 	// Common messages
 	"common.error":      "System error",
+	"common.success":     "Success",
 	"common.unauthorized": "Unauthorized",
 
 	// Login
 	"login.success":             "Login successful",
 	"login.failed":              "Login failed",
+	"login.enterUsernamePassword": "Please enter username and password",
 	"login.invalid_credentials": "Invalid username or password",
 	"login.account_disabled":    "Account has been disabled",
 	"login.guest_disabled":      "Demo feature is disabled",

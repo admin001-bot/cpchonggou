@@ -306,7 +306,7 @@ func (h *BankHandler) Withdraw(c *gin.Context) {
 
 	if cashMinAmount > 0 {
 		if valid, actual, required := checkConsumption(uid, cashMinAmount); !valid {
-			response.Error(c, fmt.Sprintf(i18n.T("withdraw.consumption"), float64(cashMinAmount))+" (已消費："+fmt.Sprintf("%.2f", actual)+", 要求："+fmt.Sprintf("%.2f", required)+")")
+			response.Error(c, fmt.Sprintf(i18n.T("withdraw.consumption_detail"), cashMinAmount, actual, required))
 			return
 		}
 	}
