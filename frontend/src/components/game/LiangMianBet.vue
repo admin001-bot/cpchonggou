@@ -199,20 +199,36 @@ const ranks = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 /**
  * 时时彩 PlayID 计算
- * playId = gameId * 10000 + categoryId * 100 + sequence
+ * playId = gameId * 1000 + categoryId * 100 + sequence
  * categoryId: 总和=1, 第一球=2, 第二球=3, 第三球=4, 第四球=5, 第五球=6
- * sequence: 大=10, 小=11, 单=12, 双=13
+ * sequence:
+ *   - 总和：大=1, 小=2, 单=3, 双=4
+ *   - 各球：大=10, 小=11, 单=12, 双=13
  */
 function getSSCPlayId(categoryId: number, type: 'big' | 'small' | 'odd' | 'even'): number {
   let sequence: number
-  switch (type) {
-    case 'big': sequence = 10; break
-    case 'small': sequence = 11; break
-    case 'odd': sequence = 12; break
-    case 'even': sequence = 13; break
-    default: sequence = 10
+
+  if (categoryId === 1) {
+    // 总和玩法
+    switch (type) {
+      case 'big': sequence = 1; break
+      case 'small': sequence = 2; break
+      case 'odd': sequence = 3; break
+      case 'even': sequence = 4; break
+      default: sequence = 1
+    }
+  } else {
+    // 各球玩法
+    switch (type) {
+      case 'big': sequence = 10; break
+      case 'small': sequence = 11; break
+      case 'odd': sequence = 12; break
+      case 'even': sequence = 13; break
+      default: sequence = 10
+    }
   }
-  return props.gameId * 10000 + categoryId * 100 + sequence
+
+  return props.gameId * 1000 + categoryId * 100 + sequence
 }
 
 /**
