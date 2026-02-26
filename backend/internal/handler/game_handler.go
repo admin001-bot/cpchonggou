@@ -164,26 +164,42 @@ func (h *GameHandler) GetNextIssue(c *gin.Context) {
 		ftime = 1800
 		periodsPerDay = 1
 	}
+	// 计算从当天 00:00:00 开始的秒数
 	secondsOfDay := int64(now.Hour()*3600 + now.Minute()*60 + now.Second())
+
+	// 计算当前期数（从 1 开始）
+	// 例如：00:00:00 时，secondsOfDay=0, issueNum=1
+	// 23:55:00 时，secondsOfDay=86100, issueNum=86100/300+1=287+1=288
 	issueNum := int(secondsOfDay/periodSeconds) + 1
+
+	// 计算当前期号的开始时间
 	periodStartSeconds := int64(issueNum-1) * periodSeconds
 	startHour := int(periodStartSeconds / 3600)
 	startMin := int((periodStartSeconds % 3600) / 60)
 	startSec := int(periodStartSeconds % 60)
 	lotteryTime := time.Date(now.Year(), now.Month(), now.Day(), startHour, startMin, startSec, 0, now.Location())
+
 	nowUnix := now.Unix()
-	// 修复：当时间正好等于开奖时间时，应该还是当前期，不是下一期
-	for nowUnix > lotteryTime.Unix() && issueNum <= periodsPerDay {
+
+	// 如果当前时间已经超过了当前期号的封盘时间，则进入下一期
+	for nowUnix >= lotteryTime.Unix()-ftime && issueNum <= periodsPerDay {
 		issueNum++
 		lotteryTime = lotteryTime.Add(time.Duration(periodSeconds) * time.Second)
 	}
+
+	// 如果超过最后一期，则进入第二天的第 1 期
+	var dateStr string
 	if issueNum > periodsPerDay {
 		issueNum = 1
 		tomorrow := now.Add(24 * time.Hour)
+		// 第二天第 1 期的开奖时间是 00:00:periodSeconds
 		lotteryTime = time.Date(tomorrow.Year(), tomorrow.Month(), tomorrow.Day(), 0, 0, int(periodSeconds), 0, now.Location())
+		dateStr = tomorrow.Format("20060102")
+	} else {
+		dateStr = now.Format("20060102")
 	}
+
 	endTime := lotteryTime.Add(-time.Duration(ftime) * time.Second)
-	dateStr := now.Format("20060102")
 	issue := fmt.Sprintf("%s%03d", dateStr, issueNum)
 
 	// 调试日志
@@ -851,7 +867,7 @@ func (h *GameHandler) DebugGetSscData(c *gin.Context) {
 
     c.JSON(200, gin.H{
         "code":    0,
-        "message": "success",
+        "message": i18n.T("common.success"),
         "data":    records,
     })
 }
