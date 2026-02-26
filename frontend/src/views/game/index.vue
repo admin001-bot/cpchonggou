@@ -53,7 +53,7 @@
                       v-for="(num, idx) in item.numbers.slice(0, 7)"
                       :key="idx"
                       class="lottery-ball lhc-ball mini"
-                      :class="'data-' + num"
+                      :class="getLhcBallClass(num)"
                     >{{ num }}</span>
                   </template>
                   <!-- 时时彩类型显示 5 个球（浅色圆球） -->
@@ -133,7 +133,7 @@
               >{{ num }}</span>
               <span class="special-separator">+</span>
               <span
-                class="lottery-ball lhc-ball special-ball"
+                class="lottery-ball lhc-ball"
                 :class="getLhcBallClass(lastNumbers[6])"
               >{{ lastNumbers[6] }}</span>
             </template>
@@ -1803,16 +1803,6 @@ onUnmounted(() => {
   line-height: 1;
 }
 
-/* 六合彩特码球稍微大一点 */
-.lottery-ball.lhc-ball.special-ball {
-  width: 36px;
-  height: 36px;
-  font-size: 16px;
-  background: linear-gradient(135deg, #ffd700, #ffb700) !important;
-  border: 2px solid #ffd700;
-  box-shadow: 0 2px 8px rgba(255,215,0,0.5);
-}
-
 /* 六合彩特码分隔符 */
 .special-separator {
   display: inline-flex;
@@ -1823,20 +1813,41 @@ onUnmounted(() => {
   font-weight: bold;
 }
 
-/* 六合彩球号波色 */
+/* 六合彩球号波色 - 红波 */
 .lottery-ball.lhc-ball.red-ball {
-  background: linear-gradient(135deg, #ff6b6b, #ee5a5a) !important;
-  border: 2px solid #ff6b6b;
+  background: linear-gradient(135deg, #ff4757, #ff3838) !important;
+  border: 2px solid #ff3838;
+  box-shadow: 0 2px 6px rgba(255,71,87,0.4);
 }
 
+/* 六合彩球号波色 - 蓝波 */
 .lottery-ball.lhc-ball.blue-ball {
-  background: linear-gradient(135deg, #4ecdc4, #44a08d) !important;
-  border: 2px solid #4ecdc4;
+  background: linear-gradient(135deg, #3742fa, #2f35c9) !important;
+  border: 2px solid #2f35c9;
+  box-shadow: 0 2px 6px rgba(55,66,250,0.4);
 }
 
+/* 六合彩球号波色 - 绿波 */
 .lottery-ball.lhc-ball.green-ball {
-  background: linear-gradient(135deg, #2ecc71, #27ae60) !important;
-  border: 2px solid #2ecc71;
+  background: linear-gradient(135deg, #2ed573, #26b061) !important;
+  border: 2px solid #26b061;
+  box-shadow: 0 2px 6px rgba(46,213,115,0.4);
+}
+
+/* 六合彩球号波色 - mini 版本（历史开奖） */
+.lottery-ball.lhc-ball.mini.red-ball {
+  background: linear-gradient(135deg, #ff4757, #ff3838) !important;
+  border: 2px solid #ff3838;
+}
+
+.lottery-ball.lhc-ball.mini.blue-ball {
+  background: linear-gradient(135deg, #3742fa, #2f35c9) !important;
+  border: 2px solid #2f35c9;
+}
+
+.lottery-ball.lhc-ball.mini.green-ball {
+  background: linear-gradient(135deg, #2ed573, #26b061) !important;
+  border: 2px solid #26b061;
 }
 
 /* 时时彩球号跑动动画 */
