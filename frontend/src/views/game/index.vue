@@ -47,12 +47,32 @@
               >
                 <div class="period-number">{{ item.actionNo }}</div>
                 <div class="period-numbers">
-                  <span
-                    v-for="(num, idx) in item.numbers"
-                    :key="idx"
-                    class="lottery-ball mini"
-                    :class="'data-' + num"
-                  >{{ num }}</span>
+                  <!-- 时时彩类型显示 5 个球（浅色圆球） -->
+                  <template v-if="gameConfig?.group === 'group2'">
+                    <span
+                      v-for="(num, idx) in item.numbers.slice(0, 5)"
+                      :key="idx"
+                      class="lottery-ball mini ssc-ball"
+                      :class="'data-' + (num === 0 ? 10 : num)"
+                    >{{ num }}</span>
+                  </template>
+                  <!-- PC 蛋蛋显示 3 个球 -->
+                  <template v-else-if="gameConfig?.group === 'group8'">
+                    <span
+                      v-for="(num, idx) in item.numbers.slice(0, 3)"
+                      :key="idx"
+                      class="lottery-ball mini round"
+                    >{{ num }}</span>
+                  </template>
+                  <!-- 其他游戏正常显示 -->
+                  <template v-else>
+                    <span
+                      v-for="(num, idx) in item.numbers"
+                      :key="idx"
+                      class="lottery-ball mini"
+                      :class="'data-' + num"
+                    >{{ num }}</span>
+                  </template>
                 </div>
                 <div class="period-time">{{ formatTime(item.actionTime) }}</div>
               </div>
@@ -105,13 +125,13 @@
               <span class="equal-sign">=</span>
               <span class="lottery-ball round sum-ball">{{ lotterySum }}</span>
             </template>
-            <!-- 时时彩类型显示 5 个球 -->
+            <!-- 时时彩类型显示 5 个球（浅色圆球） -->
             <template v-else-if="gameConfig?.group === 'group2'">
               <span
                 v-for="(num, index) in displayNumbers.slice(0, 5)"
                 :key="index"
-                class="lottery-ball round-6"
-                :class="['data-' + num, { 'running': isLotteryRunning && !settledIndexes.includes(index) }]"
+                class="lottery-ball ssc-ball"
+                :class="['data-' + (num === 0 ? 10 : num), { 'running': isLotteryRunning && !settledIndexes.includes(index) }]"
               >{{ num }}</span>
             </template>
             <!-- 其他游戏正常显示 -->
@@ -125,7 +145,7 @@
             </template>
 
           </div>
-          <div class="result-wrap" v-if="lotteryResults.length > 0 && !isLotteryRunning">
+          <div class="result-wrap" :class="{ 'ssc-results': gameConfig?.group === 'group2' }" v-if="lotteryResults.length > 0 && !isLotteryRunning">
             <span
               v-for="(result, index) in lotteryResults"
               :key="index"
@@ -559,18 +579,40 @@ const lotteryResults = computed(() => {
     const validNums = nums.slice(0, 5).filter(n => !isNaN(n))
     if (validNums.length < 5) return []
 
+    // 将 0 转换为 10 进行计算
+    const calcNums = validNums.map(n => n === 0 ? 10 : n)
+
     const results: (number | string)[] = []
 
-    // 总和（5 个球相加）
-    const totalSum = validNums.reduce((a, b) => a + b, 0)
+    // 总和（5 个球相加，0 当作 10 计算）
+    const totalSum = calcNums.reduce((a, b) => a + b, 0)
     results.push(totalSum)
 
     // 总和大小
-    // 时时彩总和范围：0-45，中间值 22.5
-    results.push(totalSum >= 23 ? '大' : '小')
+    // 时时彩总和范围：5-50（0 当 10 算），中间值 27.5
+    results.push(totalSum >= 28 ? '大' : '小')
 
     // 总和单双
     results.push(totalSum % 2 === 1 ? '單' : '雙')
+
+    // 龙虎：10 组对阵（球 1vs 球 2, 球 1vs 球 3, ... 球 4vs 球 5）
+    // 龙：前者大，虎：后者大，和：相等
+    const matchups = [
+      [0, 1], [0, 2], [0, 3], [0, 4],  // 球 1vs 球 2, 球 1vs 球 3, 球 1vs 球 4, 球 1vs 球 5
+      [1, 2], [1, 3], [1, 4],           // 球 2vs 球 3, 球 2vs 球 4, 球 2vs 球 5
+      [2, 3], [2, 4],                   // 球 3vs 球 4, 球 3vs 球 5
+      [3, 4]                            // 球 4vs 球 5
+    ]
+
+    for (const [i, j] of matchups) {
+      if (calcNums[i] > calcNums[j]) {
+        results.push('龍')
+      } else if (calcNums[i] < calcNums[j]) {
+        results.push('虎')
+      } else {
+        results.push('和')
+      }
+    }
 
     return results
   }
@@ -1215,6 +1257,26 @@ onUnmounted(() => {
   border-radius: 50%;
 }
 
+/* 历史开奖中时时彩球样式（浅色圆球） */
+.period-numbers .lottery-ball.ssc-ball {
+  background: linear-gradient(135deg, #e0f0ff, #b0d0ff);
+  border: 2px solid #8ab4f8;
+  box-shadow: 0 2px 4px rgba(138,180,248,0.3);
+  color: #333;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* 历史开奖中 PC 蛋蛋球样式 */
+.period-numbers .lottery-ball.round {
+  background: linear-gradient(135deg, #e0f0ff, #b0d0ff);
+  border: 2px solid #8ab4f8;
+  box-shadow: 0 2px 4px rgba(138,180,248,0.3);
+  color: #333;
+  font-size: 14px;
+  font-weight: 600;
+}
+
 .period-numbers .lottery-ball.data-1 { background-image: url('/images/ball/1.png'); }
 .period-numbers .lottery-ball.data-2 { background-image: url('/images/ball/2.png'); }
 .period-numbers .lottery-ball.data-3 { background-image: url('/images/ball/3.png'); }
@@ -1529,6 +1591,39 @@ onUnmounted(() => {
   border: 2px solid #fb2351;
 }
 
+/* 时时彩浅色圆球样式 - 5 个球（浅蓝色） */
+.lottery-ball.ssc-ball {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  background: linear-gradient(135deg, #e0f0ff, #b0d0ff);
+  border: 2px solid #8ab4f8;
+  box-shadow: 0 2px 6px rgba(138,180,248,0.4);
+  line-height: 1;
+}
+
+/* 时时彩球号跑动动画 */
+.lottery-ball.ssc-ball.running {
+  animation: ssc-ball-pulse 0.5s ease-in-out infinite;
+}
+
+@keyframes ssc-ball-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
 /* 等号样式 */
 .equal-sign {
   display: inline-flex;
@@ -1558,6 +1653,26 @@ onUnmounted(() => {
   margin-top: 8px;
   padding-top: 8px;
   border-top: 1px solid #eee;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* 时时彩类型的结果包装器（支持横向滚动） */
+.result-wrap.ssc-results {
+  justify-content: flex-start;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+/* 隐藏滚动条但保留功能（iOS） */
+.result-wrap.ssc-results::-webkit-scrollbar {
+  height: 4px;
+}
+
+.result-wrap.ssc-results::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 2px;
 }
 
 .result-data {
