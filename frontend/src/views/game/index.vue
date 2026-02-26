@@ -4,7 +4,7 @@
     <header class="lottery-header">
       <div class="header-left">
         <a @click.prevent="router.push('/home')" class="back-btn">
-          <span class="game-name">{{ gameName }}-{{ t('common.home') }}</span>
+          <span class="game-name">{{ gameName }}</span>
         </a>
       </div>
       <div class="header-right">
@@ -78,7 +78,7 @@
           <ul class="sidebar-list">
             <li><a @click.prevent="router.push('/home')">{{ t('game.returnLobby') }}</a></li>
             <li v-for="game in gameList" :key="game.id">
-              <a @click.prevent="router.push('/game/' + game.id)">{{ game.name }}</a>
+              <a @click.prevent="router.push('/game/' + game.id)">{{ t(`game.${game.id}`) }}</a>
             </li>
           </ul>
         </div>
@@ -128,7 +128,7 @@
             :class="{ active: currentPane?.code === pane.code }"
             @click="selectPane(pane)"
           >
-            {{ pane.name }}
+            {{ t(`play.${pane.code}`) }}
             <span v-if="getBetCount(pane.code) > 0" class="tab-badge"></span>
           </div>
         </div>
@@ -289,7 +289,7 @@ const gameId = computed(() => parseInt(route.params.id as string) || 55)
 
 // 游戏配置
 const gameConfig = computed(() => getGameConfig(gameId.value))
-const gameName = computed(() => gameConfig.value?.name || t(`game.${gameId.value}`) || '遊戲')
+const gameName = computed(() => t(`game.${gameId.value}`) || t('game.defaultName'))
 const panes = computed(() => getGamePanes(gameId.value))
 
 // 游戏列表
@@ -731,15 +731,15 @@ async function confirmBet() {
     // 后端返回格式: { success, msg, msgKey, msgArgs, code }
     const data = result as any
     if (data.success) {
-      alert(translateBetMsg(data.msgKey) || '下注成功！')
+      alert(translateBetMsg(data.msgKey) || t('game.betSuccess'))
       showConfirmModal.value = false
       resetBets()
       refreshBalance()
     } else {
-      alert(translateBetMsg(data.msgKey, data.msgArgs) || data.msg || '下注失敗')
+      alert(translateBetMsg(data.msgKey, data.msgArgs) || data.msg || t('game.betFailed'))
     }
   } catch (error) {
-    alert('下注失敗，請重試')
+    alert(t('game.betFailedRetry'))
   }
 }
 
@@ -757,7 +757,9 @@ function parseTime(timeStr: string): number {
 // 获取期号数据
 async function fetchIssueData() {
   try {
+    console.log('[游戏页面] 开始获取期号数据，游戏 ID:', gameId.value)
     const result = await gameApi.getNextIssue(gameId.value)
+    console.log('[游戏页面] 期号数据响应:', result)
     if (result.code === 0 && result.data) {
       const data: NextIssueData = result.data
 
@@ -803,7 +805,7 @@ async function fetchIssueData() {
       }
     }
   } catch (error) {
-    console.error('获取期号数据失败:', error)
+    console.error('[游戏页面] 获取期号数据失败:', error, '游戏 ID:', gameId.value)
   }
 }
 
@@ -849,8 +851,20 @@ function startCountdown() {
 }
 
 // 监听游戏ID变化
-watch(gameId, () => {
+watch(gameId, (newId, oldId) => {
+  console.log('[游戏页面] 游戏 ID 变化:', oldId, '->', newId)
+  // 切换游戏时，重置定时器
+  if (countdownTimer) {
+    clearInterval(countdownTimer)
+  }
+  if (refreshTimer) {
+    clearInterval(refreshTimer)
+  }
+  if (balanceRefreshTimer) {
+    clearInterval(balanceRefreshTimer)
+  }
   fetchIssueData()
+  startCountdown()
 })
 
 onMounted(() => {
@@ -1081,6 +1095,7 @@ onUnmounted(() => {
   margin: 0 auto;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
 }
 
 /* 顶部导航栏 */

@@ -250,6 +250,7 @@ const md5Hash = (str: string): string => {
   background: #f5f5f5;
   max-width: 640px;
   margin: 0 auto;
+  overflow-y: auto;
 }
 
 /* 顶部导航 */

@@ -7,6 +7,7 @@ import (
 	"lottery-system/internal/config"
 	"lottery-system/internal/handler"
 	"lottery-system/internal/model"
+	"lottery-system/pkg/i18n"
 
 	"github.com/gin-gonic/gin"
 )
@@ -38,6 +39,13 @@ func main() {
 			c.AbortWithStatus(204)
 			return
 		}
+		c.Next()
+	})
+
+	// 语言设置中间件
+	r.Use(func(c *gin.Context) {
+		lang := i18n.GetLanguageFromHeader(c.GetHeader("Accept-Language"))
+		i18n.SetLanguage(lang)
 		c.Next()
 	})
 
@@ -105,6 +113,7 @@ func main() {
 			game.GET("/history", gameHandler.GetHistory)
 			game.GET("/plays", gameHandler.GetPlays)
 			game.POST("/bet", authMiddleware, gameHandler.PlaceBet)
+			game.GET("/debug/data", gameHandler.DebugGetSscData) // 调试接口
 		}
 
 		// 注单相关路由（需要登录）
@@ -129,6 +138,7 @@ func main() {
 			bank.POST("/withdraw", bankHandler.Withdraw)
 			bank.GET("/records", bankHandler.GetWithdrawRecords)
 			bank.GET("/depositRecords", bankHandler.GetDepositRecords)
+			bank.POST("/bindAddress", bankHandler.BindAddress)
 		}
 	}
 

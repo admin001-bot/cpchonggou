@@ -7,7 +7,7 @@ server:
 database:
   host: 127.0.0.1
   port: 3306
-  database: xin1986ly
+  database: pj
   username: root
   password: Aa123456
   charset: utf8mb4

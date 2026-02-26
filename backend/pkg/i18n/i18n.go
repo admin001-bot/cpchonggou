@@ -57,9 +57,44 @@ var messages = map[Language]map[string]string{
 		"withdraw.password_error":  "資金密碼錯誤",
 		"withdraw.time_error":     "當前不在提現時間內",
 		"withdraw.consumption":     "消費比例不足，需要達到%d%%",
+		"withdraw.failed":          "提現申請失敗",
+		"withdraw.time_range":      "提現時間：從%s到%s",
+		"withdraw.success_message": "申請提現成功，請等待客服人員審核",
+		"bank.last4":               "尾號",
+		"deposit.system":           "系統儲值",
+		"deposit.admin":            "管理員儲值",
 
 		// 通用消息
 		"common.error": "系統錯誤",
+		"common.unauthorized": "未授權",
+
+		// 登錄
+		"login.success": "登錄成功",
+		"login.failed": "登錄失敗",
+		"login.invalid_credentials": "用戶名或密碼錯誤",
+		"login.account_disabled": "賬號已被禁用",
+		"login.guest_disabled": "試玩功能已關閉",
+		"login.token_invalid": "token無效或已過期",
+
+		// 註冊
+		"register.success": "註冊成功",
+		"register.failed": "註冊失敗",
+		"register.username_exists": "用戶名已存在",
+		"register.invalid_username": "用戶名格式錯誤",
+		"register.invalid_password": "密碼格式錯誤",
+		"register.password_too_short": "密碼長度不足",
+		"register.enterCompleteInfo": "請填寫完整的註冊信息",
+		"register.usernameLength": "用戶名長度必須在3-20個字符之間",
+		"register.enterPhone": "手機號碼不能為空",
+
+		// 星期
+		"week.0": "星期日",
+		"week.1": "星期一",
+		"week.2": "星期二",
+		"week.3": "星期三",
+		"week.4": "星期四",
+		"week.5": "星期五",
+		"week.6": "星期六",
 	},
 	ZhCN: {
 		// 系统消息
@@ -98,9 +133,44 @@ var messages = map[Language]map[string]string{
 		"withdraw.password_error":  "资金密码错误",
 		"withdraw.time_error":     "当前不在提现时间内",
 		"withdraw.consumption":     "消费比例不足，需要达到%d%%",
+		"withdraw.failed":          "提现申请失败",
+		"withdraw.time_range":      "提现时间：从%s到%s",
+		"withdraw.success_message": "申请提现成功，请等待客服人员审核",
+		"bank.last4":               "尾号",
+		"deposit.system":           "系统充值",
+		"deposit.admin":            "管理员充值",
 
 		// 通用消息
 		"common.error": "系统错误",
+		"common.unauthorized": "未授权",
+
+		// 登录
+		"login.success": "登录成功",
+		"login.failed": "登录失败",
+		"login.invalid_credentials": "用户名或密码错误",
+		"login.account_disabled": "账号已被禁用",
+		"login.guest_disabled": "试玩功能已关闭",
+		"login.token_invalid": "token无效或已过期",
+
+		// 注册
+		"register.success": "注册成功",
+		"register.failed": "注册失败",
+		"register.username_exists": "用户名已存在",
+		"register.invalid_username": "用户名格式错误",
+		"register.invalid_password": "密码格式错误",
+		"register.password_too_short": "密码长度不足",
+		"register.enterCompleteInfo": "请填写完整的注册信息",
+		"register.usernameLength": "用户名长度必须在3-20个字符之间",
+		"register.enterPhone": "手机号码不能为空",
+
+		// 星期
+		"week.0": "星期日",
+		"week.1": "星期一",
+		"week.2": "星期二",
+		"week.3": "星期三",
+		"week.4": "星期四",
+		"week.5": "星期五",
+		"week.6": "星期六",
 	},
 	En: {
 		// System messages
@@ -139,9 +209,44 @@ var messages = map[Language]map[string]string{
 		"withdraw.password_error":  "Invalid fund password",
 		"withdraw.time_error":     "Not within withdrawal hours",
 		"withdraw.consumption":     "Consumption ratio insufficient, need %d%%",
+		"withdraw.failed":          "Withdrawal request failed",
+		"withdraw.time_range":      "Withdrawal time: from %s to %s",
+		"withdraw.success_message": "Withdrawal request submitted, please wait for staff review",
+		"bank.last4":               "Last 4 digits",
+		"deposit.system":           "System Deposit",
+		"deposit.admin":            "Admin Deposit",
 
 		// Common messages
 		"common.error": "System error",
+		"common.unauthorized": "Unauthorized",
+
+		// Login
+		"login.success": "Login successful",
+		"login.failed": "Login failed",
+		"login.invalid_credentials": "Invalid username or password",
+		"login.account_disabled": "Account has been disabled",
+		"login.guest_disabled": "Demo feature is disabled",
+		"login.token_invalid": "Token invalid or expired",
+
+		// Register
+		"register.success": "Registration successful",
+		"register.failed": "Registration failed",
+		"register.username_exists": "Username already exists",
+		"register.invalid_username": "Invalid username format",
+		"register.invalid_password": "Invalid password format",
+		"register.password_too_short": "Password too short",
+		"register.enterCompleteInfo": "Please fill in complete registration info",
+		"register.usernameLength": "Username must be 3-20 characters",
+		"register.enterPhone": "Phone number cannot be empty",
+
+		// Week days
+		"week.0": "Sunday",
+		"week.1": "Monday",
+		"week.2": "Tuesday",
+		"week.3": "Wednesday",
+		"week.4": "Thursday",
+		"week.5": "Friday",
+		"week.6": "Saturday",
 	},
 }
 

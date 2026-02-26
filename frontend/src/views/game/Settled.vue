@@ -6,7 +6,7 @@
           <path d="M15 18l-6-6 6-6"/>
         </svg>
       </span>
-      <span class="title">今日已結</span>
+      <span class="title">{{ t('game.todaySettled') }}</span>
       <span class="header-badge">{{ dataList.length }}</span>
     </div>
 
@@ -20,13 +20,13 @@
     >
       <div class="refresh-indicator" v-if="isRefreshing">
         <span class="loading-spinner"></span>
-        <span>刷新中...</span>
+        <span>{{ t('game.refreshing') }}</span>
       </div>
 
       <!-- 列表头部 -->
       <div class="list-header">
-        <span class="list-title">注單列表</span>
-        <span class="list-count" v-if="dataList.length > 0">{{ dataList.length }} 筆</span>
+        <span class="list-title">{{ t('game.settledList') }}</span>
+        <span class="list-count" v-if="dataList.length > 0">{{ dataList.length }} {{ t('game.betCount') }}</span>
       </div>
 
       <!-- 注单列表 -->
@@ -38,7 +38,7 @@
               <div class="period-no">{{ item.turnNum.split('<br>')[1] || '' }}</div>
             </div>
             <div class="result-money" :class="item.resultMoney >= 0 ? 'positive' : 'negative'">
-              <span class="label">{{ item.resultMoney >= 0 ? '贏' : '虧' }}</span>
+              <span class="label">{{ item.resultMoney >= 0 ? t('game.win') : t('game.lose') }}</span>
               <span class="value">{{ formatMoney(Math.abs(item.resultMoney)) }}</span>
             </div>
           </div>
@@ -53,7 +53,7 @@
               </div>
             </div>
             <div class="bet-amount">
-              <div class="amount-label">下注金額</div>
+              <div class="amount-label">{{ t('game.betAmount') }}</div>
               <div class="amount-value">{{ formatMoney(item.money) }}</div>
             </div>
           </div>
@@ -62,7 +62,7 @@
         <!-- 加载更多 -->
         <div class="load-more" v-if="hasMore && !loading">
           <span class="loading-spinner small"></span>
-          <span>加載更多...</span>
+          <span>{{ t('game.loadingMore') }}</span>
         </div>
       </div>
 
@@ -73,25 +73,25 @@
             <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
           </svg>
         </div>
-        <div class="empty-text">暫無數據</div>
-        <div class="empty-hint">今日暫無已結算注單</div>
+        <div class="empty-text">{{ t('game.noData') }}</div>
+        <div class="empty-hint">{{ t('game.noSettledToday') }}</div>
       </div>
     </div>
 
     <!-- 加载状态 -->
     <div class="loading-wrap" v-if="loading && dataList.length === 0">
       <div class="loading-spinner"></div>
-      <span class="loading-text">加載中...</span>
+      <span class="loading-text">{{ t('common.loading') }}</span>
     </div>
 
     <!-- 底部统计 -->
     <div class="page-footer" v-if="dataList.length > 0">
       <div class="footer-item">
-        <span class="label">下注金額：</span>
+        <span class="label">{{ t('game.betAmount') }}：</span>
         <span class="value">{{ formatMoney(totalBetMoney) }}</span>
       </div>
       <div class="footer-item">
-        <span class="label">輸贏金額：</span>
+        <span class="label">{{ t('game.winLoss') }}：</span>
         <span class="value" :class="totalResultMoney >= 0 ? 'positive' : 'negative'">
           {{ totalResultMoney >= 0 ? '+' : '' }}{{ formatMoney(totalResultMoney) }}
         </span>
@@ -103,6 +103,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { betApi, type SettledItem } from '@/api/game'
+import { t } from '@/locales'
 
 const loading = ref(false)
 const isRefreshing = ref(false)
@@ -217,6 +218,7 @@ async function doRefresh() {
 }
 
 .page-container {
+  overflow-y: auto;
   min-height: 100vh;
   background: #f5f5f5;
   position: relative;

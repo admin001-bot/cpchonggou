@@ -17,46 +17,21 @@
             <span class="span-user">{{ username }}</span>
           </a>
           <a class="button ry-button" style="margin-top: 5px; margin-right: 5px" href="javascript:void(0)" @click="confirmLogout">
-            退出
+            {{ t('common.logout') }}
           </a>
 
           <!-- 语言切换 -->
-          <div class="buttons ry-buttons" onclick="changeLanguage()">
+          <div class="buttons ry-buttons" @click="toggleLanguage">
             <img style="width: 20px; padding-top: 3px; text-align: center" src="/ims/earth1.png" />
-            <ul id="language_list" data-status="0" style="display: none">
+            <ul id="language_list" :style="{ display: showLanguage ? 'block' : 'none' }">
               <li style="margin-top: 5px">
-                <a class="button ry-button" href="https://en.lisb-tc.cfd/user/login">
+                <a class="button ry-button" @click.stop="changeLanguage('en')">
                   <img style="width: 30px; padding-top: 1px; text-align: center" src="/ims/uk.png" />
                 </a>
               </li>
               <li style="margin-top: 5px">
-                <a class="button ry-button" href="https://sj.lisb-tc.cfd/user/login">
+                <a class="button ry-button" @click.stop="changeLanguage('zh-TW')">
                   <img style="width: 30px; padding-top: 1px; text-align: center" src="/ims/hk.png" />
-                </a>
-              </li>
-              <li style="margin-top: 5px">
-                <a class="button ry-button" href="https://jp.lisb-tc.cfd/user/login">
-                  <img style="width: 30px; padding-top: 1px; text-align: center" src="/ims/jp.png" />
-                </a>
-              </li>
-              <li style="margin-top: 5px">
-                <a class="button ry-button" href="https://hp.lisb-tc.cfd/user/login">
-                  <img style="width: 30px; padding-top: 1px; text-align: center" src="/ims/hg.png" />
-                </a>
-              </li>
-              <li style="margin-top: 5px">
-                <a class="button ry-button" href="https://de.lisb-tc.cfd/user/login">
-                  <img style="width: 30px; padding-top: 1px; text-align: center" src="/ims/dg.png" />
-                </a>
-              </li>
-              <li style="margin-top: 5px">
-                <a class="button ry-button" href="https://yi.lisb-tc.cfd/user/login">
-                  <img style="width: 30px; padding-top: 1px; text-align: center" src="/ims/yi.png" />
-                </a>
-              </li>
-              <li style="margin-top: 5px">
-                <a class="button ry-button" href="https://es.lisb-tc.cfd/user/login">
-                  <img style="width: 30px; padding-top: 1px; text-align: center" src="/ims/es.png" />
                 </a>
               </li>
             </ul>
@@ -65,9 +40,9 @@
 
         <!-- 未登录状态 -->
         <template v-else>
-          <a class="button ry-button mr-5" @click.prevent="router.push('/login')">登入</a>
-          <a class="button ry-button mr-5" @click.prevent="router.push('/register')">註冊</a>
-          <a class="button ry-button" href="javascript:void(0)" @click="guestLogin">試玩</a>
+          <a class="button ry-button mr-5" @click.prevent="router.push('/login')">{{ t('common.login') }}</a>
+          <a class="button ry-button mr-5" @click.prevent="router.push('/register')">{{ t('common.register') }}</a>
+          <a class="button ry-button" href="javascript:void(0)" @click="guestLogin">{{ t('common.guest') }}</a>
         </template>
       </div>
     </header>
@@ -97,25 +72,25 @@
           <li>
             <a @click.prevent="router.push('/bank/deposit')">
               <img src="/images/icon01.png" />
-              <p style="color: #ef4a42">存/取款</p>
+              <p style="color: #ef4a42">{{ t('home.deposit') }}</p>
             </a>
           </li>
           <li>
             <a @click.prevent="router.push('/week')">
               <img src="/images/icon02.png" />
-              <p style="color: #ffa421">投註記錄</p>
+              <p style="color: #ffa421">{{ t('home.records') }}</p>
             </a>
           </li>
           <li>
-            <a href="https://bz.ancha-gro.cfd/">
+            <a @click="goToHelp">
               <img src="/images/help.png" />
-              <p style="color: #86c40e">幫助中心</p>
+              <p style="color: #86c40e">{{ t('home.help') }}</p>
             </a>
           </li>
           <li>
             <a href="/chatlink.html" target="_blank">
               <img src="/images/icon04.png" />
-              <p style="color: #3cadf9">在線客服</p>
+              <p style="color: #3cadf9">{{ t('home.onlineService') }}</p>
             </a>
           </li>
         </ul>
@@ -128,7 +103,7 @@
             <div class="gamebox">
               <a @click.prevent="goToGame(game.id)">
                 <img :src="game.image" />
-                <p>{{ game.name }}</p>
+                <p>{{ getGameName(game.id) }}</p>
               </a>
             </div>
           </div>
@@ -141,19 +116,19 @@
       <div class="tabs tabs-light">
         <a class="tab-item" :class="{ active: route.path === '/home' || route.path === '/' }" @click.prevent="router.push('/home')">
           <img src="/images/icons/home.svg" class="tab-icon" />
-          <span>首頁</span>
+          <span>{{ t('common.home') }}</span>
         </a>
         <a class="tab-item" :class="{ active: route.path.startsWith('/game') }" @click.prevent="router.push('/game/55')">
           <img src="/images/icons/game.svg" class="tab-icon" />
-          <span>遊戲</span>
+          <span>{{ t('common.game') }}</span>
         </a>
         <a class="tab-item" href="/chatlink.html" target="_blank">
           <img src="/images/icons/service.svg" class="tab-icon" />
-          <span>客服</span>
+          <span>{{ t('common.service') }}</span>
         </a>
         <a class="tab-item" :class="{ active: route.path === '/user' }" @click.prevent="router.push('/user')">
           <img src="/images/icons/user.svg" class="tab-icon" />
-          <span>我的</span>
+          <span>{{ t('common.mine') }}</span>
         </a>
       </div>
     </footer>
@@ -164,6 +139,9 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { setLocale, t, type Locale } from '@/locales'
+
+const showLanguage = ref(false)
 
 const router = useRouter()
 const route = useRoute()
@@ -182,19 +160,22 @@ let slideTimer: number | null = null
 
 // 游戏列表
 const games = ref([
-  { id: 55, name: '幸運飛艇', image: '/images/index/jsft.png' },
-  { id: 50, name: '北京賽車', image: '/images/index/g-bjpk10.png' },
-  { id: 122, name: '五分時時彩', image: '/images/index/amssc.png' },
-  { id: 52, name: '極速飛艇', image: '/images/index/msft.png' },
-  { id: 66, name: 'PC 蛋蛋', image: '/images/index/pcdd.png' },
-  { id: 100, name: '極速分分彩', image: '/images/index/jsffc.png' },
-  { id: 72, name: '極速賽車', image: '/images/index/jssc.png' },
-  { id: 113, name: '極速六合彩', image: '/images/index/mspk10.png' },
+  { id: 55, image: '/images/index/jsft.png' },
+  { id: 50, image: '/images/index/g-bjpk10.png' },
+  { id: 122, image: '/images/index/amssc.png' },
+  { id: 52, image: '/images/index/msft.png' },
+  { id: 66, image: '/images/index/pcdd.png' },
+  { id: 100, image: '/images/index/jsffc.png' },
+  { id: 72, image: '/images/index/jssc.png' },
+  { id: 113, image: '/images/index/mspk10.png' },
 ])
+
+// 获取游戏名称
+const getGameName = (id: number) => t(`game.${id}`)
 
 // 退出登录
 const confirmLogout = () => {
-  if (confirm('确定要退出登录吗？')) {
+  if (confirm(t('home.logoutConfirm'))) {
     userStore.logout()
     router.push('/home')
   }
@@ -205,9 +186,25 @@ const goToGame = (gameId: number) => {
   router.push('/game/' + gameId)
 }
 
+// 跳转帮助中心
+const goToHelp = () => {
+  router.push('/user/help')
+}
+
 // 试玩登录
 const guestLogin = () => {
-  alert('試玩功能開發中')
+  alert(t('home.guestComingSoon'))
+}
+
+// 语言切换
+const toggleLanguage = () => {
+  showLanguage.value = !showLanguage.value
+}
+
+const changeLanguage = (lang: Locale) => {
+  setLocale(lang)
+  showLanguage.value = false
+  window.location.reload()
 }
 
 // 轮播图自动播放
@@ -215,6 +212,15 @@ const startSlideShow = () => {
   slideTimer = window.setInterval(() => {
     currentSlide.value = (currentSlide.value + 1) % slideList.value.length
   }, 3000)
+}
+
+// 点击其他地方关闭语言下拉框
+const handleClickOutside = (e: MouseEvent) => {
+  const target = e.target as HTMLElement
+  const langBtn = target.closest('.ry-buttons')
+  if (!langBtn && showLanguage.value) {
+    showLanguage.value = false
+  }
 }
 
 // 页面加载时初始化
@@ -243,21 +249,6 @@ onMounted(async () => {
     }
   }
 
-  // 绑定语言切换函数
-  ;(window as any).changeLanguage = function () {
-    const el = document.getElementById('language_list')
-    if (el) {
-      const status = el.getAttribute('data-status')
-      if (status == '0') {
-        el.style.display = 'block'
-        el.setAttribute('data-status', '1')
-      } else {
-        el.style.display = 'none'
-        el.setAttribute('data-status', '0')
-      }
-    }
-  }
-
   // 手机端触摸反馈效果
   const handleTouchStart = (e: TouchEvent) => {
     const target = e.target as HTMLElement
@@ -280,6 +271,9 @@ onMounted(async () => {
   document.addEventListener('touchstart', handleTouchStart, { passive: true })
   document.addEventListener('touchend', handleTouchEnd, { passive: true })
 
+  // 点击其他地方关闭语言下拉框
+  document.addEventListener('click', handleClickOutside)
+
   // 启动轮播图
   startSlideShow()
 })
@@ -293,6 +287,8 @@ onUnmounted(() => {
   if (mainCss) {
     mainCss.remove()
   }
+  // 移除点击外部关闭语言下拉框的事件监听
+  document.removeEventListener('click', handleClickOutside)
 })
 </script>
 
@@ -306,6 +302,7 @@ onUnmounted(() => {
   max-width: 640px;
   margin: 0 auto;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
 }
 
 /* 去掉手机端点击蓝色遮罩 */

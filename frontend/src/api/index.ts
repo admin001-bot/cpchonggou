@@ -1,6 +1,7 @@
 import axios from 'axios'
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { ElMessage } from 'element-plus'
+import { getCurrentLocale } from '@/locales'
 
 // 创建axios实例
 const service: AxiosInstance = axios.create({
@@ -15,6 +16,9 @@ service.interceptors.request.use(
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`
     }
+    // 添加语言设置到请求头
+    const locale = getCurrentLocale()
+    config.headers['Accept-Language'] = locale
     // 默认设置 JSON 内容类型
     if (config.data && !config.headers['Content-Type']) {
       config.headers['Content-Type'] = 'application/json'

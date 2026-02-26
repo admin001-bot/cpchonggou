@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"lottery-system/internal/model"
+	"lottery-system/pkg/i18n"
 	"lottery-system/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -47,7 +48,7 @@ func ParseToken(token string) (int, error) {
 		}
 	}
 
-	return 0, fmt.Errorf("token无效或已过期")
+	return 0, fmt.Errorf(i18n.T("login.token_invalid"))
 }
 
 // saveToken 保存token
@@ -85,7 +86,7 @@ func NewUserHandler() *UserHandler {
 func (h *UserHandler) Register(c *gin.Context) {
 	var req RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.Error(c, "请填写完整的注册信息")
+		response.Error(c, i18n.T("register.enterCompleteInfo"))
 		return
 	}
 
@@ -97,33 +98,33 @@ func (h *UserHandler) Register(c *gin.Context) {
 
 	// 用户名验证
 	if len(username) < 3 || len(username) > 20 {
-		response.Error(c, "用户名长度必须在3-20个字符之间")
+		response.Error(c, i18n.T("register.usernameLength"))
 		return
 	}
 
 	// 用户名只能是字母和数字
 	matched, _ := regexp.MatchString("^[a-zA-Z0-9]+$", username)
 	if !matched {
-		response.Error(c, "用户名只能包含字母和数字")
+		response.Error(c, i18n.T("register.invalid_username"))
 		return
 	}
 
 	// 密码验证
 	if len(password) < 6 || len(password) > 20 {
-		response.Error(c, "密码长度必须在6-20个字符之间")
+		response.Error(c, i18n.T("register.password_too_short"))
 		return
 	}
 
 	// 手机号验证
 	if phone == "" {
-		response.Error(c, "手机号码不能为空")
+		response.Error(c, i18n.T("register.enterPhone"))
 		return
 	}
 
 	// 检查用户名是否已存在
 	var existUser model.User
 	if err := model.DB.Where("username = ?", username).First(&existUser).Error; err == nil {
-		response.Error(c, "用户名已存在")
+		response.Error(c, i18n.T("register.username_exists"))
 		return
 	}
 
@@ -174,7 +175,7 @@ func (h *UserHandler) Register(c *gin.Context) {
 
 	// 保存用户
 	if err := model.DB.Create(&user).Error; err != nil {
-		response.Error(c, "注册失败，请稍后重试")
+		response.Error(c, i18n.T("register.failed"))
 		return
 	}
 
@@ -232,7 +233,7 @@ type InitResponse struct {
 func (h *UserHandler) Login(c *gin.Context) {
 	var req LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		response.Error(c, "请输入用户名和密码")
+		response.Error(c, i18n.T("login.enterUsernamePassword"))
 		return
 	}
 
@@ -242,20 +243,20 @@ func (h *UserHandler) Login(c *gin.Context) {
 	// 查找用户
 	var user model.User
 	if err := model.DB.Where("username = ?", username).First(&user).Error; err != nil {
-		response.Error(c, "用户名或密码错误")
+		response.Error(c, i18n.T("login.invalid_credentials"))
 		return
 	}
 
 	// 验证密码
 	hashedPassword := md5Hash(password)
 	if user.Password != hashedPassword {
-		response.Error(c, "用户名或密码错误")
+		response.Error(c, i18n.T("login.invalid_credentials"))
 		return
 	}
 
 	// 检查用户状态
 	if user.Enable != 1 {
-		response.Error(c, "账号已被禁用")
+		response.Error(c, i18n.T("login.account_disabled"))
 		return
 	}
 
@@ -290,21 +291,21 @@ func (h *UserHandler) GetUserInfo(c *gin.Context) {
 	// 从Header获取Token
 	token := c.GetHeader("Authorization")
 	if token == "" {
-		response.Error(c, "未授权")
+		response.Error(c, i18n.T("common.unauthorized"))
 		return
 	}
 
 	// 解析token获取用户ID
 	uid, err := ParseToken(token)
 	if err != nil {
-		response.Error(c, "token无效或已过期")
+		response.Error(c, i18n.T("login.token_invalid"))
 		return
 	}
 
 	// 查询用户信息
 	var user model.User
 	if err := model.DB.First(&user, uid).Error; err != nil {
-		response.Error(c, "用户不存在")
+		response.Error(c, i18n.T("bet.user_not_found"))
 		return
 	}
 
@@ -332,7 +333,7 @@ func (h *UserHandler) Init(c *gin.Context) {
 		// 没有token，返回未登录状态
 		c.JSON(200, gin.H{
 			"code":    401,
-			"message": "未登录",
+			"message": i18n.T("common.unauthorized"),
 			"data":    nil,
 		})
 		return
@@ -343,7 +344,7 @@ func (h *UserHandler) Init(c *gin.Context) {
 	if err != nil {
 		c.JSON(200, gin.H{
 			"code":    401,
-			"message": "token无效或已过期",
+			"message": i18n.T("login.token_invalid"),
 			"data":    nil,
 		})
 		return
@@ -354,7 +355,7 @@ func (h *UserHandler) Init(c *gin.Context) {
 	if err := model.DB.First(&user, uid).Error; err != nil {
 		c.JSON(200, gin.H{
 			"code":    401,
-			"message": "用户不存在",
+			"message": i18n.T("bet.user_not_found"),
 			"data":    nil,
 		})
 		return

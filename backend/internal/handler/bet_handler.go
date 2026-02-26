@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"lottery-system/internal/model"
+	"lottery-system/pkg/i18n"
 	"lottery-system/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -308,12 +309,11 @@ func (h *BetHandler) GetStatBets(c *gin.Context) {
 
 	// 构建结果
 	var result []WeekRecordItem
-	weekDays := []string{"星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"}
 
 	// 填充最近7天数据
 	for i := 0; i < 7; i++ {
 		date := time.Now().AddDate(0, 0, -i).Format("2006-01-02")
-		weekDay := weekDays[time.Now().AddDate(0, 0, -i).Weekday()]
+		weekDay := i18n.T("week." + fmt.Sprintf("%d", int(time.Now().AddDate(0, 0, -i).Weekday())))
 
 		found := false
 		for _, stat := range stats {

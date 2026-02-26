@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"lottery-system/internal/model"
+	"lottery-system/pkg/i18n"
 	"lottery-system/pkg/response"
 
 	"github.com/gin-gonic/gin"
@@ -133,9 +134,9 @@ func (h *GameHandler) GetNextIssue(c *gin.Context) {
 		ftime = 30
 		periodsPerDay = 288
 	case "52":
-		periodSeconds = 300
+		periodSeconds = 75
 		ftime = 10
-		periodsPerDay = 288
+		periodsPerDay = 1152
 	case "50":
 		periodSeconds = 1200
 		ftime = 60
@@ -177,27 +178,39 @@ func (h *GameHandler) GetNextIssue(c *gin.Context) {
 	endTime := lotteryTime.Add(-time.Duration(ftime) * time.Second)
 	dateStr := now.Format("20060102")
 	issue := fmt.Sprintf("%s%03d", dateStr, issueNum)
-	preIssue := ""
-	if issueNum > 1 {
-		preIssue = fmt.Sprintf("%s%03d", dateStr, issueNum-1)
+
+	// 从数据库读取上期开奖数据（最新的一条记录）
+	// 使用与历史记录完全相同的查询方式
+	var preIssue string
+	var preNum string
+
+	type LotteryRecord struct {
+		ActionNo   string `gorm:"column:number"`
+		Numbers    string `gorm:"column:data"`
+		ActionTime int64  `gorm:"column:time"`
+	}
+
+	var records []LotteryRecord
+	query := "SELECT number, data, time FROM ssc_data WHERE type = ? ORDER BY id DESC LIMIT 1"
+	result := model.DB.Raw(query, gameIDInt).Scan(&records)
+
+	if len(records) > 0 {
+	}
+
+
+	if result.Error == nil && len(records) > 0 {
+		preIssue = records[0].ActionNo
+		preNum = records[0].Numbers
 	} else {
-		yesterday := now.Add(-24 * time.Hour)
-		preIssue = fmt.Sprintf("%s%03d", yesterday.Format("20060102"), periodsPerDay)
+		// 如果数据库没有数据，使用计算的期号作为 preIssue
+		if issueNum > 1 {
+			preIssue = fmt.Sprintf("%s%03d", dateStr, issueNum-1)
+		} else {
+			yesterday := now.Add(-24 * time.Hour)
+			preIssue = fmt.Sprintf("%s%03d", yesterday.Format("20060102"), periodsPerDay)
+		}
 	}
-	preNum := ""
-	var lastData struct {
-		Data   string `gorm:"column:data"`
-		Number string `gorm:"column:number"`
-	}
-	err := model.DB.Table("ssc_data").
-		Select("data, number").
-		Where("type = ?", gameIDInt).
-		Order("number DESC").
-		First(&lastData).Error
-	if err == nil {
-		preNum = lastData.Data
-		preIssue = lastData.Number
-	}
+
 	response.Success(c, NextIssueData{
 		Issue:       issue,
 		Endtime:     endTime.Format("2006-01-02 15:04:05"),
@@ -220,7 +233,7 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
     if !exists {
         c.JSON(http.StatusOK, BetResponse{
             Success: false,
-            Msg:     "请先登录",
+            Msg:     i18n.T("bet.login_required"),
             MsgKey:  "bet.login_required",
             Code:    401,
         })
@@ -232,7 +245,7 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
     if err := c.ShouldBindJSON(&req); err != nil {
         c.JSON(http.StatusOK, BetResponse{
             Success: false,
-            Msg:     "参数错误",
+            Msg:     i18n.T("bet.param_error"),
             MsgKey:  "bet.param_error",
             Code:    400,
         })
@@ -591,19 +604,18 @@ func getGameActionInfo(gameID int) (ftime int64, actionTime int64, actionNo stri
     if offset < 8*3600 {
         now = now.Add(time.Duration(8*3600-offset) * time.Second)
     }
-    // 获取游戏配置
-    var gameType model.GameType
-    if err := model.DB.First(&gameType, gameID).Error; err == nil {
-        ftime = int64(gameType.DataFTime)
-    }
     // 根据游戏ID设置不同的配置
     var periodSeconds int64 = 300
     var periodsPerDay int = 288
     switch gameID {
-    case 55, 52: // 幸运飞艇、极速飞艇
+    case 55: // 幸运飞艇
         periodSeconds = 300
         ftime = 30
         periodsPerDay = 288
+    case 52: // 极速飞艇
+        periodSeconds = 75
+        ftime = 10
+        periodsPerDay = 1152
     case 50: // 北京赛车
         periodSeconds = 1200
         ftime = 60
@@ -675,9 +687,8 @@ func (h *GameHandler) GetHistory(c *gin.Context) {
 
     var records []LotteryRecord
 
-    // 从 ssc_data 表查询开奖历史（该表存储官方开奖结果）
-    query := "SELECT number, data, time FROM ssc_data WHERE type = ? ORDER BY number DESC LIMIT 20"
-
+    // 从 ssc_data 表查询开奖历史（该表存储官方开奖结果），按ID排序
+    query := "SELECT number, data, time FROM ssc_data WHERE type = ? ORDER BY id DESC LIMIT 20"
     result := model.DB.Raw(query, gameIDInt).Scan(&records)
 
     // 如果没有数据或查询失败，返回空数组
@@ -687,6 +698,7 @@ func (h *GameHandler) GetHistory(c *gin.Context) {
         response.Success(c, []gin.H{})
         return
     }
+
 
     // 如果没有数据，返回空数组
     if len(records) == 0 {
@@ -741,7 +753,7 @@ func (h *GameHandler) GetPlays(c *gin.Context) {
     }
     rows, err := model.DB.Raw(fmt.Sprintf("SELECT id, name, alias, type, played_groupid, odds, rebate, minMoney, maxMoney, maxTurnMoney FROM %s WHERE type = ?", tableName), gameIDInt).Rows()
     if err != nil {
-        response.Error(c, "获取玩法数据失败")
+        response.Error(c, i18n.T("bet.play_not_found"))
         return
     }
     defer rows.Close()
@@ -776,11 +788,8 @@ func (h *GameHandler) GetCurIssue(c *gin.Context) {
         Number string `gorm:"column:number"`
         Data   string `gorm:"column:data"`
     }
-    err := model.DB.Table("ssc_data").
-        Select("number, data").
-        Where("type = ?", gameIDInt).
-        Order("time DESC").
-        First(&data).Error
+    // 使用原生SQL查询，按ID DESC排序获取最新一期（与历史记录查询方式一致）
+    err := model.DB.Raw("SELECT number, data FROM ssc_data WHERE type = ? ORDER BY id DESC LIMIT 1", gameIDInt).Scan(&data).Error
     if err != nil {
         response.Success(c, CurIssueData{
             Issue: "",
@@ -801,4 +810,32 @@ func (h *GameHandler) GetBankList(c *gin.Context) {
         return
     }
     response.Success(c, banks)
+}
+
+// DebugGetSscData 调试接口：直接查询ssc_data表
+func (h *GameHandler) DebugGetSscData(c *gin.Context) {
+    gameID := c.DefaultQuery("gameId", "55")
+    gameIDInt, _ := strconv.Atoi(gameID)
+
+    type SscRecord struct {
+        ID     int64  `gorm:"column:id"`
+        Number string `gorm:"column:number"`
+        Type   int    `gorm:"column:type"`
+        Data   string `gorm:"column:data"`
+        Time   int64  `gorm:"column:time"`
+    }
+
+    var records []SscRecord
+    model.DB.Table("ssc_data").
+        Select("id, number, type, data, time").
+        Where("type = ?", gameIDInt).
+        Order("time DESC").
+        Limit(10).
+        Scan(&records)
+
+    c.JSON(200, gin.H{
+        "code":    0,
+        "message": "success",
+        "data":    records,
+    })
 }

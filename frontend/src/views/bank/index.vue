@@ -52,8 +52,7 @@
         </router-link>
         <router-link class="tab-item" to="/bank/records/1">
           <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-            <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
           </svg>
           <span>{{ t('bank.depositRecord') }}</span>
         </router-link>
@@ -115,6 +114,7 @@ onMounted(() => {
   max-width: 640px;
   margin: 0 auto;
   padding-bottom: 20px;
+  overflow-y: auto;
 }
 
 /* 顶部导航 */

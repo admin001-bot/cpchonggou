@@ -20,19 +20,40 @@
             <circle cx="12" cy="7" r="4"/>
           </svg>
         </div>
-        <div class="vip-badge" v-if="userInfo.grade > 1">
-          <span>VIP{{ userInfo.grade }}</span>
+        <div class="vip-badge" v-if="userInfoData.grade > 1">
+          <span>VIP{{ userInfoData.grade }}</span>
         </div>
       </div>
-      <div class="user-name">{{ username }}</div>
+      <div class="user-name">{{ userInfoData.username }}</div>
       <div class="user-type">
         <span class="type-tag">{{ userTypeText }}</span>
-        <span class="fan-dian" v-if="userInfo.fanDian > 0">{{ userInfo.fanDian }}% 返点</span>
+        <span class="fan-dian" v-if="userInfoData.fanDian > 0">{{ userInfoData.fanDian }}% {{ t('user.fanDian') }}</span>
+      </div>
+    </div>
+
+    <!-- 账户信息 -->
+    <div class="info-section">
+      <div class="section-title">{{ t('user.accountInfo') }}</div>
+      <div class="info-list">
+        <div class="info-item">
+          <span class="info-label">{{ t('user.userId') }}</span>
+          <span class="info-value">{{ userInfoData.uid }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">{{ t('user.regTime') }}</span>
+          <span class="info-value">{{ userInfoData.regTime || '-' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">{{ t('user.balance') }}</span>
+          <span class="info-value balance">{{ (userInfoData.balance || 0).toFixed(2) }}</span>
+        </div>
       </div>
     </div>
 
     <!-- 表单区域 -->
     <div class="form-section">
+      <div class="section-title">{{ t('user.personalInfo') }}</div>
+
       <!-- 真实姓名 - 不可修改 -->
       <div class="form-item">
         <div class="form-label">
@@ -182,16 +203,39 @@ import { t } from '@/locales'
 const router = useRouter()
 const userStore = useUserStore()
 
-const username = computed(() => userStore.userInfo?.username || '')
-const userInfo = computed(() => ({
-  grade: userStore.userInfo?.grade || 1,
-  fanDian: userStore.userInfo?.fanDian || 0,
-  type: userStore.userInfo?.type || 0,
-}))
+interface UserInfoData {
+  uid: number
+  username: string
+  nickname: string
+  name: string
+  balance: number
+  phone: string
+  email: string
+  userType: number
+  type: number
+  grade: number
+  fanDian: number
+  regTime: string
+}
+
+const userInfoData = reactive<UserInfoData>({
+  uid: 0,
+  username: '',
+  nickname: '',
+  name: '',
+  balance: 0,
+  phone: '',
+  email: '',
+  userType: 0,
+  type: 0,
+  grade: 1,
+  fanDian: 0,
+  regTime: ''
+})
 
 const userTypeText = computed(() => {
   const types = ['', t('user.agent'), t('user.zd'), t('user.gd')]
-  return types[userInfo.value.type] || t('user.member')
+  return types[userInfoData.type] || t('user.member')
 })
 
 const profileData = reactive({
@@ -263,6 +307,17 @@ const saveEdit = () => {
 const loadUserInfo = async () => {
   const info = userStore.userInfo
   if (info) {
+    userInfoData.uid = info.uid || 0
+    userInfoData.username = info.username || ''
+    userInfoData.nickname = info.nickname || ''
+    userInfoData.name = info.name || ''
+    userInfoData.balance = info.balance || 0
+    userInfoData.phone = info.phone || ''
+    userInfoData.email = info.email || ''
+    userInfoData.type = info.type || 0
+    userInfoData.grade = info.grade || 1
+    userInfoData.fanDian = info.fanDian || 0
+
     profileData.name = info.name || ''
     profileData.nickname = info.nickname || ''
     profileData.phone = info.phone || ''
@@ -286,6 +341,8 @@ onMounted(() => {
   background: #f5f5f5;
   max-width: 640px;
   margin: 0 auto;
+  padding-bottom: 20px;
+  overflow-y: auto;
 }
 
 /* 顶部导航 */
@@ -407,10 +464,59 @@ onMounted(() => {
   color: rgba(255, 255, 255, 0.8);
 }
 
+/* 账户信息 */
+.info-section {
+  background: #fff;
+  margin: 15px 10px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.section-title {
+  padding: 12px 15px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.info-list {
+  padding: 0;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 15px;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.info-item:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  font-size: 14px;
+  color: #666;
+}
+
+.info-value {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.info-value.balance {
+  color: #fb2351;
+  font-weight: 600;
+}
+
 /* 表单区域 */
 .form-section {
   background: #fff;
-  margin: 15px 10px;
+  margin: 0 10px;
   border-radius: 12px;
   overflow: hidden;
 }

@@ -6,6 +6,14 @@ export interface BankInfo {
   countName: string
   username: string
   realName: string
+  bankName?: string
+}
+
+// 绑定地址请求
+export interface BindAddressRequest {
+  bankId: number
+  cardNo: string
+  subAddress: string
 }
 
 // 提款配置响应
@@ -40,6 +48,13 @@ export function getBankInfo() {
     url: '/bank/info',
     method: 'get'
   })
+}
+
+/**
+ * 绑定提款地址
+ */
+export function bindAddress(data: BindAddressRequest) {
+  return request.post('/bank/bindAddress', data)
 }
 
 /**
@@ -125,4 +140,14 @@ export function getDepositRecords(params?: RecordsParams) {
     method: 'get',
     params
   })
+}
+
+// 统一导出 bankApi 对象
+export const bankApi = {
+  getBankInfo,
+  getWithdrawConfig,
+  withdraw,
+  bindAddress,
+  getWithdrawRecords,
+  getDepositRecords
 }

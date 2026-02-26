@@ -20,7 +20,7 @@
     >
       <div class="refresh-indicator" v-if="isRefreshing">
         <span class="loading-spinner"></span>
-        <span>刷新中...</span>
+        <span>{{ t('game.refreshing') }}</span>
       </div>
 
       <!-- 统计卡片 -->
@@ -32,7 +32,7 @@
             </svg>
           </div>
           <div class="stat-content">
-            <div class="stat-label">總下注金額</div>
+            <div class="stat-label">{{ t('game.totalBetAmount') }}</div>
             <div class="stat-value">{{ formatMoney(totalBetMoney) }}</div>
           </div>
         </div>
@@ -40,8 +40,8 @@
 
       <!-- 列表标题 -->
       <div class="list-header">
-        <span class="list-title">注單明細</span>
-        <span class="list-count" v-if="dataList.length > 0">{{ dataList.length }} 筆</span>
+        <span class="list-title">{{ t('game.betDetail') }}</span>
+        <span class="list-count" v-if="dataList.length > 0">{{ dataList.length }} {{ t('game.betCountUnit') }}</span>
       </div>
 
       <!-- 注单列表 -->
@@ -53,10 +53,10 @@
                 <circle cx="12" cy="12" r="10"/>
                 <path d="M12 6v6l4 2"/>
               </svg>
-              <span>第 {{ item.turnNum }} 期</span>
+              <span>{{ t('game.period') }} {{ item.turnNum }}</span>
             </div>
             <div class="potential-win">
-              <span class="label">可贏</span>
+              <span class="label">{{ t('game.potentialWin') }}</span>
               <span class="value">{{ formatMoney(item.resultMoney) }}</span>
             </div>
           </div>
@@ -70,7 +70,7 @@
               </div>
             </div>
             <div class="bet-money">
-              <div class="money-label">下注金額</div>
+              <div class="money-label">{{ t('game.betAmount') }}</div>
               <div class="money-value">{{ formatMoney(item.money) }}</div>
             </div>
           </div>
@@ -84,15 +84,15 @@
             <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
           </svg>
         </div>
-        <div class="empty-text">暫無注單數據</div>
-        <div class="empty-hint">下注後會在此處顯示明細</div>
+        <div class="empty-text">{{ t('game.noBetData') }}</div>
+        <div class="empty-hint">{{ t('game.noBetDetail') }}</div>
       </div>
     </div>
 
     <!-- 加载状态 -->
     <div class="loading-wrap" v-if="loading && !isRefreshing">
       <div class="loading-spinner"></div>
-      <span class="loading-text">加載中...</span>
+      <span class="loading-text">{{ t('common.loading') }}</span>
     </div>
   </div>
 </template>
@@ -101,6 +101,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { betApi, type BetDetailItem } from '@/api/game'
+import { t } from '@/locales'
 
 const route = useRoute()
 const loading = ref(false)
@@ -205,6 +206,7 @@ async function doRefresh() {
 }
 
 .page-container {
+  overflow-y: auto;
   min-height: 100vh;
   background: #f5f5f5;
   position: relative;

@@ -350,7 +350,7 @@ const goWithdraw = () => {
 }
 
 const goBankCard = () => {
-  router.push('/bank')
+  router.push('/bank/bind-address')
 }
 
 const goBetRecord = () => {
@@ -397,7 +397,7 @@ const goTeam = () => {
 }
 
 const goHelp = () => {
-  window.location.href = 'https://bz.ancha-gro.cfd/'
+  router.push('/user/help')
 }
 
 const goService = () => {
@@ -452,6 +452,7 @@ onMounted(() => {
   max-width: 640px;
   margin: 0 auto;
   padding-bottom: 30px;
+  overflow-y: auto;
 }
 
 /* 顶部导航 */

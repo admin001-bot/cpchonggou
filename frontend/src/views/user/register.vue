@@ -16,13 +16,13 @@
                       type="text"
                       v-model="form.username"
                       class="username"
-                      placeholder="您的用戶名"
+                      :placeholder="t('register.yourUsername')"
                       autocomplete="off"
                     />
                   </div>
                   <div class="col"></div>
                 </div>
-                <p class="field-tip">*請使用6-15位英文或數字的組合</p>
+                <p class="field-tip">*{{ t('register.usernameRule') }}</p>
 
                 <!-- 密码 -->
                 <div class="row">
@@ -34,7 +34,7 @@
                       :type="showPassword1 ? 'text' : 'password'"
                       v-model="form.password"
                       class="password"
-                      placeholder="你的用戶密碼"
+                      :placeholder="t('register.yourPassword')"
                       @contextmenu.prevent
                       @paste.prevent
                     />
@@ -45,7 +45,7 @@
                     </a>
                   </div>
                 </div>
-                <p class="field-tip">*請使用6-20位字符</p>
+                <p class="field-tip">*{{ t('register.passwordRule') }}</p>
 
                 <!-- 确认密码 -->
                 <div class="row">
@@ -57,7 +57,7 @@
                       :type="showPassword2 ? 'text' : 'password'"
                       v-model="form.cpasswd"
                       class="confirm_password"
-                      placeholder="再次輸入密碼"
+                      :placeholder="t('register.confirmPassword')"
                       @contextmenu.prevent
                       @paste.prevent
                     />
@@ -68,7 +68,7 @@
                     </a>
                   </div>
                 </div>
-                <p class="field-tip">*請確認密碼</p>
+                <p class="field-tip">*{{ t('register.confirmPasswordTip') }}</p>
 
                 <!-- 真实姓名 -->
                 <div class="row">
@@ -80,11 +80,11 @@
                       type="text"
                       v-model="form.name"
                       class="name"
-                      placeholder="真實姓名"
+                      :placeholder="t('register.realName')"
                     />
                   </div>
                 </div>
-                <p class="field-tip">*真實姓名</p>
+                <p class="field-tip">*{{ t('register.realName') }}</p>
 
                 <!-- 手机号码 -->
                 <div class="row">
@@ -96,22 +96,22 @@
                       type="text"
                       v-model="form.phone"
                       class="email"
-                      placeholder="手機號碼"
+                      :placeholder="t('register.phoneNumber')"
                     />
                   </div>
                 </div>
-                <p class="field-tip">*請輸純數字號碼</p>
+                <p class="field-tip">*{{ t('register.enterPhone') }}</p>
 
                 <!-- 底部按钮区 -->
                 <div class="l-bottom-wrap">
                   <div class="btn-wrap">
                     <button type="submit" class="btn" :disabled="loading">
-                      {{ loading ? '註冊中...' : '註冊' }}
+                      {{ loading ? t('register.registering') : t('common.register') }}
                     </button>
                   </div>
                   <div class="uc-navs">
                     <div class="row">
-                      <span class="text-center">已有帳號，請 <router-link to="/login">登錄</router-link></span>
+                      <span class="text-center">{{ t('login.alreadyHaveAccount') }} <router-link to="/login">{{ t('common.login') }}</router-link></span>
                     </div>
                   </div>
                 </div>
@@ -127,13 +127,13 @@
           <div class="nav-left-wrap">
             <div class="back">
               <router-link to="/login">
-                <span class="back-btn">登錄</span>
+                <span class="back-btn">{{ t('common.login') }}</span>
               </router-link>
             </div>
             <div class="left-slot"></div>
           </div>
         </div>
-        <div class="title">註冊</div>
+        <div class="title">{{ t('register.title') }}</div>
         <div class="nav-item">
           <div class="right-slot"></div>
         </div>
@@ -146,6 +146,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { userApi } from '@/api/user'
+import { t } from '@/locales'
 
 const router = useRouter()
 const loading = ref(false)
@@ -163,19 +164,19 @@ const form = reactive({
 const handleRegister = async () => {
   // 验证
   if (!form.username || form.username.length < 6 || form.username.length > 15) {
-    alert('請使用6-15位英文或數字的組合')
+    alert(t('register.usernameRule'))
     return
   }
   if (!form.password || form.password.length < 6 || form.password.length > 20) {
-    alert('請使用6-20位字符')
+    alert(t('register.passwordRule'))
     return
   }
   if (form.password !== form.cpasswd) {
-    alert('兩次輸入的密碼不一致')
+    alert(t('register.passwordMismatch'))
     return
   }
   if (!form.phone) {
-    alert('請輸入手機號碼')
+    alert(t('register.enterPhone'))
     return
   }
 
@@ -187,10 +188,10 @@ const handleRegister = async () => {
       phone: form.phone,
       name: form.name || undefined,
     })
-    alert('註冊成功')
+    alert(t('register.success'))
     router.push('/login')
   } catch (error) {
-    console.error('註冊失敗:', error)
+    console.error('Registration failed:', error)
   } finally {
     loading.value = false
   }

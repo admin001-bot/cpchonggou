@@ -15,7 +15,7 @@
                       type="text"
                       v-model="form.username"
                       class="username"
-                      placeholder="請輸入用戶名"
+                      :placeholder="t('login.username')"
                       autocomplete="off"
                     />
                   </div>
@@ -30,7 +30,7 @@
                       type="password"
                       v-model="form.password"
                       class="password"
-                      placeholder="請輸入密碼"
+                      :placeholder="t('login.password')"
                       @contextmenu.prevent
                       @paste.prevent
                     />
@@ -41,7 +41,7 @@
 
             <div class="login-btn">
               <button type="submit" class="FormBtn" :disabled="loading">
-                {{ loading ? '登錄中...' : '登錄' }}
+                {{ loading ? t('login.loggingIn') : t('common.login') }}
               </button>
             </div>
           </form>
@@ -53,24 +53,24 @@
               </div>
               <div class="row" style="margin-top: 1em">
                 <span class="text-center">
-                  <a href="#">《用戶協議》</a>
+                  <a href="#">《{{ t('common.userAgreement') }}》</a>
                 </span>
               </div>
 
               <div class="row options" style="margin-top: 2em">
                 <router-link to="/register" class="col">
                   <img src="/ims/dew_1.png" />
-                  <p><span>馬上註冊</span></p>
+                  <p><span>{{ t('login.registerNow') }}</span></p>
                 </router-link>
 
                 <a href="javascript:void(0);" @click="guestLogin" class="col">
                   <img src="/ims/dew_2.png" />
-                  <p><span>免費試玩</span></p>
+                  <p><span>{{ t('login.guest') }}</span></p>
                 </a>
 
                 <a href="/chatlink.html" class="col">
                   <img src="/ims/aaa.png" />
-                  <p><span>在線客服</span></p>
+                  <p><span>{{ t('common.service') }}</span></p>
                 </a>
               </div>
             </div>
@@ -84,14 +84,14 @@
           <div class="nav-left-wrap">
             <div class="back">
               <a @click.prevent="router.push('/home')">
-                <span class="back-btn">首頁</span>
+                <span class="back-btn">{{ t('common.home') }}</span>
               </a>
             </div>
             <div class="left-slot"></div>
           </div>
         </div>
 
-        <div class="title">登錄</div>
+        <div class="title">{{ t('login.title') }}</div>
 
         <div class="nav-item">
           <div class="right-slot">
@@ -103,17 +103,17 @@
               />
               <ul id="language_list" :style="{ display: showLanguage ? 'block' : 'none' }">
                 <li style="margin-top: 5px">
-                  <a class="button ry-button" href="#">
+                  <a class="button ry-button" @click.prevent="changeLanguage('en')">
                     <img style="width: 30px; padding-top: 1px; text-align: center" src="/ims/uk.png" />
                   </a>
                 </li>
                 <li style="margin-top: 5px">
-                  <a class="button ry-button" href="#">
+                  <a class="button ry-button" @click.prevent="changeLanguage('zh-TW')">
                     <img style="width: 30px; padding-top: 1px; text-align: center" src="/ims/hk.png" />
                   </a>
                 </li>
                 <li style="margin-top: 5px">
-                  <a class="button ry-button" href="#">
+                  <a class="button ry-button" @click.prevent="changeLanguage('zh-CN')">
                     <img style="width: 30px; padding-top: 1px; text-align: center" src="/ims/jp.png" />
                   </a>
                 </li>
@@ -131,6 +131,7 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { userApi } from '@/api/user'
 import { useUserStore } from '@/stores/user'
+import { setLocale, t, type Locale } from '@/locales'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -144,7 +145,7 @@ const form = reactive({
 
 const handleLogin = async () => {
   if (!form.username || !form.password) {
-    alert('請輸入用戶名和密碼')
+    alert(t('login.enterUsernamePassword'))
     return
   }
 
@@ -174,22 +175,29 @@ const handleLogin = async () => {
       localStorage.setItem('userInfo', JSON.stringify(userInfo))
       router.push('/')
     } else {
-      alert(res.message || '登錄失敗')
+      alert(res.message || t('login.failed'))
     }
   } catch (error: any) {
-    console.error('登錄失敗:', error)
-    alert(error.response?.data?.message || '登錄失敗，請稍後重試')
+    console.error('Login failed:', error)
+    alert(error.response?.data?.message || t('login.failedRetry'))
   } finally {
     loading.value = false
   }
 }
 
 const guestLogin = () => {
-  alert('免費試玩功能開發中')
+  alert(t('login.guestComingSoon'))
 }
 
 const toggleLanguage = () => {
   showLanguage.value = !showLanguage.value
+}
+
+const changeLanguage = (lang: Locale) => {
+  setLocale(lang)
+  showLanguage.value = false
+  // 刷新页面以应用新语言
+  window.location.reload()
 }
 </script>
 

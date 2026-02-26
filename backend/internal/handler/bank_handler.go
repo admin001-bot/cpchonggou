@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"lottery-system/internal/model"
+	"lottery-system/pkg/i18n"
 	"lottery-system/pkg/response"
 	"strconv"
 	"strings"
@@ -21,6 +22,7 @@ type BankInfoResponse struct {
 	CountName string `json:"countName"` // 钱包名称
 	Username  string `json:"username"`  // 开户姓名
 	RealName  string `json:"realName"`  // 真实姓名（来自用户表）
+	BankName  string `json:"bankName"`  // 银行/币种名称
 }
 
 // WithdrawConfigResponse 提款配置响应
@@ -57,7 +59,7 @@ func (h *BankHandler) GetBankInfo(c *gin.Context) {
 	// 从 context 获取用户 ID
 	userID, exists := c.Get("userID")
 	if !exists {
-		response.Error(c, "未授权")
+		response.Error(c, i18n.T("common.unauthorized"))
 		return
 	}
 	uid := uint(userID.(int))
@@ -65,7 +67,7 @@ func (h *BankHandler) GetBankInfo(c *gin.Context) {
 	// 查询用户信息获取真实姓名
 	var user model.User
 	if err := model.DB.First(&user, uid).Error; err != nil {
-		response.Error(c, "用户不存在")
+		response.Error(c, i18n.T("bet.user_not_found"))
 		return
 	}
 
@@ -79,11 +81,19 @@ func (h *BankHandler) GetBankInfo(c *gin.Context) {
 		return
 	}
 
+	// 获取银行/币种名称
+	bankName := "USDT"
+	var bankInfo model.BankList
+	if err := model.DB.First(&bankInfo, bank.BankID).Error; err == nil {
+		bankName = bankInfo.Name
+	}
+
 	response.Success(c, BankInfoResponse{
 		Account:   bank.Account,
 		CountName: bank.CountName,
 		Username:  bank.Username,
 		RealName:  user.Name,
+		BankName:  bankName,
 	})
 }
 
@@ -142,7 +152,7 @@ func checkWithdrawTime(fromTimeStr, toTimeStr string) (bool, string) {
 	}
 
 	if now.Before(fromTime) || now.After(toTime) {
-		return false, fmt.Sprintf("提現時間：從%s到%s", fromTimeStr, toTimeStr)
+		return false, fmt.Sprintf(i18n.T("withdraw.time_range"), fromTimeStr, toTimeStr)
 	}
 
 	return true, ""
@@ -210,7 +220,7 @@ func (h *BankHandler) Withdraw(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {
 		fmt.Println("错误：未授权，userID 不存在")
-		response.Error(c, "未授权")
+		response.Error(c, i18n.T("common.unauthorized"))
 		return
 	}
 	fmt.Println("userID:", userID)
@@ -221,7 +231,7 @@ func (h *BankHandler) Withdraw(c *gin.Context) {
 		fmt.Println("绑定 JSON 失败:", err)
 		bodyBytes, _ := io.ReadAll(c.Request.Body)
 		fmt.Println("原始 Body 数据:", string(bodyBytes))
-		response.Error(c, "參數出錯："+err.Error())
+		response.Error(c, i18n.T("bet.param_error")+": "+err.Error())
 		return
 	}
 
@@ -229,7 +239,7 @@ func (h *BankHandler) Withdraw(c *gin.Context) {
 
 	// 验证金额是否为正数
 	if req.Amount <= 0 {
-		response.Error(c, "提現金額只能為正整數")
+		response.Error(c, i18n.T("withdraw.invalid_amount"))
 		return
 	}
 	amount := req.Amount
@@ -237,32 +247,32 @@ func (h *BankHandler) Withdraw(c *gin.Context) {
 	// 查询用户信息
 	var user model.User
 	if err := model.DB.First(&user, uid).Error; err != nil {
-		response.Error(c, "用戶不存在")
+		response.Error(c, i18n.T("bet.user_not_found"))
 		return
 	}
 
 	// 检查余额
 	if user.Coin <= 0 {
-		response.Error(c, "可用餘額為零，無法提款")
+		response.Error(c, i18n.T("withdraw.insufficient"))
 		return
 	}
 
 	if user.Coin < amount {
-		response.Error(c, "你帳號資金不足")
+		response.Error(c, i18n.T("withdraw.insufficient"))
 		return
 	}
 
 	// 查询用户银行卡信息
 	var bank model.UserBank
 	if err := model.DB.Where("uid = ?", uid).First(&bank).Error; err != nil {
-		response.Error(c, "請先綁定銀行卡")
+		response.Error(c, i18n.T("withdraw.bank_required"))
 		return
 	}
 
 	// 验证资金密码
 	hashedPwd := md5Hash(req.CoinPwd)
 	if user.CoinPassword != "" && user.CoinPassword != hashedPwd {
-		response.Error(c, "提款密碼不正確")
+		response.Error(c, i18n.T("withdraw.password_error"))
 		return
 	}
 
@@ -296,7 +306,7 @@ func (h *BankHandler) Withdraw(c *gin.Context) {
 
 	if cashMinAmount > 0 {
 		if valid, actual, required := checkConsumption(uid, cashMinAmount); !valid {
-			response.Error(c, fmt.Sprintf("消費滿%.0f%%才能提現 (已消費：%.2f, 要求：%.2f)", float64(cashMinAmount), actual, required))
+			response.Error(c, fmt.Sprintf(i18n.T("withdraw.consumption"), float64(cashMinAmount))+" (已消費："+fmt.Sprintf("%.2f", actual)+", 要求："+fmt.Sprintf("%.2f", required)+")")
 			return
 		}
 	}
@@ -319,7 +329,7 @@ func (h *BankHandler) Withdraw(c *gin.Context) {
 
 	if err := tx.Create(&cash).Error; err != nil {
 		tx.Rollback()
-		response.Error(c, "提交提現請求出錯")
+		response.Error(c, i18n.T("withdraw.failed"))
 		return
 	}
 
@@ -330,7 +340,7 @@ func (h *BankHandler) Withdraw(c *gin.Context) {
 	}
 	if err := tx.Model(&user).Updates(updates).Error; err != nil {
 		tx.Rollback()
-		response.Error(c, "更新餘額失敗")
+		response.Error(c, i18n.T("common.error"))
 		return
 	}
 
@@ -353,7 +363,7 @@ func (h *BankHandler) Withdraw(c *gin.Context) {
 	}
 	if err := tx.Create(&coinLog).Error; err != nil {
 		tx.Rollback()
-		response.Error(c, "記錄資金日誌失敗")
+		response.Error(c, i18n.T("common.error"))
 		return
 	}
 
@@ -364,7 +374,7 @@ func (h *BankHandler) Withdraw(c *gin.Context) {
 		Amount:  amount,
 		State:   0,
 		AddTime: cash.ActionTime,
-		Message: "申請提現成功，請等待客服人員審核",
+		Message: i18n.T("withdraw.success_message"),
 	})
 }
 
@@ -394,7 +404,7 @@ func (h *BankHandler) GetWithdrawRecords(c *gin.Context) {
 	// 从 context 获取用户 ID
 	userID, exists := c.Get("userID")
 	if !exists {
-		response.Error(c, "未授权")
+		response.Error(c, i18n.T("common.unauthorized"))
 		return
 	}
 	uid := uint(userID.(int))
@@ -500,7 +510,7 @@ func (h *BankHandler) GetWithdrawRecords(c *gin.Context) {
 			ApplyMoney:  r.Amount,
 			OrderNo:     time.Unix(actionTime, 0).Format("20060102150405") + fmt.Sprintf("%d", r.UID),
 			ApplyTime:   time.Unix(actionTime, 0).Format("2006-01-02 15:04:05"),
-			Reason:      r.BankName + "尾號" + getCardLast4(r.Account),
+			Reason:      r.BankName + i18n.T("bank.last4") + getCardLast4(r.Account),
 			CheckStatus: r.State,
 			BankName:    r.BankName,
 			BankCard:    r.Account,
@@ -544,7 +554,7 @@ func (h *BankHandler) GetDepositRecords(c *gin.Context) {
 	// 从 context 获取用户 ID
 	userID, exists := c.Get("userID")
 	if !exists {
-		response.Error(c, "未授权")
+		response.Error(c, i18n.T("common.unauthorized"))
 		return
 	}
 	uid := uint(userID.(int))
@@ -617,13 +627,13 @@ func (h *BankHandler) GetDepositRecords(c *gin.Context) {
 	var dataList []DepositRecordResponse
 	for _, r := range records {
 		rechType := "onlinePayment"
-		if r.Info == "系統儲值" {
+		if r.Info == i18n.T("deposit.system") {
 			rechType = "adminAddMoney"
 		}
 		// 根据 info 判断充值方式
 		orderNo := r.RechargeID
 		if orderNo == "" {
-			orderNo = "管理員儲值"
+			orderNo = i18n.T("deposit.admin")
 		}
 		dataList = append(dataList, DepositRecordResponse{
 			ID:           r.ID,
@@ -645,5 +655,71 @@ func (h *BankHandler) GetDepositRecords(c *gin.Context) {
 		Data:       dataList,
 		TotalCount: int(total),
 		OtherData:  nil,
+	})
+}
+
+// BindAddressRequest 绑定地址请求
+type BindAddressRequest struct {
+	BankID     uint   `json:"bankId" binding:"required"`
+	CardNo     string `json:"cardNo" binding:"required"`   // 钱包名称
+	SubAddress string `json:"subAddress" binding:"required"` // 提款地址
+}
+
+// BindAddress 绑定提款地址
+func (h *BankHandler) BindAddress(c *gin.Context) {
+	// 从 context 获取用户 ID
+	userID, exists := c.Get("userID")
+	if !exists {
+		response.Error(c, i18n.T("common.unauthorized"))
+		return
+	}
+	uid := uint(userID.(int))
+
+	var req BindAddressRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, i18n.T("bet.param_error")+": "+err.Error())
+		return
+	}
+
+	// 检查是否已绑定
+	var existingBank model.UserBank
+	if err := model.DB.Where("uid = ?", uid).First(&existingBank).Error; err == nil {
+		response.Error(c, i18n.T("bank.bindTip"))
+		return
+	}
+
+	// 获取用户信息
+	var user model.User
+	if err := model.DB.First(&user, uid).Error; err != nil {
+		response.Error(c, i18n.T("bet.user_not_found"))
+		return
+	}
+
+	// 获取银行名称
+	var bankInfo model.BankList
+	bankName := "USDT"
+	if err := model.DB.First(&bankInfo, req.BankID).Error; err == nil {
+		bankName = bankInfo.Name
+	}
+
+	// 创建绑定记录
+	userBank := model.UserBank{
+		UID:       uid,
+		Username:  user.Name,
+		BankID:    int(req.BankID),
+		Account:   req.SubAddress,  // 提款地址
+		CountName: req.CardNo,      // 钱包名称
+	}
+
+	if err := model.DB.Create(&userBank).Error; err != nil {
+		response.Error(c, i18n.T("bank.bindFailed"))
+		return
+	}
+
+	response.Success(c, gin.H{
+		"message":   i18n.T("bank.bindSuccess"),
+		"bankName":  bankName,
+		"countName": req.CardNo,
+		"account":   req.SubAddress,
 	})
 }

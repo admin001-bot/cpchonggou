@@ -5,31 +5,31 @@
         <Transition name="slide">
           <div v-if="visible" class="popover-content" @click.stop>
             <div class="popover-header">
-              <span>功能菜单</span>
+              <span>{{ t('game.menu') }}</span>
               <span class="close-btn" @click="$emit('close')">&times;</span>
             </div>
             <div class="popover-body">
               <div class="menu-item" @click="goTo('notcount')">
-                <span class="menu-text">即時注單</span>
+                <span class="menu-text">{{ t('game.pendingBets') }}</span>
                 <span class="menu-value" v-if="loading">
                   <span class="loading-spinner"></span>
                 </span>
                 <span class="menu-value orange" v-else>({{ formatMoney(lotteryData.unbalancedMoney) }})</span>
               </div>
               <div class="menu-item" @click="goTo('settled')">
-                <span class="menu-text">今日已結</span>
+                <span class="menu-text">{{ t('game.settledToday') }}</span>
               </div>
               <div class="menu-item" @click="goTo('week')">
-                <span class="menu-text">下注紀錄</span>
+                <span class="menu-text">{{ t('game.betRecord') }}</span>
               </div>
               <div class="menu-item" @click="goTo('history')">
-                <span class="menu-text">開獎結果</span>
+                <span class="menu-text">{{ t('game.lotteryResult') }}</span>
               </div>
               <div class="menu-item" @click="goTo('rule')">
-                <span class="menu-text">遊戲規則</span>
+                <span class="menu-text">{{ t('game.rules') }}</span>
               </div>
               <div class="menu-item gray" @click="goTo('settled')">
-                <span class="menu-text blue">今天輸贏</span>
+                <span class="menu-text blue">{{ t('game.todayWinLoss') }}</span>
                 <span class="menu-value" v-if="loading">
                   <span class="loading-spinner"></span>
                 </span>
@@ -47,6 +47,7 @@
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { betApi } from '@/api/game'
+import { t } from '@/locales'
 
 interface Props {
   visible: boolean

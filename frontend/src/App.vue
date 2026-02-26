@@ -38,7 +38,6 @@ watch(() => route.path, (newPath) => {
 html, body, #app {
   height: 100%;
   font-family: 'Microsoft YaHei', sans-serif;
-  overflow: hidden;
   background: #f5f5f5;
 }
 
