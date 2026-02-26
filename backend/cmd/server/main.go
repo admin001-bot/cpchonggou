@@ -98,13 +98,14 @@ func main() {
 			user.POST("/register", userHandler.Register)
 			user.POST("/login", userHandler.Login)
 			user.GET("/info", userHandler.GetUserInfo)
-			// 安全相关路由（需要登录）
-			safe := user.Group("/safe")
-			safe.Use(authMiddleware)
-			{
-				safe.POST("/setPasswddo", userHandler.SetPassword)
-				safe.POST("/setCoinPwddo", userHandler.SetCoinPassword)
-			}
+		}
+
+		// 安全相关路由（需要登录）- 与前端路径保持一致 /api/safe
+		safe := api.Group("/safe")
+		safe.Use(authMiddleware)
+		{
+			safe.POST("/setPasswddo", userHandler.SetPassword)
+			safe.POST("/setCoinPwddo", userHandler.SetCoinPassword)
 		}
 
 		// 初始化接口 - 类似PHP的/api/init
