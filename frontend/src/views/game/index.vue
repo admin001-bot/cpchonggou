@@ -93,12 +93,28 @@
         <div class="last-lottery">
           <div class="last-period-label">{{ t('game.issue') }} {{ prePeriod }} {{ t('game.period') }}</div>
           <div class="lottery-numbers">
-            <span
-              v-for="(num, index) in displayNumbers"
-              :key="index"
-              class="lottery-ball round-6"
-              :class="['data-' + num, { 'running': isLotteryRunning && !settledIndexes.includes(index) }]"
-            >{{ num }}</span>
+
+            <!-- 开奖号码显示 -->
+            <!-- PC 蛋蛋特殊显示：3 个球 + 等号 + 总和 -->
+            <template v-if="gameConfig?.group === 'group8'">
+              <span
+                v-for="(num, index) in displayNumbers.slice(0, 3)"
+                :key="index"
+                class="lottery-ball round"
+              >{{ num }}</span>
+              <span class="equal-sign">=</span>
+              <span class="lottery-ball round sum-ball">{{ lotterySum }}</span>
+            </template>
+            <!-- 其他游戏正常显示 -->
+            <template v-else>
+              <span
+                v-for="(num, index) in displayNumbers"
+                :key="index"
+                class="lottery-ball round-6"
+                :class="['data-' + num, { 'running': isLotteryRunning && !settledIndexes.includes(index) }]"
+              >{{ num }}</span>
+            </template>
+
           </div>
           <div class="result-wrap" v-if="lotteryResults.length > 0 && !isLotteryRunning">
             <span
@@ -181,6 +197,23 @@
             @toggle-bet="toggleBet"
           />
         </template>
+        <!-- PC 蛋蛋 - 混合玩法 -->
+        <template v-if="gameConfig?.group === 'group8' && currentPane?.code === 'HH'">
+          <HunHeBet
+            :plays-data="playsData"
+            :selected-bets="betData['HH'] || []"
+            @toggle-bet="(playId: number) => toggleBet(playId, 'HH')"
+          />
+        </template>
+
+        <!-- PC 蛋蛋 - 特码玩法 -->
+        <template v-else-if="gameConfig?.group === 'group8' && currentPane?.code === 'TM'">
+          <TeMaBet
+            :plays-data="playsData"
+            :selected-bets="betData['TM'] || []"
+            @toggle-bet="(playId: number) => toggleBet(playId, 'TM')"
+          />
+        </template>
 
         <!-- 默认投注面板 -->
         <template v-else>
@@ -242,7 +275,7 @@
             <div class="bet-list">
               <div v-for="(item, index) in confirmBetList" :key="index" class="bet-item">
                 <span class="bet-name">{{ item.name }}</span>
-                <span class="bet-odds">@{{ item.odds }}</span>
+                <span class="bet-odds">@{{ typeof item.odds === 'number' ? item.odds.toFixed(item.odds < 10 ? 2 : 3) : item.odds }}</span>
                 <span class="bet-amount">x {{ betAmount }}</span>
               </div>
             </div>
@@ -279,6 +312,8 @@ import LiangMianBet from '@/components/game/LiangMianBet.vue'
 import GuanYaHeBet from '@/components/game/GuanYaHeBet.vue'
 import RankBet from '@/components/game/RankBet.vue'
 import GamePopover from '@/components/game/GamePopover.vue'
+import HunHeBet from '@/components/game/HunHeBet.vue'
+import TeMaBet from '@/components/game/TeMaBet.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -462,6 +497,16 @@ function getBetCount(paneCode: string): number {
 }
 
 // 翻译开奖结果
+// PC 蛋蛋总和
+const lotterySum = computed(() => {
+  if (gameConfig.value?.group === 'group8') {
+    const nums = lastNumbers.value.slice(0, 3)
+    if (nums.length < 3 || nums.some(n => isNaN(n))) return 0
+    return nums.reduce((a, b) => a + b, 0)
+  }
+  return 0
+})
+
 function translateResult(result: number | string): string {
   if (typeof result === 'number') return String(result)
   switch (result) {
@@ -649,6 +694,40 @@ function getPlayName(playId: number): string {
     if (sequence === 14) return `${rankName}${t('game.even')}`
     if (sequence === 15) return `${rankName}${t('game.dragon')}`
     if (sequence === 16) return `${rankName}${t('game.tiger')}`
+  }
+
+  // PC 蛋蛋 (gameId = 66)
+  if (gameId === 66) {
+    // 混合玩法 (categoryId = 112)
+    if (categoryId === 112) {
+      const names: Record<number, string> = {
+        1: t('pcdd.big'),
+        2: t('pcdd.small'),
+        3: t('pcdd.odd'),
+        4: t('pcdd.even'),
+        5: t('pcdd.bigOdd'),
+        6: t('pcdd.bigEven'),
+        7: t('pcdd.smallOdd'),
+        8: t('pcdd.smallEven'),
+        9: t('pcdd.extraBig'),
+        10: t('pcdd.extraSmall'),
+        11: t('pcdd.leopard')
+      }
+      return names[sequence] || `玩法${playId}`
+    }
+    // 波色 (categoryId = 113)
+    if (categoryId === 113) {
+      const names: Record<number, string> = {
+        1: t('pcdd.redWave'),
+        2: t('pcdd.greenWave'),
+        3: t('pcdd.blueWave')
+      }
+      return names[sequence] || `玩法${playId}`
+    }
+    // 特码 (categoryId = 114)
+    if (categoryId === 114) {
+      return `${t('pcdd.teMa')} ${sequence}`
+    }
   }
 
   return `玩法${playId}`
@@ -1296,7 +1375,8 @@ onUnmounted(() => {
   display: inline-block;
 }
 
-/* PK10开奖号码图片样式 */
+
+/* 其他游戏开奖号码图片样式（PK10、时时彩等） */
 .lottery-ball.round-6 {
   width: 28px;
   height: 28px;
@@ -1316,6 +1396,39 @@ onUnmounted(() => {
 .lottery-ball.data-8 { background-image: url('/images/ball/8.png'); }
 .lottery-ball.data-9 { background-image: url('/images/ball/9.png'); }
 .lottery-ball.data-10 { background-image: url('/images/ball/10.png'); }
+/* PC 蛋蛋圆形球样式 - 前 3 个球（浅蓝色） */
+.lottery-ball.round {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  background: linear-gradient(135deg, #e0f0ff, #b0d0ff);
+  border: 2px solid #8ab4f8;
+  box-shadow: 0 2px 6px rgba(138,180,248,0.4);
+  line-height: 1;
+}
+
+/* PC 蛋蛋总和球 - 红色 */
+.sum-ball {
+  background: linear-gradient(135deg, #fb2351, #ff4b3e) !important;
+  color: #fff !important;
+  border: 2px solid #fb2351;
+}
+
+/* 等号样式 */
+.equal-sign {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 8px;
+  font-size: 18px;
+  color: #999;
+  font-weight: bold;
+}
 
 /* 开奖跑动动画 */
 .lottery-ball.running {

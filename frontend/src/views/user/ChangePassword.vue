@@ -1,0 +1,355 @@
+<template>
+  <div class="changepwd-page">
+    <!-- 顶部导航 -->
+    <header class="changepwd-header">
+      <span class="back-btn" @click="goBack">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+      </span>
+      <h1 class="header-title">{{ t('user.changePassword') }}</h1>
+      <span class="header-right"></span>
+    </header>
+
+    <!-- 修改密码表单 -->
+    <div class="form-card">
+      <div class="form-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0110 0v4"/>
+        </svg>
+      </div>
+      <div class="form-title">{{ t('user.changePassword') }}</div>
+
+      <div class="form-group">
+        <!-- 原密码 -->
+        <div class="input-item">
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0110 0v4"/>
+          </svg>
+          <input
+            type="password"
+            v-model="form.oldPwd"
+            :placeholder="t('user.enterOldPwd')"
+            class="form-input"
+            maxlength="20"
+            @input="onOldPwdInput"
+          />
+        </div>
+
+        <!-- 新密码 -->
+        <div class="input-item">
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+          </svg>
+          <input
+            type="password"
+            v-model="form.newPwd"
+            :placeholder="t('user.enterNewPwd')"
+            class="form-input"
+            maxlength="20"
+            @input="onNewPwdInput"
+          />
+        </div>
+
+        <!-- 确认新密码 -->
+        <div class="input-item">
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+          </svg>
+          <input
+            type="password"
+            v-model="form.confirmPwd"
+            :placeholder="t('user.confirmNewPwd')"
+            class="form-input"
+            maxlength="20"
+            @input="onConfirmPwdInput"
+          />
+        </div>
+      </div>
+
+      <div class="form-tip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="16" x2="12" y2="12"/>
+          <line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg>
+        <span>{{ t('user.changePwdTip') }}</span>
+      </div>
+
+      <button class="submit-btn" @click="submitForm" :disabled="loading">
+        {{ loading ? t('common.loading') : t('common.confirm') }}
+      </button>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive } from 'vue'
+import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user'
+import { ElMessage } from 'element-plus'
+import { t } from '@/locales'
+import { userApi } from '@/api/user'
+import MD5 from 'crypto-js/md5'
+
+const router = useRouter()
+const userStore = useUserStore()
+
+const loading = ref(false)
+
+const form = reactive({
+  oldPwd: '',
+  newPwd: '',
+  confirmPwd: ''
+})
+
+// 密码输入限制
+const onOldPwdInput = () => {
+  form.oldPwd = form.oldPwd.replace(/\D/g, '').slice(0, 20)
+}
+
+const onNewPwdInput = () => {
+  form.newPwd = form.newPwd.replace(/\D/g, '').slice(0, 20)
+}
+
+const onConfirmPwdInput = () => {
+  form.confirmPwd = form.confirmPwd.replace(/\D/g, '').slice(0, 20)
+}
+
+const goBack = () => {
+  router.back()
+}
+
+// 提交修改密码
+const submitForm = async () => {
+  // 验证
+  if (!form.oldPwd) {
+    ElMessage.warning(t('user.enterOldPwd'))
+    return
+  }
+
+  if (form.oldPwd.length < 6) {
+    ElMessage.warning(t('user.oldPwdMinLength'))
+    return
+  }
+
+  if (!form.newPwd) {
+    ElMessage.warning(t('user.enterNewPwd'))
+    return
+  }
+
+  if (form.newPwd.length < 6) {
+    ElMessage.warning(t('user.pwdMinLength'))
+    return
+  }
+
+  if (form.newPwd !== form.confirmPwd) {
+    ElMessage.warning(t('user.pwdNotMatch'))
+    return
+  }
+
+  loading.value = true
+  try {
+    const res = await userApi.changePassword(
+      MD5(form.oldPwd).toString(),
+      MD5(form.newPwd).toString()
+    )
+
+    if (res.code === 0) {
+      ElMessage.success(t('user.changePwdSuccess'))
+      // 刷新用户信息
+      await userStore.getUserInfo()
+      setTimeout(() => {
+        router.back()
+      }, 1500)
+    } else {
+      // PHP 错误消息映射到多语言
+      const msgMap: Record<string, string> = {
+        '原密碼不能為空': t('user.oldPwdEmpty'),
+        '原密碼至少 6 位': t('user.oldPwdMinLength'),
+        '密碼不能為空': t('user.newPwdEmpty'),
+        '密碼至少 6 位': t('user.pwdMinLength'),
+        '原密碼不正確': t('user.oldPwdIncorrect'),
+        '修改密碼失敗': t('user.changePwdFailed'),
+      }
+      const translatedMsg = msgMap[res.message] || res.message || t('user.changePwdFailed')
+      ElMessage.error(translatedMsg)
+    }
+  } catch (error: any) {
+    ElMessage.error(error.message || t('user.changePwdFailed'))
+  } finally {
+    loading.value = false
+  }
+}
+</script>
+
+<style scoped>
+* {
+  box-sizing: border-box;
+}
+
+.changepwd-page {
+  min-height: 100vh;
+  background: #f5f5f5;
+  max-width: 640px;
+  margin: 0 auto;
+  overflow-y: auto;
+}
+
+/* 顶部导航 */
+.changepwd-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 45px;
+  background: linear-gradient(45deg, #fb2351, #ff4b3e);
+  padding: 0 12px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 10px rgba(251, 35, 81, 0.3);
+}
+
+.back-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.back-btn:active {
+  background: rgba(255, 255, 255, 0.35);
+  transform: scale(0.92);
+}
+
+.back-btn .icon {
+  width: 20px;
+  height: 20px;
+  color: #fff;
+}
+
+.header-title {
+  flex: 1;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+}
+
+.header-right {
+  width: 36px;
+}
+
+/* 表单卡片 */
+.form-card {
+  background: #fff;
+  margin: 20px 15px;
+  border-radius: 16px;
+  padding: 30px 20px;
+}
+
+.form-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 15px;
+  background: linear-gradient(135deg, #fb2351, #ff4b3e);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form-icon svg {
+  width: 32px;
+  height: 32px;
+  color: #fff;
+}
+
+.form-title {
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 25px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.input-item {
+  position: relative;
+  margin-bottom: 15px;
+}
+
+.input-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: #fb2351;
+}
+
+.form-input {
+  width: 100%;
+  padding: 14px 15px 14px 45px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-input:focus {
+  border-color: #fb2351;
+}
+
+.form-tip {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: #999;
+}
+
+.form-tip svg {
+  width: 14px;
+  height: 14px;
+  margin-right: 6px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(45deg, #fb2351, #ff4b3e);
+  color: #fff;
+  border: none;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 25px;
+  transition: all 0.2s;
+}
+
+.submit-btn:active {
+  transform: scale(0.98);
+  opacity: 0.9;
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+}
+</style>

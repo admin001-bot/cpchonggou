@@ -376,3 +376,184 @@ func (h *UserHandler) Init(c *gin.Context) {
 		ServerTime: time.Now().Unix(),
 	})
 }
+
+// SetPasswordRequest 修改密码请求
+type SetPasswordRequest struct {
+	OldPwd string `json:"oldPwd" binding:"required"`
+	NewPwd string `json:"newPwd" binding:"required"`
+}
+
+// SetPassword 修改登录密码 - 参考 PHP Safe.class.php setPasswddo
+func (h *UserHandler) SetPassword(c *gin.Context) {
+	// 从 Header 获取 Token
+	token := c.GetHeader("Authorization")
+	if token == "" {
+		response.Error(c, i18n.T("login.login_required"))
+		return
+	}
+
+	// 解析 token 获取用户 ID
+	uid, err := ParseToken(token)
+	if err != nil {
+		response.Error(c, i18n.T("login.token_invalid"))
+		return
+	}
+
+	var req SetPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, i18n.T("user.enterOldPwd"))
+		return
+	}
+
+	opwd := req.OldPwd
+	npwd := req.NewPwd
+
+	// 验证旧密码
+	if opwd == "" {
+		response.Error(c, i18n.T("user.oldPwdEmpty"))
+		return
+	}
+	if len(opwd) < 6 {
+		response.Error(c, i18n.T("user.oldPwdMinLength"))
+		return
+	}
+
+	// 验证新密码
+	if npwd == "" {
+		response.Error(c, i18n.T("user.newPwdEmpty"))
+		return
+	}
+	if len(npwd) < 6 {
+		response.Error(c, i18n.T("user.pwdMinLength"))
+		return
+	}
+
+	// 查询用户密码
+	var user model.User
+	if err := model.DB.Select("password").First(&user, uid).Error; err != nil {
+		response.Error(c, i18n.T("bet.user_not_found"))
+		return
+	}
+
+	// 验证旧密码是否正确
+	oldPwdHash := md5Hash(opwd)
+	if oldPwdHash != user.Password {
+		response.Error(c, i18n.T("user.oldPwdIncorrect"))
+		return
+	}
+
+	// 更新密码
+	newPwdHash := md5Hash(npwd)
+	if err := model.DB.Model(&user).Update("password", newPwdHash).Error; err != nil {
+		response.Error(c, i18n.T("user.changePwdFailed"))
+		return
+	}
+
+	response.Success(c, gin.H{})
+}
+
+// SetCoinPasswordRequest 设置资金密码请求
+type SetCoinPasswordRequest struct {
+	OldPwd   string `json:"oldPwd"`
+	NewPwd   string `json:"newPwd" binding:"required"`
+	LoginPwd string `json:"loginPwd"`
+}
+
+// SetCoinPassword 设置/修改资金密码 - 参考 PHP Safe.class.php setCoinPwddo
+func (h *UserHandler) SetCoinPassword(c *gin.Context) {
+	// 从 Header 获取 Token
+	token := c.GetHeader("Authorization")
+	if token == "" {
+		response.Error(c, i18n.T("login.login_required"))
+		return
+	}
+
+	// 解析 token 获取用户 ID
+	uid, err := ParseToken(token)
+	if err != nil {
+		response.Error(c, i18n.T("login.token_invalid"))
+		return
+	}
+
+	var req SetCoinPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		response.Error(c, i18n.T("user.fillAllFields"))
+		return
+	}
+
+	opwd := req.OldPwd
+	npwd := req.NewPwd
+	loginPwd := req.LoginPwd
+
+	// 验证旧密码（如果是修改）
+	if opwd == "" && loginPwd == "" {
+		response.Error(c, i18n.T("user.oldCoinPwdEmpty"))
+		return
+	}
+
+	// 验证新密码
+	if npwd == "" {
+		response.Error(c, i18n.T("user.newCoinPwdEmpty"))
+		return
+	}
+	if len(npwd) < 6 {
+		response.Error(c, i18n.T("user.pwdMinLength"))
+		return
+	}
+
+	// 查询用户信息
+	var user model.User
+	if err := model.DB.First(&user, uid).Error; err != nil {
+		response.Error(c, i18n.T("bet.user_not_found"))
+		return
+	}
+
+	// 检查是否已设置资金密码
+	var tishi string
+	if user.CoinPassword == "" {
+		// 首次设置
+		if loginPwd == "" {
+			response.Error(c, i18n.T("user.enterLoginPwd"))
+			return
+		}
+		// 验证登录密码
+		loginPwdHash := md5Hash(loginPwd)
+		if loginPwdHash != user.Password {
+			response.Error(c, i18n.T("user.oldPwdIncorrect"))
+			return
+		}
+		tishi = i18n.T("user.setFundPwdSuccess")
+	} else {
+		// 修改资金密码
+		if opwd == "" {
+			response.Error(c, i18n.T("user.oldCoinPwdEmpty"))
+			return
+		}
+		// 验证旧资金密码
+		oldCoinPwdHash := md5Hash(opwd)
+		if oldCoinPwdHash != user.CoinPassword {
+			response.Error(c, i18n.T("user.oldPwdIncorrect"))
+			return
+		}
+		tishi = i18n.T("user.changeCoinPwdSuccess")
+	}
+
+	// 计算新密码哈希
+	newPwdHash := md5Hash(npwd)
+
+	// 检查资金密码是否与登录密码相同
+	if newPwdHash == user.Password {
+		response.Error(c, i18n.T("user.pwdSame"))
+		return
+	}
+
+	// 更新资金密码
+	if err := model.DB.Model(&user).Update("coinPassword", newPwdHash).Error; err != nil {
+		response.Error(c, i18n.T("user.changeCoinPwdFailed"))
+		return
+	}
+
+	response.Success(c, gin.H{
+		"message": tishi,
+	})
+}

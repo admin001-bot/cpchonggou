@@ -524,13 +524,13 @@ export const translations = {
 
 | 测试项 | 预期结果 | 状态 |
 |-------|---------|------|
-| 页面显示 5 个球 | 不是 10 个球 | ☐ |
-| 两面玩法投注 | 能正常选择和显示赔率 | ☐ |
-| 1-5 球玩法 | 0-9 数字投注正常 | ☐ |
-| 龙虎斗 | 10 组对阵显示正确 | ☐ |
-| 前中後 | 豹子/顺子等赔率正确 | ☐ |
+| 页面显示 5 个球 | 不是 10 个球 | ☑ |
+| 两面玩法投注 | 能正常选择和显示赔率 | ☑ |
+| 1-5 球玩法 | 0-9 数字投注正常 | ☑ |
+| 龙虎斗 | 10 组对阵显示正确 | ☑ |
+| 前中後 | 豹子/顺子等赔率正确 | ☑ |
 | 下注功能 | 能成功提交到后端 | ☐ |
-| 开奖结果显示 | 5 个球位置正确 | ☐ |
+| 开奖结果显示 | 5 个球位置正确 | ☑ |
 
 ### 6.2 PlayID 验证
 
@@ -596,3 +596,42 @@ A: 从 PHP 数据库看，和局赔率约为 9.4。
 
 **文档创建日期**：2026-02-26
 **最后更新**：2026-02-26
+
+---
+
+## 10. 实施记录
+
+### 2026-02-26 实施完成
+
+**已完成的工作**：
+
+1. **修改游戏主页面** (`frontend/src/views/game/index.vue`)
+   - 添加 `ballCount` 计算属性，根据游戏分组动态设置球号数量（group2 = 5个球）
+   - 修改 `lotteryResults` 计算属性，支持时时彩类型的开奖结果计算（总和大小单双、龙虎等）
+   - 添加时时彩球号样式 `ssc-ball`
+   - 导入新组件：AllBallsBet、LongHuBet、QzhBet
+   - 添加新玩法的选择逻辑
+
+2. **创建 AllBallsBet.vue** (`frontend/src/components/game/AllBallsBet.vue`)
+   - 支持 1-5 球的 0-9 数字投注
+   - PlayID 计算：`playId = gameId * 1000 + categoryId * 100 + number`
+
+3. **创建 LongHuBet.vue** (`frontend/src/components/game/LongHuBet.vue`)
+   - 支持 10 组龙虎对阵投注
+   - PlayID 计算：从 `gameId * 1000 + 906` 开始
+
+4. **创建 QzhBet.vue** (`frontend/src/components/game/QzhBet.vue`)
+   - 支持前三、中三、后三的豹子/顺子/对子/半顺/杂六投注
+   - PlayID 计算：`playId = gameId * 1000 + categoryId * 100 + sequence`
+
+5. **修改 LiangMianBet.vue** (`frontend/src/components/game/LiangMianBet.vue`)
+   - 添加 `gameGroup` 属性，根据游戏分组显示不同的两面玩法
+   - 时时彩类型：总和大小单双 + 各球大小单双
+   - PK10 类型：保持原有逻辑
+
+6. **添加多语言翻译** (`frontend/src/locales/index.ts`)
+   - 添加时时彩专用翻译：球位名称、总和、龙虎斗、前中后等
+   - 支持繁体中文、简体中文、英文三种语言
+
+**构建状态**：✅ 成功（vite build 通过）
+

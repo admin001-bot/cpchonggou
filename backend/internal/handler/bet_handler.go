@@ -292,6 +292,9 @@ func (h *BetHandler) GetStatBets(c *gin.Context) {
 		startDate = time.Now().AddDate(0, 0, -6).Format("2006-01-02")
 	}
 
+	// 调试日志
+	fmt.Printf("[GetStatBets] uid=%d, startDate=%s, endDate=%s\n", uid, startDate, endDate)
+
 	// 查询每天统计
 	var stats []struct {
 		StatDate     string
@@ -300,9 +303,16 @@ func (h *BetHandler) GetStatBets(c *gin.Context) {
 		RewardRebate float64
 	}
 
+	// 将日期字符串转为时间戳范围（使用本地时区）
+	loc, _ := time.LoadLocation("Asia/Shanghai")
+	startTime, _ := time.ParseInLocation("2006-01-02", startDate, loc)
+	endTime, _ := time.ParseInLocation("2006-01-02", endDate, loc)
+	endTime = endTime.Add(24*time.Hour - 1*time.Second) // 到当天的最后一秒
+
+	// 从 ssc_bets 表实时统计（不再依赖 report 表）
 	model.DB.Table("ssc_bets").
 		Select("DATE(FROM_UNIXTIME(actionTime)) as statDate, COUNT(*) as betCount, SUM(money * totalNums) as betMoney, SUM(bonus - money * totalNums + money * totalNums * rebate) as rewardRebate").
-		Where("isDelete = 0 AND lotteryNo != '' AND uid = ? AND DATE(FROM_UNIXTIME(actionTime)) >= ? AND DATE(FROM_UNIXTIME(actionTime)) <= ?", uid, startDate, endDate).
+		Where("isDelete = 0 AND uid = ? AND actionTime >= ? AND actionTime <= ?", uid, startTime.Unix(), endTime.Unix()).
 		Group("statDate").
 		Order("statDate DESC").
 		Find(&stats)

@@ -234,6 +234,7 @@ export const lotteryConfig: Record<number, GameConfig> = {
     id: 66,
     name: 'PC蛋蛋',
     template: 'pcdd',
+    numStyle: { lottery: 6, history: 6 },
     group: 'group8'
   },
   100: {
@@ -372,7 +373,7 @@ export const lotteryConfig: Record<number, GameConfig> = {
     id: 113,
     name: '極速六合彩',
     template: 'jslhc',
-    numStyle: { lottery: 4, history: 4 },
+    numStyle: { lottery: 7, history: 7 },
     group: 'group7'
   }
 }

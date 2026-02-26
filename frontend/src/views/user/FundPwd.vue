@@ -11,17 +11,86 @@
       <span class="header-right"></span>
     </header>
 
-    <!-- 已设置状态 -->
-    <div class="status-card" v-if="hasFundPwd">
-      <div class="status-icon">
+    <!-- 已设置状态 - 改为可点击修改 -->
+    <div class="status-card" v-if="hasFundPwd && !isEditMode">
+      <div class="status-icon success">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+      </div>
+      <div class="status-title">{{ t('user.fundPwdSetted') }}</div>
+      <div class="status-desc">{{ t('user.fundPwdSettedTip') }}</div>
+      <button class="change-btn" @click="handleSetClick">
+        {{ t('user.changeCoinPwd') }}
+      </button>
+    </div>
+
+    <!-- 修改密码模式 -->
+    <div class="form-card" v-else-if="isEditMode">
+      <div class="form-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
           <path d="M7 11V7a5 5 0 0110 0v4"/>
         </svg>
       </div>
-      <div class="status-title">{{ t('user.fundPwdSetted') }}</div>
-      <div class="status-desc">{{ t('user.fundPwdSettedTip') }}</div>
-      <button class="contact-btn" @click="contactService">{{ t('user.contactService') }}</button>
+      <div class="form-title">{{ t('user.changeCoinPwd') }}</div>
+
+      <div class="form-group">
+        <!-- 原提款密码 -->
+        <div class="input-item">
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0110 0v4"/>
+          </svg>
+          <input
+            type="password"
+            v-model="form.oldPwd"
+            :placeholder="t('user.enterOldCoinPwd')"
+            class="form-input"
+            maxlength="6"
+            @input="onOldPwdInput"
+          />
+        </div>
+
+        <!-- 新提款密码 -->
+        <div class="input-item">
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+          </svg>
+          <input
+            type="password"
+            v-model="form.coinPwd"
+            :placeholder="t('user.enterNewCoinPwd')"
+            class="form-input"
+            maxlength="6"
+            @input="onCoinPwdInput"
+          />
+        </div>
+
+        <!-- 确认新密码 -->
+        <div class="input-item">
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+          </svg>
+          <input
+            type="password"
+            v-model="form.confirmPwd"
+            :placeholder="t('user.confirmNewCoinPwd')"
+            class="form-input"
+            maxlength="6"
+            @input="onConfirmPwdInput"
+          />
+        </div>
+      </div>
+
+      <button class="submit-btn" @click="submitEditForm" :disabled="loading">
+        {{ loading ? t('common.loading') : t('common.confirm') }}
+      </button>
+
+      <button class="back-btn-text" @click="isEditMode = false">
+        {{ t('user.backToSet') }}
+      </button>
     </div>
 
     <!-- 未设置 - 表单 -->
@@ -110,17 +179,20 @@ import { useUserStore } from '@/stores/user'
 import { ElMessage } from 'element-plus'
 import { t } from '@/locales'
 import { userApi } from '@/api/user'
+import MD5 from 'crypto-js/md5'
 
 const router = useRouter()
 const userStore = useUserStore()
 
 const loading = ref(false)
+const isEditMode = ref(false)  // 是否为修改模式
 const hasFundPwd = computed(() => userStore.userInfo?.hasFundPwd || false)
 
 const form = reactive({
-  loginPwd: '',
-  coinPwd: '',
-  confirmPwd: '',
+  loginPwd: '',      // 登录密码（首次设置时使用）
+  oldPwd: '',        // 原提款密码（修改时使用）
+  coinPwd: '',       // 新提款密码
+  confirmPwd: '',    // 确认新密码
 })
 
 // 密码输入限制数字
@@ -132,6 +204,10 @@ const onConfirmPwdInput = () => {
   form.confirmPwd = form.confirmPwd.replace(/\D/g, '').slice(0, 6)
 }
 
+const onOldPwdInput = () => {
+  form.oldPwd = form.oldPwd.replace(/\D/g, '').slice(0, 6)
+}
+
 const goBack = () => {
   router.back()
 }
@@ -140,30 +216,12 @@ const contactService = () => {
   window.open('/chatlink.html', '_blank')
 }
 
-// MD5加密
-const md5 = (str: string): string => {
-  // 简单MD5实现
-  let md5Hash = ''
-  const hexDigits = '0123456789abcdef'
-  for (let i = 0; i < 32; i++) {
-    md5Hash += hexDigits.charAt(Math.floor(Math.random() * 16))
-  }
-  // 这里使用前端简单模拟，实际应该用crypto-js
-  // 实际项目中需要引入crypto-js库
-  return simpleMD5(str)
+// 点击已设置状态时的处理
+const handleSetClick = () => {
+  isEditMode.value = true
 }
 
-// 简化MD5模拟
-const simpleMD5 = (str: string): string => {
-  // 实际项目中请使用 crypto-js 库的 md5 函数
-  // 这里只是占位
-  let result = ''
-  for (let i = 0; i < 32; i++) {
-    result += '0'
-  }
-  return result
-}
-
+// 首次设置提交
 const submitForm = async () => {
   // 验证
   if (!form.loginPwd) {
@@ -181,6 +239,7 @@ const submitForm = async () => {
     return
   }
 
+  // 验证密码不能与登录密码相同
   if (form.loginPwd === form.coinPwd) {
     ElMessage.warning(t('user.pwdSame'))
     return
@@ -188,14 +247,10 @@ const submitForm = async () => {
 
   loading.value = true
   try {
-    // 使用实际MD5加密
-    // 实际项目中需要引入crypto-js
-    const loginPwdHash = await md5Hash(form.loginPwd)
-    const coinPwdHash = await md5Hash(form.coinPwd)
-
-    const res = await userApi.setFundPwd({
-      loginPwd: loginPwdHash,
-      coinPwd: coinPwdHash,
+    const res = await userApi.setCoinPwd({
+      oldPwd: '',  // 首次设置为空
+      newPwd: MD5(form.coinPwd).toString(),
+      loginPwd: MD5(form.loginPwd).toString(),
     })
 
     if (res.code === 0) {
@@ -215,28 +270,46 @@ const submitForm = async () => {
   }
 }
 
-// 实际MD5加密
-const md5Hash = (str: string): string => {
-  // 使用Web Crypto API
-  const encoder = new TextEncoder()
-  const data = encoder.encode(str)
-
-  // 简化处理，使用btoa模拟
-  let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i)
-    hash = ((hash << 5) - hash) + char
-    hash = hash & hash
+// 修改密码提交
+const submitEditForm = async () => {
+  // 验证
+  if (!form.oldPwd || form.oldPwd.length < 6) {
+    ElMessage.warning(t('user.enterOldCoinPwd'))
+    return
   }
 
-  // 转为32位hex
-  let hex = Math.abs(hash).toString(16)
-  while (hex.length < 8) {
-    hex = '0' + hex
+  if (!form.coinPwd || form.coinPwd.length < 6) {
+    ElMessage.warning(t('user.coinPwdLength'))
+    return
   }
 
-  // 补齐32位（简化）
-  return hex + '0123456789abcdef01234567'.slice(0, 24)
+  if (form.coinPwd !== form.confirmPwd) {
+    ElMessage.warning(t('user.pwdNotMatch'))
+    return
+  }
+
+  loading.value = true
+  try {
+    const res = await userApi.setCoinPwd({
+      oldPwd: MD5(form.oldPwd).toString(),
+      newPwd: MD5(form.coinPwd).toString(),
+    })
+
+    if (res.code === 0) {
+      ElMessage.success(t('user.changeSuccess'))
+      isEditMode.value = false
+      // 清空表单
+      form.oldPwd = ''
+      form.coinPwd = ''
+      form.confirmPwd = ''
+    } else {
+      ElMessage.error(res.message || t('user.changeFailed'))
+    }
+  } catch (error: any) {
+    ElMessage.error(error.response?.data?.message || t('user.changeFailed'))
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
@@ -321,6 +394,10 @@ const md5Hash = (str: string): string => {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.status-icon.success {
+  background: linear-gradient(135deg, #52c41a, #73d13d);
 }
 
 .status-icon svg {
@@ -455,5 +532,37 @@ const md5Hash = (str: string): string => {
 
 .submit-btn:disabled {
   opacity: 0.6;
+}
+
+/* 修改按钮 */
+.change-btn {
+  background: transparent;
+  color: #fb2351;
+  border: 1px solid #fb2351;
+  padding: 12px 40px;
+  border-radius: 25px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.change-btn:hover,
+.change-btn:active {
+  background: #fb2351;
+  color: #fff;
+}
+
+/* 返回按钮 */
+.back-btn-text {
+  display: block;
+  width: 100%;
+  margin-top: 15px;
+  padding: 12px;
+  background: transparent;
+  border: none;
+  color: #666;
+  font-size: 14px;
+  cursor: pointer;
+  text-align: center;
 }
 </style>

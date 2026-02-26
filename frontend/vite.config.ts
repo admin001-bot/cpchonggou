@@ -17,6 +17,11 @@ export default defineConfig({
         target: 'http://localhost:8080',
         changeOrigin: true,
       },
+      // /safe 开头的请求代理到 PHP 后端
+      '/safe': {
+        target: 'http://localhost:80',
+        changeOrigin: true,
+      },
     },
   },
 })

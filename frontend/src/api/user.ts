@@ -86,4 +86,70 @@ export const userApi = {
   logout(): Promise<{ code: number; message: string }> {
     return request.post('/user/logout')
   },
+
+  // 设置/修改提款密码 - 使用 PHP 后端
+  setCoinPwd(params: {
+    oldPwd: string
+    newPwd: string
+    loginPwd?: string
+  }): Promise<{ code: number; message: string }> {
+    return request.post('/safe/setCoinPwddo', params)
+  },
+
+  // 设置/修改提款密码（别名）
+  setCoinPassword(params: {
+    oldPwd: string
+    newPwd: string
+    loginPwd?: string
+  }): Promise<{ code: number; message: string }> {
+    return request.post('/safe/setCoinPwddo', params)
+  },
+
+  // 更新用户资料
+  updateProfile(data: {
+    nickname?: string
+    phone?: string
+    email?: string
+    qq?: string
+  }): Promise<{ code: number; message: string }> {
+    return request.post('/user/updateProfile', data)
+  },
+
+  // 设置真实姓名（只能设置一次）
+  setFullName(name: string): Promise<{ code: number; message: string }> {
+    return request.post('/user/setFullNamedo', { fullName: name })
+  },
+
+  // 修改登录密码 - 使用 PHP 后端
+  changePassword(oldPwd: string, newPwd: string): Promise<{ code: number; message: string }> {
+    return request.post('/safe/setPasswddo', {
+      oldPwd: oldPwd,
+      newPwd: newPwd
+    })
+  },
+
+  // 获取用户银行信息
+  getUserBank(): Promise<{ code: number; message: string; data: BankInfo }> {
+    return request.get('/user/getBankInfo')
+  },
+
+  // 绑定银行卡
+  bindBank(data: {
+    username: string
+    bankId: number
+    cardNo: string
+    subAddress: string
+  }): Promise<{ code: number; message: string }> {
+    return request.post('/user/bindBankdo', data)
+  },
+}
+
+// 银行卡信息接口
+export interface BankInfo {
+  username?: string
+  bankName?: string
+  cardNo?: string
+  account?: string
+  countname?: string
+  subAddress?: string
 }

@@ -32,6 +32,30 @@ const routes: RouteRecordRaw[] = [
     meta: { title: 'home.mine', requiresAuth: true },
   },
   {
+    path: '/user/profile',
+    name: 'UserProfile',
+    component: () => import('@/views/user/Profile.vue'),
+    meta: { title: 'user.profile', requiresAuth: true },
+  },
+  {
+    path: '/user/change-password',
+    name: 'UserChangePassword',
+    component: () => import('@/views/user/ChangePassword.vue'),
+    meta: { title: 'user.changePassword', requiresAuth: true },
+  },
+  {
+    path: '/user/fund-password',
+    name: 'UserFundPassword',
+    component: () => import('@/views/user/FundPassword.vue'),
+    meta: { title: 'user.fundPassword', requiresAuth: true },
+  },
+  {
+    path: '/user/fundpwd',
+    name: 'UserFundPwd',
+    component: () => import('@/views/user/FundPwd.vue'),
+    meta: { title: 'user.fundPassword', requiresAuth: true },
+  },
+  {
     path: '/user/login',
     name: 'UserLogin',
     component: () => import('@/views/user/login.vue'),

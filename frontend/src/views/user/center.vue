@@ -358,24 +358,15 @@ const goBetRecord = () => {
 }
 
 const goProfile = () => {
-  // TODO: 完善个人信息
-  ElMessageBox.alert(t('user.profileEdit'), t('user.prompt'), {
-    confirmButtonText: t('common.confirm')
-  })
+  router.push('/user/profile')
 }
 
 const goFundPassword = () => {
-  // TODO: 资金密码设置
-  ElMessageBox.alert(t('user.fundPasswordSet'), t('user.prompt'), {
-    confirmButtonText: t('common.confirm')
-  })
+  router.push('/user/fundpwd')
 }
 
 const goChangePassword = () => {
-  // TODO: 修改密码
-  ElMessageBox.alert(t('user.passwordEdit'), t('user.prompt'), {
-    confirmButtonText: t('common.confirm')
-  })
+  router.push('/user/change-password')
 }
 
 const goWeekRecord = () => {

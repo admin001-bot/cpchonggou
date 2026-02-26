@@ -50,7 +50,7 @@
       </div>
     </div>
 
-    <!-- 表单区域 -->
+    <!-- 个人资料表单区域 -->
     <div class="form-section">
       <div class="section-title">{{ t('user.personalInfo') }}</div>
 
@@ -67,24 +67,6 @@
           <span v-if="profileData.name">{{ profileData.name }}</span>
           <span v-else class="placeholder">{{ t('user.setRealName') }}</span>
           <span class="readonly-tip">{{ t('user.cannotModify') }}</span>
-        </div>
-      </div>
-
-      <!-- 昵称 -->
-      <div class="form-item" @click="editField('nickname')">
-        <div class="form-label">
-          <svg class="label-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
-            <circle cx="12" cy="7" r="4"/>
-          </svg>
-          {{ t('user.nickname') }}
-        </div>
-        <div class="form-value">
-          <span v-if="profileData.nickname">{{ profileData.nickname }}</span>
-          <span v-else class="placeholder">{{ t('user.setNickname') }}</span>
-          <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 18l6-6-6-6"/>
-          </svg>
         </div>
       </div>
 
@@ -105,37 +87,42 @@
           </svg>
         </div>
       </div>
+    </div>
 
-      <!-- 邮箱 -->
-      <div class="form-item" @click="editField('email')">
+    <!-- 账户安全区块 -->
+    <div class="form-section">
+      <div class="section-title">{{ t('user.accountSecurity') }}</div>
+
+      <!-- 登录密码 -->
+      <div class="form-item" @click="router.push('/user/change-password')">
         <div class="form-label">
           <svg class="label-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-            <polyline points="22,6 12,13 2,6"/>
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0110 0v4"/>
           </svg>
-          {{ t('user.email') }}
+          {{ t('user.loginPassword') }}
         </div>
         <div class="form-value">
-          <span v-if="profileData.email">{{ profileData.email }}</span>
-          <span v-else class="placeholder">{{ t('user.bindEmail') }}</span>
+          <span class="placeholder">{{ t('user.passwordSet') }}</span>
           <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M9 18l6-6-6-6"/>
           </svg>
         </div>
       </div>
 
-      <!-- QQ -->
-      <div class="form-item" @click="editField('qq')">
+      <!-- 提款密码 -->
+      <div class="form-item" @click="router.push('/user/fund-password')">
         <div class="form-label">
           <svg class="label-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
-            <path d="M9 9h.01M15 9h.01M8 14s1.5 2 4 2 4-2 4-2"/>
+            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+            <line x1="1" y1="10" x2="23" y2="10"/>
           </svg>
-          QQ
+          {{ t('user.fundPassword') }}
         </div>
         <div class="form-value">
-          <span v-if="profileData.qq">{{ profileData.qq }}</span>
-          <span v-else class="placeholder">{{ t('user.bindQQ') }}</span>
+          <span :class="{ placeholder: !hasFundPwd }">
+            {{ hasFundPwd ? t('user.passwordSet') : t('user.passwordNotSet') }}
+          </span>
           <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M9 18l6-6-6-6"/>
           </svg>
@@ -143,33 +130,56 @@
       </div>
     </div>
 
-    <!-- 账户安全提示 -->
-    <div class="security-tip">
-      <div class="tip-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="12" y1="16" x2="12" y2="12"/>
-          <line x1="12" y1="8" x2="12.01" y2="8"/>
-        </svg>
-      </div>
-      <div class="tip-text">
-        <p>{{ t('user.securityTip1') }}</p>
-        <p>{{ t('user.securityTip2') }}</p>
+    
+
+    <!-- 绑定银行卡弹窗 -->
+    <div class="edit-modal" v-if="showBankModal">
+      <div class="modal-mask" @click="showBankModal = false"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>{{ t('user.bindBankCard') }}</h3>
+          <span class="modal-close" @click="showBankModal = false">×</span>
+        </div>
+        <div class="modal-body">
+          <input
+            type="text"
+            v-model="bankForm.username"
+            :placeholder="t('user.cardHolderName')"
+            class="modal-input"
+          />
+          <select v-model="bankForm.bankId" class="modal-input">
+            <option value="">{{ t('user.selectBank') }}</option>
+            <option v-for="bank in bankList" :key="bank.id" :value="bank.id">{{ bank.name }}</option>
+          </select>
+          <input
+            type="text"
+            v-model="bankForm.cardNo"
+            :placeholder="t('user.bankCardNo')"
+            class="modal-input"
+          />
+          <input
+            type="text"
+            v-model="bankForm.subAddress"
+            :placeholder="t('user.bankAddress')"
+            class="modal-input"
+          />
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" @click="showBankModal = false">{{ t('common.cancel') }}</button>
+          <button class="btn-confirm" @click="handleBindBank" :disabled="!bankForm.username || !bankForm.bankId || !bankForm.cardNo || !bankForm.subAddress || loading">
+            {{ loading ? t('common.loading') : t('common.confirm') }}
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- 编辑弹窗 -->
+    <!-- 个人资料编辑弹窗（昵称、手机、邮箱、QQ） -->
     <div class="edit-modal" v-if="showModal">
       <div class="modal-mask" @click="closeModal"></div>
       <div class="modal-content">
         <div class="modal-header">
           <h3>{{ editTitle }}</h3>
-          <span class="modal-close" @click="closeModal">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="18" y1="6" x2="6" y2="18"/>
-              <line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </span>
+          <span class="modal-close" @click="closeModal">×</span>
         </div>
         <div class="modal-body">
           <input
@@ -186,7 +196,9 @@
         </div>
         <div class="modal-footer">
           <button class="btn-cancel" @click="closeModal">{{ t('common.cancel') }}</button>
-          <button class="btn-confirm" @click="saveEdit" :disabled="!editValue && editingField !== 'name'">{{ t('common.confirm') }}</button>
+          <button class="btn-confirm" @click="saveEdit" :disabled="!editValue && editingField !== 'name'">
+            {{ t('common.confirm') }}
+          </button>
         </div>
       </div>
     </div>
@@ -197,6 +209,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { userApi, type BankInfo } from '@/api/user'
 import { ElMessage } from 'element-plus'
 import { t } from '@/locales'
 
@@ -246,24 +259,64 @@ const profileData = reactive({
   qq: '',
 })
 
-// 编辑弹窗
+// 银行卡数据
+const bankData = reactive<BankInfo>({
+  username: '',
+  bankName: '',
+  cardNo: '',
+  subAddress: ''
+})
+
+const hasFundPwd = ref(false)
+const loading = ref(false)
+
+// 弹窗状态
 const showModal = ref(false)
 const editingField = ref('')
 const editValue = ref('')
+const showBankModal = ref(false)
+
+// 银行卡表单
+const bankForm = reactive({
+  username: '',
+  bankId: '',
+  cardNo: '',
+  subAddress: ''
+})
+
+// 银行列表
+const bankList = ref([
+  { id: 1, name: '中国工商银行' },
+  { id: 2, name: '中国农业银行' },
+  { id: 3, name: '中国建设银行' },
+  { id: 4, name: '中国银行' },
+  { id: 5, name: '交通银行' },
+  { id: 6, name: '招商银行' },
+  { id: 7, name: '中国民生银行' },
+  { id: 8, name: '中国光大银行' },
+  { id: 9, name: '中国浦发银行' },
+  { id: 10, name: '北京银行' },
+  { id: 11, name: '上海银行' },
+  { id: 12, name: '平安银行' },
+  { id: 13, name: '华夏银行' },
+  { id: 14, name: '农村信用合作社' },
+  { id: 15, name: '其他银行' }
+])
 
 const editTitles: Record<string, string> = {
-  nickname: '修改昵称',
-  phone: '绑定手机',
-  email: '绑定邮箱',
-  qq: '绑定QQ',
-  name: '设置真实姓名',
+  nickname: t('user.nickname'),
+  phone: t('user.bindPhone'),
+  email: t('user.bindEmail'),
+  qq: t('user.bindQQ'),
+  name: t('user.realname'),
 }
 
 const editPlaceholders: Record<string, string> = {
-  nickname: '请输入昵称',
-  phone: '请输入手机号',
-  email: '请输入邮箱',
-  qq: '请输入QQ号',
+  nickname: t('user.nickname'),
+  phone: t('user.phone'),
+  email: t('user.email'),
+  qq: 'QQ',
+  name: '',
 }
 
 const editTitle = computed(() => editTitles[editingField.value] || '')
@@ -280,7 +333,7 @@ const editField = (field: string) => {
   // 真实姓名需要特殊处理
   if (field === 'name') {
     if (profileData.name) {
-      ElMessage.warning(t('user.nameCannotModify'))
+      ElMessage.warning(t('user.cannotModify'))
       return
     }
   }
@@ -294,13 +347,126 @@ const closeModal = () => {
   editValue.value = ''
 }
 
-const saveEdit = () => {
+const saveEdit = async () => {
   if (!editValue.value.trim()) return
 
-  // TODO: 调用API保存
-  ElMessage.success(t('user.updateSuccess'))
-  profileData[editingField.value as keyof typeof profileData] = editValue.value
-  closeModal()
+  loading.value = true
+  try {
+    const res = await userApi.updateProfile({
+      [editingField.value]: editValue.value
+    })
+
+    if (res.code === 0) {
+      ElMessage.success(t('user.setSuccess'))
+      profileData[editingField.value as keyof typeof profileData] = editValue.value
+      closeModal()
+    } else {
+      ElMessage.error(res.message || t('user.setFailed'))
+    }
+  } catch (error: any) {
+    ElMessage.error(error.response?.data?.message || t('user.setFailed'))
+  } finally {
+    loading.value = false
+  }
+}
+
+// 修改登录密码
+const handleChangePassword = async () => {
+  if (!pwdForm.oldPwd || !pwdForm.newPwd || !pwdForm.confirmPwd) {
+    ElMessage.warning(t('user.fillAllFields'))
+    return
+  }
+
+  if (pwdForm.oldPwd.length < 6) {
+    ElMessage.warning(t('user.oldPwdMinLength'))
+    return
+  }
+
+  if (pwdForm.newPwd.length < 6) {
+    ElMessage.warning(t('user.pwdMinLength'))
+    return
+  }
+
+  if (pwdForm.newPwd !== pwdForm.confirmPwd) {
+    ElMessage.warning(t('user.pwdNotMatch'))
+    return
+  }
+
+  loading.value = true
+  try {
+    const res = await userApi.changePassword(pwdForm.oldPwd, pwdForm.newPwd)
+    if (res.code === 0) {
+      ElMessage.success(t('user.changePwdSuccess'))
+      showChangePwdModal.value = false
+      pwdForm.oldPwd = ''
+      pwdForm.newPwd = ''
+      pwdForm.confirmPwd = ''
+    } else {
+      // PHP 错误消息映射到多语言
+      const msgMap: Record<string, string> = {
+        '原密碼不能為空': t('user.oldPwdEmpty'),
+        '原密碼至少 6 位': t('user.oldPwdMinLength'),
+        '密碼不能為空': t('user.newPwdEmpty'),
+        '密碼至少 6 位': t('user.pwdMinLength'),
+        '原密碼不正確': t('user.oldPwdIncorrect'),
+        '修改密碼失敗': t('user.changePwdFailed'),
+        '原提款密碼不能為空': t('user.oldCoinPwdEmpty'),
+        '原提款密碼至少 6 位': t('user.oldCoinPwdMinLength'),
+        '提款密碼不能為空': t('user.newCoinPwdEmpty'),
+        '提領密碼至少 6 位': t('user.pwdMinLength'),
+        '提款密碼與登入密碼不能一樣': t('user.pwdSame'),
+        '修改提款密碼失敗': t('user.changeCoinPwdFailed'),
+      }
+      const translatedMsg = msgMap[res.message] || res.message || t('user.changePwdFailed')
+      ElMessage.error(translatedMsg)
+    }
+  } catch (error: any) {
+    ElMessage.error(error.message || t('user.changePwdFailed'))
+  } finally {
+    loading.value = false
+  }
+}
+
+// 绑定银行卡
+const handleBindBank = async () => {
+  if (!bankForm.username || !bankForm.bankId || !bankForm.cardNo || !bankForm.subAddress) {
+    ElMessage.warning(t('user.fillAllFields'))
+    return
+  }
+
+  loading.value = true
+  try {
+    const res = await userApi.bindBank(bankForm)
+    if (res.code === 0) {
+      ElMessage.success(t('user.bindBankSuccess'))
+      showBankModal.value = false
+      bankData.username = bankForm.username
+      bankData.cardNo = bankForm.cardNo
+      // 刷新银行信息
+      loadBankInfo()
+    } else {
+      ElMessage.error(res.message || t('user.bindFailed'))
+    }
+  } catch (error: any) {
+    ElMessage.error(error.response?.data?.message || t('user.bindFailed'))
+  } finally {
+    loading.value = false
+  }
+}
+
+// 加载银行信息
+const loadBankInfo = async () => {
+  try {
+    const res = await userApi.getUserBank()
+    if (res.code === 0 && res.data) {
+      bankData.username = res.data.username || ''
+      bankData.bankName = res.data.bankName || ''
+      bankData.cardNo = res.data.cardNo || res.data.account || ''
+      bankData.subAddress = res.data.subAddress || res.data.countname || ''
+    }
+  } catch (error) {
+    console.error('加载银行卡信息失败', error)
+  }
 }
 
 // 加载用户信息
@@ -323,7 +489,11 @@ const loadUserInfo = async () => {
     profileData.phone = info.phone || ''
     profileData.email = info.email || ''
     profileData.qq = ''
+
+    hasFundPwd.value = !!(info as any).hasFundPwd || false
   }
+
+  loadBankInfo()
 }
 
 onMounted(() => {
@@ -516,7 +686,7 @@ onMounted(() => {
 /* 表单区域 */
 .form-section {
   background: #fff;
-  margin: 0 10px;
+  margin: 0 10px 15px 10px;
   border-radius: 12px;
   overflow: hidden;
 }
@@ -582,37 +752,6 @@ onMounted(() => {
   margin-left: 8px;
 }
 
-/* 安全提示 */
-.security-tip {
-  display: flex;
-  align-items: flex-start;
-  background: #fff9e6;
-  margin: 15px 10px;
-  padding: 15px;
-  border-radius: 12px;
-  border: 1px solid #ffe58f;
-}
-
-.tip-icon {
-  flex-shrink: 0;
-  width: 24px;
-  height: 24px;
-  margin-right: 10px;
-}
-
-.tip-icon svg {
-  width: 100%;
-  height: 100%;
-  color: #faad14;
-}
-
-.tip-text p {
-  margin: 0;
-  font-size: 12px;
-  color: #8c6e3f;
-  line-height: 1.6;
-}
-
 /* 编辑弹窗 */
 .edit-modal {
   position: fixed;
@@ -671,16 +810,17 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.modal-close svg {
-  width: 20px;
-  height: 20px;
+  cursor: pointer;
+  font-size: 20px;
   color: #999;
 }
 
 .modal-body {
   padding: 20px;
+}
+
+.modal-body input {
+  margin-bottom: 12px;
 }
 
 .modal-input {
@@ -743,5 +883,6 @@ onMounted(() => {
 
 .btn-confirm:disabled {
   opacity: 0.5;
+  cursor: not-allowed;
 }
 </style>
