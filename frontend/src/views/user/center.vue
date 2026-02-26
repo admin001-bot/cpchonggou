@@ -222,25 +222,6 @@
     <div class="menu-section">
       <div class="section-title">{{ t('user.otherManage') }}</div>
       <div class="menu-list">
-        <div class="menu-item" @click="goTeam">
-          <div class="menu-left">
-            <div class="menu-icon team">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 00-3-3.87"/>
-                <path d="M16 3.13a4 4 0 010 7.75"/>
-              </svg>
-            </div>
-            <span class="menu-text">{{ t('user.myTeam') }}</span>
-          </div>
-          <div class="menu-right">
-            <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M9 18l6-6-6-6"/>
-            </svg>
-          </div>
-        </div>
-
         <div class="menu-item" @click="goHelp">
           <div class="menu-left">
             <div class="menu-icon help">
@@ -379,12 +360,6 @@ const goDayRecord = () => {
 
 const goNotCount = () => {
   router.push('/notcount')
-}
-
-const goTeam = () => {
-  ElMessageBox.alert(t('user.teamManage'), t('user.prompt'), {
-    confirmButtonText: t('common.confirm')
-  })
 }
 
 const goHelp = () => {

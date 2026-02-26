@@ -105,6 +105,15 @@
               <span class="equal-sign">=</span>
               <span class="lottery-ball round sum-ball">{{ lotterySum }}</span>
             </template>
+            <!-- 时时彩类型显示 5 个球 -->
+            <template v-else-if="gameConfig?.group === 'group2'">
+              <span
+                v-for="(num, index) in displayNumbers.slice(0, 5)"
+                :key="index"
+                class="lottery-ball round-6"
+                :class="['data-' + num, { 'running': isLotteryRunning && !settledIndexes.includes(index) }]"
+              >{{ num }}</span>
+            </template>
             <!-- 其他游戏正常显示 -->
             <template v-else>
               <span
@@ -156,6 +165,7 @@
         <template v-if="currentPane?.code === 'LM'">
           <LiangMianBet
             :game-id="gameId"
+            :game-group="gameConfig?.group"
             :bet-data="betData"
             :plays-data="playsData"
             :get-odds="getOdds"
@@ -167,6 +177,7 @@
         <template v-else-if="currentPane?.code === 'HE'">
           <GuanYaHeBet
             :game-id="gameId"
+            :game-group="gameConfig?.group"
             :bet-data="betData"
             :plays-data="playsData"
             :get-odds="getOdds"
@@ -178,6 +189,7 @@
         <template v-else-if="currentPane?.code === '1-5'">
           <RankBet
             :game-id="gameId"
+            :game-group="gameConfig?.group"
             :bet-data="betData"
             :plays-data="playsData"
             :get-odds="getOdds"
@@ -190,10 +202,47 @@
         <template v-else-if="currentPane?.code === '6-10'">
           <RankBet
             :game-id="gameId"
+            :game-group="gameConfig?.group"
             :bet-data="betData"
             :plays-data="playsData"
             :get-odds="getOdds"
             :ranks="[6, 7, 8, 9, 10]"
+            @toggle-bet="toggleBet"
+          />
+        </template>
+
+        <!-- 时时彩 - 1-5 球玩法 -->
+        <template v-else-if="gameConfig?.group === 'group2' && currentPane?.code === 'ALL'">
+          <AllBallsBet
+            :game-id="gameId"
+            :game-group="gameConfig?.group"
+            :bet-data="betData"
+            :plays-data="playsData"
+            :get-odds="getOdds"
+            @toggle-bet="toggleBet"
+          />
+        </template>
+
+        <!-- 时时彩 - 前中后玩法 -->
+        <template v-else-if="gameConfig?.group === 'group2' && currentPane?.code === 'QZH'">
+          <QzhBet
+            :game-id="gameId"
+            :game-group="gameConfig?.group"
+            :bet-data="betData"
+            :plays-data="playsData"
+            :get-odds="getOdds"
+            @toggle-bet="toggleBet"
+          />
+        </template>
+
+        <!-- 时时彩 - 龙虎斗玩法 -->
+        <template v-else-if="gameConfig?.group === 'group2' && currentPane?.code === 'LONGHU'">
+          <LongHuBet
+            :game-id="gameId"
+            :game-group="gameConfig?.group"
+            :bet-data="betData"
+            :plays-data="playsData"
+            :get-odds="getOdds"
             @toggle-bet="toggleBet"
           />
         </template>
@@ -296,6 +345,7 @@
     <GamePopover
       :visible="popoverVisible"
       :game-id="gameId"
+            :game-group="gameConfig?.group"
       @close="closePopover"
     />
   </div>
@@ -314,6 +364,9 @@ import RankBet from '@/components/game/RankBet.vue'
 import GamePopover from '@/components/game/GamePopover.vue'
 import HunHeBet from '@/components/game/HunHeBet.vue'
 import TeMaBet from '@/components/game/TeMaBet.vue'
+import AllBallsBet from '@/components/game/AllBallsBet.vue'
+import QzhBet from '@/components/game/QzhBet.vue'
+import LongHuBet from '@/components/game/LongHuBet.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -464,10 +517,34 @@ const totalBetCount = computed(() => {
   return count
 })
 
-// 开奖结果计算（PK10游戏）
+// 开奖结果计算
 const lotteryResults = computed(() => {
   const nums = lastNumbers.value
-  if (!nums || nums.length < 10) return []
+  if (!nums || nums.length === 0) return []
+
+  // 时时彩类型（5 个球）
+  if (gameConfig.value?.group === 'group2') {
+    const validNums = nums.slice(0, 5).filter(n => !isNaN(n))
+    if (validNums.length < 5) return []
+
+    const results: (number | string)[] = []
+
+    // 总和（5 个球相加）
+    const totalSum = validNums.reduce((a, b) => a + b, 0)
+    results.push(totalSum)
+
+    // 总和大小
+    // 时时彩总和范围：0-45，中间值 22.5
+    results.push(totalSum >= 23 ? '大' : '小')
+
+    // 总和单双
+    results.push(totalSum % 2 === 1 ? '單' : '雙')
+
+    return results
+  }
+
+  // PK10 类型（10 个球）
+  if (nums.length < 10) return []
 
   const results: (number | string)[] = []
 
