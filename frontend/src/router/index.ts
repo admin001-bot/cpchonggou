@@ -179,6 +179,76 @@ const router = createRouter({
 // 路由动画控制
 let historyStack: string[] = []
 
+// 资源加载检测
+let stylesLoaded = false
+let domReady = false
+
+// 检测样式加载
+const checkStylesLoaded = (): Promise<void> => {
+  return new Promise((resolve) => {
+    const checkInterval = setInterval(() => {
+      const sheets = document.styleSheets
+      let allLoaded = true
+
+      if (sheets && sheets.length > 0) {
+        for (let i = 0; i < sheets.length; i++) {
+          const sheet = sheets[i]
+          // 检查外部样式表是否加载完成
+          if (sheet.href) {
+            try {
+              // 尝试访问 cssRules，如果未加载会抛出错误
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              const rules = sheet.cssRules || sheet.rules
+            } catch (e) {
+              // 样式未加载完成
+              allLoaded = false
+              break
+            }
+          }
+        }
+      }
+
+      if (allLoaded) {
+        clearInterval(checkInterval)
+        stylesLoaded = true
+        resolve()
+      }
+    }, 50)
+
+    // 最多等待 5 秒
+    setTimeout(() => {
+      clearInterval(checkInterval)
+      stylesLoaded = true
+      resolve()
+    }, 5000)
+  })
+}
+
+// 检测 DOM 和组件渲染完成
+const checkDomReady = (): Promise<void> => {
+  return new Promise((resolve) => {
+    if (document.readyState === 'complete') {
+      domReady = true
+      resolve()
+      return
+    }
+
+    const onReady = () => {
+      domReady = true
+      resolve()
+    }
+
+    window.addEventListener('load', onReady, { once: true })
+
+    // 备用方案：超时后强制标记为就绪
+    setTimeout(() => {
+      window.removeEventListener('load', onReady)
+      domReady = true
+      resolve()
+    }, 5000)
+  })
+}
+
 router.afterEach((to) => {
   // 记录访问历史
   if (!historyStack.includes(to.path)) {
@@ -188,7 +258,7 @@ router.afterEach((to) => {
     }
   }
 
-  // 设置transition名称
+  // 设置 transition 名称
   const fromPath = historyStack[historyStack.length - 2]
   if (fromPath && to.path === fromPath) {
     // 后退
@@ -199,12 +269,21 @@ router.afterEach((to) => {
   }
 })
 
-// 路由守卫
-router.beforeEach((to, _from, next) => {
+// 路由守卫 - 显示加载动画并检测资源加载
+router.beforeEach(async (to, _from, next) => {
+  // 显示加载动画
+  const loadingStore = (router as any).__loadingStore
+  if (loadingStore) {
+    loadingStore.show()
+    // 重置加载状态
+    stylesLoaded = false
+    domReady = false
+  }
+
   // 设置页面标题
   const titleKey = to.meta.title as string
-  // 如果标题是翻译key则翻译，否则直接使用
-  if (titleKey && titleKey.startsWith('bet.') || titleKey && titleKey.startsWith('home.') || titleKey && titleKey.startsWith('common.') || titleKey && titleKey.startsWith('bank.')) {
+  // 如果标题是翻译 key 则翻译，否则直接使用
+  if (titleKey && (titleKey.startsWith('bet.') || titleKey.startsWith('home.') || titleKey.startsWith('common.') || titleKey.startsWith('bank.'))) {
     document.title = t(titleKey)
   } else {
     document.title = titleKey || '彩票系统'
@@ -219,7 +298,26 @@ router.beforeEach((to, _from, next) => {
     }
   }
 
+  // 等待资源和样式加载完成
+  if (loadingStore) {
+    await Promise.all([
+      checkStylesLoaded(),
+      checkDomReady(),
+    ])
+  }
+
   next()
+})
+
+// 路由结束后隐藏加载动画
+router.afterEach(() => {
+  const loadingStore = (router as any).__loadingStore
+  if (loadingStore) {
+    // 确保资源和样式都加载完成后再隐藏
+    setTimeout(() => {
+      loadingStore.hide()
+    }, 150)
+  }
 })
 
 export default router

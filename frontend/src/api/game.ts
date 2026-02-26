@@ -125,12 +125,14 @@ export interface BetDetailItem {
   lotteryNo: string
   openTime: string
   betInfo: string
+  content: string    // 投注内容（如：单、双等）
 }
 
 // 今日已结项
 export interface SettledItem {
   turnNum: string
   detail: string
+  content: string    // 投注内容（如：双、冠亚单等）
   money: number
   resultMoney: number
   rebate: number

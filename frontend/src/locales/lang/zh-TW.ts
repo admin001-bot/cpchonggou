@@ -138,6 +138,7 @@ export default {
   'game.lose': '虧',
   'game.betAmount': '下注金額',
   'game.winLoss': '輸贏金額',
+  'game.betContent': '下注內容',
   'game.menu': '功能菜單',
   'game.pendingBets': '即時注單',
   'game.settledToday': '今日已結',

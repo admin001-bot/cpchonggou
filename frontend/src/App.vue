@@ -15,13 +15,20 @@
     :show-progress="toastStore.shouldShowProgress"
     @close="toastStore.close"
   />
+
+  <!-- 全局加载动画 -->
+  <LoadingOverlay
+    :visible="loadingStore.isLoading"
+  />
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import FullscreenToast from '@/components/FullscreenToast/index.vue'
+import LoadingOverlay from '@/components/LoadingOverlay/index.vue'
 import { useToastStore } from '@/stores/toast'
+import { useLoadingStore } from '@/stores/loading'
 
 // 路由动画
 const route = useRoute()
@@ -29,6 +36,9 @@ const transitionName = ref('slide-forward')
 
 // Toast store
 const toastStore = useToastStore()
+
+// Loading store
+const loadingStore = useLoadingStore()
 
 // 路由动画
 let history: string[] = []
@@ -44,6 +54,17 @@ watch(() => route.path, (newPath) => {
   }
   if (history.length > 5) history = history.slice(-5)
 }, { immediate: true })
+
+// 初始化时检测资源加载
+onMounted(() => {
+  // 初始加载时显示加载动画直到资源加载完成
+  loadingStore.show()
+
+  // 等待所有资源加载完成
+  setTimeout(() => {
+    loadingStore.hide()
+  }, 500)
+})
 </script>
 
 <style>

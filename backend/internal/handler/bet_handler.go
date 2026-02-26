@@ -48,12 +48,14 @@ type NotCountDetailItem struct {
 	LotteryNo   string  `json:"lotteryNo"`
 	OpenTime    string  `json:"openTime"`
 	BetInfo     string  `json:"betInfo"`
+	Content     string  `json:"content"`     // 投注内容（如：单、双等）
 }
 
 // SettledItem 今日已结项
 type SettledItem struct {
 	TurnNum     string  `json:"turnNum"`
 	Detail      string  `json:"detail"`
+	Content     string  `json:"content"`     // 投注内容（如：双、冠亚单等）
 	Money       float64 `json:"money"`
 	ResultMoney float64 `json:"resultMoney"`
 	Rebate      float64 `json:"rebate"`
@@ -137,6 +139,7 @@ func (h *BetHandler) GetNotCountDetail(c *gin.Context) {
 		LotteryNo   string  `gorm:"column:lotteryNo"`
 		KjTime      int64   `gorm:"column:kjTime"`
 		BetInfo     string  `gorm:"column:betInfo"`
+		ActionData  string  `gorm:"column:actionData"`
 	}
 
 	query := model.DB.Table("ssc_bets").
@@ -175,6 +178,7 @@ func (h *BetHandler) GetNotCountDetail(c *gin.Context) {
 			LotteryNo:   bet.LotteryNo,
 			OpenTime:    time.Unix(bet.KjTime, 0).Format("2006-01-02 15:04:05"),
 			BetInfo:     bet.BetInfo,
+			Content:     bet.ActionData,
 		})
 
 		totalBetMoney += betMoney
@@ -222,9 +226,11 @@ func (h *BetHandler) GetBetBills(c *gin.Context) {
 		KjTime      int64
 		Bonus       float64
 		BetInfo     string
+		Content     string
 	}
 
 	query := model.DB.Table("ssc_bets").
+		Select("id, uid, username, playedId, playedGroup, odds, rebate, actionTime, actionNo, type, money, totalNums, wjorderId, lotteryNo, kjTime, bonus, betInfo, actionData as content").
 		Where("isDelete = 0 AND lotteryNo != '' AND uid = ? AND actionTime >= ?", uid, todayStartInt)
 	if gameID > 0 {
 		query = query.Where("type = ?", gameID)
@@ -259,6 +265,7 @@ func (h *BetHandler) GetBetBills(c *gin.Context) {
 		result = append(result, SettledItem{
 			TurnNum:     gameName + "<br>" + bet.ActionNo,
 			Detail:      playName + "<br>@" + fmt.Sprintf("%.2f", bet.Odds) + "<br>#" + fmt.Sprintf("%.3f", bet.Rebate),
+			Content:     bet.Content,
 			Money:       betMoney,
 			ResultMoney: resultMoney,
 			Rebate:      bet.Rebate,

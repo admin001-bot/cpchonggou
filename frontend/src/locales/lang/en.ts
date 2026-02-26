@@ -138,6 +138,7 @@ export default {
   'game.lose': 'Lose',
   'game.betAmount': 'Bet Amount',
   'game.winLoss': 'Profit/Loss',
+  'game.betContent': 'Bet Content',
   'game.menu': 'Menu',
   'game.pendingBets': 'Pending Bets',
   'game.settledToday': 'Settled Today',

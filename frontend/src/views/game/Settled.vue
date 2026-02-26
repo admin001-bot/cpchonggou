@@ -52,9 +52,15 @@
                 <span class="rebate-tag">#{{ parseDetail(item.detail).rebate }}</span>
               </div>
             </div>
-            <div class="bet-amount">
-              <div class="amount-label">{{ t('game.betAmount') }}</div>
-              <div class="amount-value">{{ formatMoney(item.money) }}</div>
+            <div class="bet-info-right">
+              <div class="bet-content-display">
+                <div class="content-label">{{ t('game.betContent') }}</div>
+                <div class="content-value">{{ item.content || '-' }}</div>
+              </div>
+              <div class="bet-amount">
+                <div class="amount-label">{{ t('game.betAmount') }}</div>
+                <div class="amount-value">{{ formatMoney(item.money) }}</div>
+              </div>
             </div>
           </div>
         </div>
@@ -468,10 +474,37 @@ async function doRefresh() {
   border: 1px solid rgba(251, 35, 81, 0.15);
 }
 
+.bet-info-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  min-width: 120px;
+  margin-left: 12px;
+}
+
+.bet-content-display {
+  text-align: right;
+}
+
+.content-label {
+  font-size: 10px;
+  color: #999;
+  margin-bottom: 4px;
+}
+
+.content-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  background: rgba(251, 35, 81, 0.08);
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(251, 35, 81, 0.15);
+}
+
 .bet-amount {
   text-align: right;
-  min-width: 80px;
-  margin-left: 12px;
 }
 
 .bet-amount .amount-label {

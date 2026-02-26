@@ -67,6 +67,7 @@
               <div class="play-detail">
                 <span class="odds-badge">@{{ item.odds.toFixed(2) }}</span>
                 <span class="bet-info">{{ item.betInfo }}</span>
+                <span class="content-badge" v-if="item.content">{{ item.content }}</span>
               </div>
             </div>
             <div class="bet-money">
@@ -492,6 +493,18 @@ async function doRefresh() {
   border-radius: 4px;
   border: 1px solid rgba(251, 35, 81, 0.15);
   color: #fb2351;
+}
+
+.content-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  background: rgba(76, 175, 80, 0.08);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #4caf50;
+  border: 1px solid rgba(76, 175, 80, 0.15);
 }
 
 .bet-money {
