@@ -561,7 +561,7 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
             coinLog := map[string]interface{}{
                 "uid":        uid,
                 "liqType":    101,
-                "info":       "投注",
+                "info":       i18n.T("log.bet"),
                 "coin":       -amount,
                 "fcoin":      0,
                 "type":       gameID,

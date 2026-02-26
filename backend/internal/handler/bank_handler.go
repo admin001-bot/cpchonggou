@@ -349,7 +349,7 @@ func (h *BankHandler) Withdraw(c *gin.Context) {
 		UID:        uid,
 		Type:       0,
 		LiqType:    106, // 提现冻结类型
-		Info:       fmt.Sprintf("提現 [%d] 資金凍結", cash.ID),
+		Info:       fmt.Sprintf(i18n.T("withdraw.freeze_info"), cash.ID),
 		Coin:       -amount,
 		FCoin:      amount,
 		UserCoin:   user.Coin - amount,

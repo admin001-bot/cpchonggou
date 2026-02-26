@@ -44,6 +44,7 @@ var ZhTW = map[string]string{
 	"bank.last4":                "尾號",
 	"deposit.system":            "系統儲值",
 	"deposit.admin":             "管理員儲值",
+	"withdraw.freeze_info":      "提現 [%d] 資金凍結",
 
 	// 通用消息
 	"common.error":      "系統錯誤",
@@ -96,4 +97,5 @@ var ZhTW = map[string]string{
 	"week.4": "星期四",
 	"week.5": "星期五",
 	"week.6": "星期六",
+	"log.bet": "投注",
 }

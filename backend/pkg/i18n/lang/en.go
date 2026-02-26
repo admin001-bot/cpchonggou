@@ -44,6 +44,7 @@ var En = map[string]string{
 	"bank.last4":               "Last 4 digits",
 	"deposit.system":           "System Deposit",
 	"deposit.admin":            "Admin Deposit",
+	"withdraw.freeze_info":     "Withdraw [%d] Fund Frozen",
 
 	// Common messages
 	"common.error":      "System error",
@@ -96,4 +97,5 @@ var En = map[string]string{
 	"week.4": "Thursday",
 	"week.5": "Friday",
 	"week.6": "Saturday",
+	"log.bet": "Bet",
 }
