@@ -112,11 +112,6 @@
                     <img style="width: 30px; padding-top: 1px; text-align: center" src="/ims/hk.png" />
                   </a>
                 </li>
-                <li style="margin-top: 5px">
-                  <a class="button ry-button" @click.prevent="changeLanguage('zh-CN')">
-                    <img style="width: 30px; padding-top: 1px; text-align: center" src="/ims/jp.png" />
-                  </a>
-                </li>
               </ul>
             </div>
           </div>
