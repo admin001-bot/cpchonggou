@@ -226,23 +226,39 @@ const handleSetClick = () => {
 const submitForm = async () => {
   // 验证
   if (!form.loginPwd) {
-    ElMessage.warning(t('user.enterLoginPwd'))
+    toastStore.show({
+      type: 'warning',
+      title: '需要登录密码',
+      message: t('user.enterLoginPwd')
+    })
     return
   }
 
   if (!form.coinPwd || form.coinPwd.length < 6) {
-    ElMessage.warning(t('user.coinPwdLength'))
+    toastStore.show({
+      type: 'warning',
+      title: '密码长度不足',
+      message: t('user.coinPwdLength')
+    })
     return
   }
 
   if (form.coinPwd !== form.confirmPwd) {
-    ElMessage.warning(t('user.pwdNotMatch'))
+    toastStore.show({
+      type: 'warning',
+      title: '密码不匹配',
+      message: t('user.pwdNotMatch')
+    })
     return
   }
 
   // 验证密码不能与登录密码相同
   if (form.loginPwd === form.coinPwd) {
-    ElMessage.warning(t('user.pwdSame'))
+    toastStore.show({
+      type: 'warning',
+      title: '密码不能相同',
+      message: t('user.pwdSame')
+    })
     return
   }
 
@@ -255,17 +271,31 @@ const submitForm = async () => {
     })
 
     if (res.code === 0) {
-      ElMessage.success(t('user.setSuccess'))
+      toastStore.show({
+        type: 'success',
+        title: '设置成功',
+        message: t('user.setSuccess')
+      })
       // 刷新用户信息
       await userStore.getUserInfo()
       setTimeout(() => {
         router.back()
       }, 1500)
     } else {
-      ElMessage.error(res.message || t('user.setFailed'))
+      const errorMessage = res.message || res.data?.message || res.msg || res.error || t('user.setFailed')
+      toastStore.show({
+        type: 'error',
+        title: '设置失败',
+        message: errorMessage
+      })
     }
   } catch (error: any) {
-    ElMessage.error(error.response?.data?.message || t('user.setFailed'))
+    const errorMsg = error.response?.data?.message || error.response?.data?.msg || error.message || t('user.setFailed')
+    toastStore.show({
+      type: 'error',
+      title: '设置失败',
+      message: errorMsg
+    })
   } finally {
     loading.value = false
   }
@@ -275,17 +305,29 @@ const submitForm = async () => {
 const submitEditForm = async () => {
   // 验证
   if (!form.oldPwd || form.oldPwd.length < 6) {
-    ElMessage.warning(t('user.enterOldCoinPwd'))
+    toastStore.show({
+      type: 'warning',
+      title: '需要原密码',
+      message: t('user.enterOldCoinPwd')
+    })
     return
   }
 
   if (!form.coinPwd || form.coinPwd.length < 6) {
-    ElMessage.warning(t('user.coinPwdLength'))
+    toastStore.show({
+      type: 'warning',
+      title: '密码长度不足',
+      message: t('user.coinPwdLength')
+    })
     return
   }
 
   if (form.coinPwd !== form.confirmPwd) {
-    ElMessage.warning(t('user.pwdNotMatch'))
+    toastStore.show({
+      type: 'warning',
+      title: '密码不匹配',
+      message: t('user.pwdNotMatch')
+    })
     return
   }
 
@@ -297,17 +339,31 @@ const submitEditForm = async () => {
     })
 
     if (res.code === 0) {
-      ElMessage.success(t('user.changeSuccess'))
+      toastStore.show({
+        type: 'success',
+        title: '修改成功',
+        message: t('user.changeSuccess')
+      })
       isEditMode.value = false
       // 清空表单
       form.oldPwd = ''
       form.coinPwd = ''
       form.confirmPwd = ''
     } else {
-      ElMessage.error(res.message || t('user.changeFailed'))
+      const errorMessage = res.message || res.data?.message || res.msg || res.error || t('user.changeFailed')
+      toastStore.show({
+        type: 'error',
+        title: '修改失败',
+        message: errorMessage
+      })
     }
   } catch (error: any) {
-    ElMessage.error(error.response?.data?.message || t('user.changeFailed'))
+    const errorMsg = error.response?.data?.message || error.response?.data?.msg || error.message || t('user.changeFailed')
+    toastStore.show({
+      type: 'error',
+      title: '修改失败',
+      message: errorMsg
+    })
   } finally {
     loading.value = false
   }
