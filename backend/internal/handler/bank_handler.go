@@ -322,7 +322,7 @@ func (h *BankHandler) Withdraw(c *gin.Context) {
 		Account:    bank.Account,
 		Username:   bank.Username,
 		State:      0, // 待审核
-		Info:       "提款申請",
+		Info:       i18n.T("withdraw.apply"),
 		IsDelete:   0,
 		ActionTime: time.Now().Unix(),
 	}

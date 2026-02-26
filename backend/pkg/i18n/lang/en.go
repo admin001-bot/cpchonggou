@@ -27,6 +27,7 @@ var En = map[string]string{
 	"bet.max_single":       "Single bet must be less than %d",
 	"bet.system_error":     "System error: %s, please contact admin",
 	"bet.submit_error":     "Submit error, please try again",
+	"bet.error":           "Bet error",
 
 	// Withdraw messages
 	"withdraw.success":         "Withdrawal request submitted",

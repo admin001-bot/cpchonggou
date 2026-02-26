@@ -169,11 +169,11 @@ func (h *GameHandler) GetNextIssue(c *gin.Context) {
 
 	// 计算当前期数（从 1 开始）
 	// 例如：00:00:00 时，secondsOfDay=0, issueNum=1
-	// 23:55:00 时，secondsOfDay=86100, issueNum=86100/300+1=287+1=288
+	// 00:05:00 时，secondsOfDay=300, issueNum=300/300+1=2
 	issueNum := int(secondsOfDay/periodSeconds) + 1
 
-	// 计算当前期号的开始时间
-	periodStartSeconds := int64(issueNum-1) * periodSeconds
+	// 计算当前期号的开奖时间（第 1 期开奖时间是 00:05:00，不是 00:00:00）
+	periodStartSeconds := int64(issueNum) * periodSeconds
 	startHour := int(periodStartSeconds / 3600)
 	startMin := int((periodStartSeconds % 3600) / 60)
 	startSec := int(periodStartSeconds % 60)
@@ -182,7 +182,7 @@ func (h *GameHandler) GetNextIssue(c *gin.Context) {
 	nowUnix := now.Unix()
 
 	// 如果当前时间已经超过了当前期号的封盘时间，则进入下一期
-	for nowUnix >= lotteryTime.Unix()-ftime && issueNum <= periodsPerDay {
+	for nowUnix > lotteryTime.Unix()-ftime && issueNum <= periodsPerDay {
 		issueNum++
 		lotteryTime = lotteryTime.Add(time.Duration(periodSeconds) * time.Second)
 	}
@@ -281,13 +281,14 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
 
     betInfo := BetResponse{
         Success: false,
-        Msg:     "",
+        Msg:     i18n.T("bet.error"),
         Code:    0,
     }
 
     // 获取用户信息
     var user model.User
     if err := model.DB.First(&user, uid).Error; err != nil {
+        betInfo.Msg = i18n.T("bet.user_not_found")
         betInfo.MsgKey = "bet.user_not_found"
         c.JSON(http.StatusOK, betInfo)
         return
@@ -302,26 +303,31 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
 
     // 检查系统设置
     if settings["switchBuy"] == "0" {
+        betInfo.Msg = i18n.T("bet.platform_stopped")
         betInfo.MsgKey = "bet.platform_stopped"
         c.JSON(http.StatusOK, betInfo)
         return
     }
     if settings["switchDLBuy"] == "0" && user.Type == 1 {
+        betInfo.Msg = i18n.T("bet.agent_disabled")
         betInfo.MsgKey = "bet.agent_disabled"
         c.JSON(http.StatusOK, betInfo)
         return
     }
     if settings["switchZDLBuy"] == "0" && user.Type == 2 {
+        betInfo.Msg = i18n.T("bet.zdl_disabled")
         betInfo.MsgKey = "bet.zdl_disabled"
         c.JSON(http.StatusOK, betInfo)
         return
     }
     if settings["switchGDBuy"] == "0" && user.Type == 3 {
+        betInfo.Msg = i18n.T("bet.gd_disabled")
         betInfo.MsgKey = "bet.gd_disabled"
         c.JSON(http.StatusOK, betInfo)
         return
     }
     if len(req.BetBean) == 0 {
+        betInfo.Msg = i18n.T("bet.select_first")
         betInfo.MsgKey = "bet.select_first"
         c.JSON(http.StatusOK, betInfo)
         return
@@ -340,6 +346,7 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
 
     // 检查封单时间
     if currentTime > (actionTime - ftime) {
+        betInfo.Msg = i18n.Tf("bet.expired", turnNum)
         betInfo.MsgKey = "bet.expired"
         betInfo.MsgArgs = []string{turnNum}
         c.JSON(http.StatusOK, betInfo)
@@ -348,6 +355,7 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
 
     // 检查期号是否正确
     if actionNo != turnNum {
+        betInfo.Msg = i18n.Tf("bet.expired", turnNum)
         betInfo.MsgKey = "bet.expired"
         betInfo.MsgArgs = []string{turnNum}
         c.JSON(http.StatusOK, betInfo)
@@ -358,6 +366,7 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
     var gameEnable int8
     model.DB.Table("ssc_type").Select("enable").Where("id = ?", gameID).Scan(&gameEnable)
     if gameEnable != 1 {
+        betInfo.Msg = i18n.T("bet.game_disabled")
         betInfo.MsgKey = "bet.game_disabled"
         c.JSON(http.StatusOK, betInfo)
         return
@@ -366,6 +375,7 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
     // 检查用户余额
     userAmount := user.Coin
     if userAmount < float64(totalMoney) {
+        betInfo.Msg = i18n.T("bet.insufficient")
         betInfo.MsgKey = "bet.insufficient"
         c.JSON(http.StatusOK, betInfo)
         return
@@ -373,16 +383,19 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
 
     // 检查注数
     if totalNums < 1 {
+        betInfo.Msg = i18n.T("bet.min_nums")
         betInfo.MsgKey = "bet.min_nums"
         c.JSON(http.StatusOK, betInfo)
         return
     }
     if totalNums > 1000 {
+        betInfo.Msg = i18n.T("bet.max_nums")
         betInfo.MsgKey = "bet.max_nums"
         c.JSON(http.StatusOK, betInfo)
         return
     }
     if totalMoney < 1 {
+        betInfo.Msg = i18n.T("bet.min_money")
         betInfo.MsgKey = "bet.min_money"
         c.JSON(http.StatusOK, betInfo)
         return
@@ -402,6 +415,7 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
     // 查询用户单期投注总额限制
     userMaxTurnMoney := user.MaxTurnMoney
     if userMaxTurnMoney > 0 && int(actionNoMoney+float64(totalMoney)) > userMaxTurnMoney {
+        betInfo.Msg = i18n.Tf("bet.period_limit", userMaxTurnMoney, actionNoMoney)
         betInfo.MsgKey = "bet.period_limit"
         betInfo.MsgArgs = []string{fmt.Sprintf("%d", userMaxTurnMoney), fmt.Sprintf("%.0f", actionNoMoney)}
         c.JSON(http.StatusOK, betInfo)
@@ -426,6 +440,7 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
             Where("id = ?", playID).
             First(&played).Error
         if err != nil {
+            betInfo.Msg = i18n.T("bet.play_not_found")
             betInfo.MsgKey = "bet.play_not_found"
             c.JSON(http.StatusOK, betInfo)
             return
@@ -433,6 +448,7 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
 
         // 检查玩法是否启用
         if played.Enable != 1 {
+            betInfo.Msg = i18n.T("bet.play_disabled")
             betInfo.MsgKey = "bet.play_disabled"
             c.JSON(http.StatusOK, betInfo)
             return
@@ -440,6 +456,7 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
 
         // 检查玩法ID是否正确
         if played.ID != playID {
+            betInfo.Msg = i18n.T("bet.param_error")
             betInfo.MsgKey = "bet.param_error"
             c.JSON(http.StatusOK, betInfo)
             return
@@ -457,6 +474,7 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
         if maxTurnMoney > 0 && int(playMoney)+int(money) > maxTurnMoney {
             var groupName string
             model.DB.Table("ssc_played_group").Select("name").Where("id = ?", played.PlayedGroupID).Scan(&groupName)
+            betInfo.Msg = i18n.Tf("bet.play_limit", groupName, played.Name, maxTurnMoney, playMoney)
             betInfo.MsgKey = "bet.play_limit"
             betInfo.MsgArgs = []string{groupName, played.Name, fmt.Sprintf("%d", maxTurnMoney), fmt.Sprintf("%.0f", playMoney)}
             c.JSON(http.StatusOK, betInfo)
@@ -466,6 +484,7 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
         // 检查用户单注投注金额限制
         userMaxMoney := user.MaxMoney
         if userMaxMoney > 0 && int(money) > userMaxMoney {
+            betInfo.Msg = i18n.Tf("bet.single_limit", userMaxMoney)
             betInfo.MsgKey = "bet.single_limit"
             betInfo.MsgArgs = []string{fmt.Sprintf("%d", userMaxMoney)}
             c.JSON(http.StatusOK, betInfo)
@@ -474,6 +493,7 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
 
         // 检查单注最低金额
         if int(money) < played.MinMoney {
+            betInfo.Msg = i18n.Tf("bet.min_single", played.MinMoney)
             betInfo.MsgKey = "bet.min_single"
             betInfo.MsgArgs = []string{fmt.Sprintf("%d", played.MinMoney)}
             c.JSON(http.StatusOK, betInfo)
@@ -482,6 +502,7 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
 
         // 检查单注最高金额
         if played.MaxMoney > 0 && int(money) > played.MaxMoney {
+            betInfo.Msg = i18n.Tf("bet.max_single", played.MaxMoney)
             betInfo.MsgKey = "bet.max_single"
             betInfo.MsgArgs = []string{fmt.Sprintf("%d", played.MaxMoney)}
             c.JSON(http.StatusOK, betInfo)
@@ -604,6 +625,7 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
     })
 
     if err != nil {
+        betInfo.Msg = i18n.Tf("bet.system_error", err.Error())
         betInfo.MsgKey = "bet.system_error"
         betInfo.MsgArgs = []string{err.Error()}
         c.JSON(http.StatusOK, betInfo)
@@ -611,6 +633,7 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
     }
 
     betInfo.Success = true
+    betInfo.Msg = i18n.T("bet.success")
     betInfo.MsgKey = "bet.success"
     c.JSON(http.StatusOK, betInfo)
 }
@@ -675,23 +698,28 @@ func getGameActionInfo(gameID int) (ftime int64, actionTime int64, actionNo stri
     // 计算当前是当天的第几期
     secondsOfDay := int64(now.Hour()*3600 + now.Minute()*60 + now.Second())
     issueNum := int(secondsOfDay/periodSeconds) + 1
-    periodStartSeconds := int64(issueNum-1) * periodSeconds
+    // 计算当前期号的开奖时间（第 1 期开奖时间是 00:05:00，不是 00:00:00）
+    periodStartSeconds := int64(issueNum) * periodSeconds
     startHour := int(periodStartSeconds / 3600)
     startMin := int((periodStartSeconds % 3600) / 60)
     startSec := int(periodStartSeconds % 60)
     lotteryTime := time.Date(now.Year(), now.Month(), now.Day(), startHour, startMin, startSec, 0, now.Location())
     nowUnix := now.Unix()
-    // 修复：当时间正好等于开奖时间时，应该还是当前期，不是下一期
-    for nowUnix > lotteryTime.Unix() && issueNum <= periodsPerDay {
+    // 如果当前时间已经超过了当前期号的封盘时间，则进入下一期
+    for nowUnix > lotteryTime.Unix()-ftime && issueNum <= periodsPerDay {
         issueNum++
         lotteryTime = lotteryTime.Add(time.Duration(periodSeconds) * time.Second)
     }
+    // 如果超过最后一期，则进入第二天的第 1 期
+    var dateStr string
     if issueNum > periodsPerDay {
         issueNum = 1
         tomorrow := now.Add(24 * time.Hour)
         lotteryTime = time.Date(tomorrow.Year(), tomorrow.Month(), tomorrow.Day(), 0, 0, int(periodSeconds), 0, now.Location())
+        dateStr = tomorrow.Format("20060102")
+    } else {
+        dateStr = now.Format("20060102")
     }
-    dateStr := now.Format("20060102")
     actionNo = fmt.Sprintf("%s%03d", dateStr, issueNum)
     actionTime = lotteryTime.Unix()
     return ftime, actionTime, actionNo

@@ -1,5 +1,7 @@
 package model
 
+import "time"
+
 // 数据库表名常量
 const (
 	TableMembers        = "ssc_members"

@@ -27,6 +27,7 @@ var ZhTW = map[string]string{
 	"bet.max_single":       "單注金額只能為小於%d正整數",
 	"bet.system_error":     "異常錯誤:%s請聯絡管理員",
 	"bet.submit_error":     "提交資料出錯，請重新投注",
+	"bet.error":           "投注錯誤",
 
 	// 提现消息
 	"withdraw.success":          "提現申請已提交",

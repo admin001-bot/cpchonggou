@@ -2,6 +2,7 @@ package handler
 
 import (
 	"crypto/md5"
+	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -614,11 +615,16 @@ func (h *UserHandler) GuestLogin(c *gin.Context) {
 		return
 	}
 
+	// 生成随机 session ID
+	sessionBytes := make([]byte, 32)
+	rand.Read(sessionBytes)
+	sessionKey := hex.EncodeToString(sessionBytes)
+
 	// 创建会话
 	session := model.MemberSession{
 		UID:        createdGuest.UID,
 		Username:   createdGuest.Username,
-		SessionKey: c.SessionID(),
+		SessionKey: sessionKey,
 		LoginTime:  currentTime,
 		AccessTime: currentTime,
 		LoginIP:    clientIP,
