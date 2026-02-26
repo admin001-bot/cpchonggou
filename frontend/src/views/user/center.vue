@@ -264,6 +264,33 @@
         {{ t('user.logout') }}
       </button>
     </div>
+
+    <!-- 退出确认对话框 -->
+    <Teleport to="body">
+      <Transition name="confirm-dialog">
+        <div v-if="showLogoutConfirm" class="confirm-dialog-overlay" @click.self="handleLogoutCancel">
+          <div class="confirm-dialog-container">
+            <div class="confirm-dialog-icon warning">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </div>
+            <h3 class="confirm-dialog-title">{{ t('user.logoutConfirm') }}</h3>
+            <p class="confirm-dialog-message">确定要退出登录吗？</p>
+            <div class="confirm-dialog-actions">
+              <button class="confirm-btn cancel" @click="handleLogoutCancel">
+                {{ t('common.cancel') }}
+              </button>
+              <button class="confirm-btn confirm" @click="handleLogoutConfirm">
+                {{ t('common.confirm') }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -271,15 +298,15 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { ElMessageBox } from 'element-plus'
+import { useToastStore } from '@/stores/toast'
 import { t } from '@/locales'
 import { gameApi } from '@/api/game'
 
 const router = useRouter()
 const userStore = useUserStore()
+const toastStore = useToastStore()
 
 const pendingCount = ref(0)
-
 const username = computed(() => userStore.userInfo?.username || '')
 const userInfo = computed(() => {
   const info = userStore.userInfo
@@ -375,19 +402,28 @@ const getTodayDate = () => {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 }
 
+// 退出登录确认对话框状态
+const showLogoutConfirm = ref(false)
+
 const confirmLogout = () => {
-  ElMessageBox.confirm(
-    t('user.logoutConfirm'),
-    t('user.prompt'),
-    {
-      confirmButtonText: t('common.confirm'),
-      cancelButtonText: t('common.cancel'),
-      type: 'warning'
-    }
-  ).then(() => {
-    userStore.logout()
+  showLogoutConfirm.value = true
+}
+
+const handleLogoutConfirm = () => {
+  showLogoutConfirm.value = false
+  userStore.logout()
+  toastStore.show({
+    type: 'success',
+    title: '退出成功',
+    message: '您已成功退出登录'
+  })
+  setTimeout(() => {
     router.push('/home')
-  }).catch(() => {})
+  }, 500)
+}
+
+const handleLogoutCancel = () => {
+  showLogoutConfirm.value = false
 }
 
 // 获取即时注单数量
@@ -903,5 +939,145 @@ onMounted(() => {
 
 .logout-btn:active {
   background: #fff5f5;
+}
+
+/* 确认对话框 */
+.confirm-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.confirm-dialog-container {
+  background: #fff;
+  border-radius: 20px;
+  padding: 35px 25px;
+  max-width: 300px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: confirmIn 0.3s ease;
+}
+
+@keyframes confirmIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.confirm-dialog-icon {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+.confirm-dialog-icon.warning {
+  background: linear-gradient(135deg, #FF9800, #f57c00);
+  box-shadow: 0 8px 20px rgba(255, 152, 0, 0.3);
+}
+
+.confirm-dialog-icon svg {
+  width: 35px;
+  height: 35px;
+  color: #fff;
+}
+
+.confirm-dialog-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 10px;
+  line-height: 1.4;
+}
+
+.confirm-dialog-message {
+  font-size: 14px;
+  color: #999;
+  line-height: 1.5;
+  margin: 0 0 25px;
+}
+
+.confirm-dialog-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.confirm-btn {
+  flex: 1;
+  max-width: 120px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 25px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.confirm-btn.cancel {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.confirm-btn.cancel:hover {
+  background: #e8e8e8;
+}
+
+.confirm-btn.confirm {
+  background: linear-gradient(135deg, #fb2351, #ff4b3e);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(251, 35, 81, 0.3);
+}
+
+.confirm-btn.confirm:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(251, 35, 81, 0.4);
+}
+
+/* 进入动画 */
+.confirm-dialog-enter-active {
+  transition: all 0.3s ease;
+}
+
+.confirm-dialog-enter-from {
+  opacity: 0;
+}
+
+.confirm-dialog-enter-from .confirm-dialog-container {
+  transform: scale(0.8);
+  opacity: 0;
+}
+
+/* 离开动画 */
+.confirm-dialog-leave-active {
+  transition: all 0.2s ease;
+}
+
+.confirm-dialog-leave-to {
+  opacity: 0;
+}
+
+.confirm-dialog-leave-to .confirm-dialog-container {
+  transform: scale(0.9);
 }
 </style>

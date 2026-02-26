@@ -126,16 +126,16 @@
             <!-- 六合彩特殊显示：6 个正码 + 分隔符 + 1 个特码 -->
             <template v-if="gameConfig?.group === 'group7'">
               <span
-                v-for="(num, index) in displayNumbers.slice(0, 6)"
+                v-for="(num, index) in lastNumbers.slice(0, 6)"
                 :key="index"
                 class="lottery-ball lhc-ball"
-                :class="['data-' + (num === 0 ? 10 : num), { 'running': isLotteryRunning && !settledIndexes.includes(index) }]"
+                :class="getLhcBallClass(num)"
               >{{ num }}</span>
               <span class="special-separator">+</span>
               <span
                 class="lottery-ball lhc-ball special-ball"
-                :class="['data-' + (displayNumbers[6] === 0 ? 10 : displayNumbers[6]), { 'running': isLotteryRunning && !settledIndexes.includes(6) }]"
-              >{{ displayNumbers[6] }}</span>
+                :class="getLhcBallClass(lastNumbers[6])"
+              >{{ lastNumbers[6] }}</span>
             </template>
             <!-- PC 蛋蛋特殊显示：3 个球 + 等号 + 总和 -->
             <template v-else-if="gameConfig?.group === 'group8'">
@@ -166,13 +166,6 @@
               >{{ num }}</span>
             </template>
 
-          </div>
-          <div class="result-wrap" :class="{ 'ssc-results': gameConfig?.group === 'group2' }" v-if="lotteryResults.length > 0 && !isLotteryRunning">
-            <span
-              v-for="(result, index) in lotteryResults"
-              :key="index"
-              class="result-data"
-            >{{ translateResult(result) }}</span>
           </div>
         </div>
       </div>
@@ -205,7 +198,19 @@
       <div class="bet-panel">
         <!-- 两面玩法 -->
         <template v-if="currentPane?.code === 'LM'">
+          <!-- 六合彩两面 -->
+          <LiangMianLhcBet
+            v-if="gameConfig?.group === 'group7'"
+            :game-id="gameId"
+            :game-group="gameConfig?.group"
+            :bet-data="betData"
+            :plays-data="playsData"
+            :get-odds="getOdds"
+            @toggle-bet="toggleBet"
+          />
+          <!-- 其他两面玩法 -->
           <LiangMianBet
+            v-else
             :game-id="gameId"
             :game-group="gameConfig?.group"
             :bet-data="betData"
@@ -442,6 +447,7 @@ import { t } from '@/locales'
 import { getGameConfig, getGamePanes, getGameList, type GroupPane } from '@/config/games'
 import { gameApi, type NextIssueData, type PlayInfo } from '@/api/game'
 import LiangMianBet from '@/components/game/LiangMianBet.vue'
+import LiangMianLhcBet from '@/components/game/LiangMianLhcBet.vue'
 import GuanYaHeBet from '@/components/game/GuanYaHeBet.vue'
 import RankBet from '@/components/game/RankBet.vue'
 import GamePopover from '@/components/game/GamePopover.vue'
@@ -751,6 +757,20 @@ const getLhcColor = (num: number): string => {
   if (blueWave.includes(num)) return '藍波'
   if (greenWave.includes(num)) return '綠波'
   return ''
+}
+
+// 获取六合彩球号样式类
+const getLhcBallClass = (num: number): string => {
+  if (!num || isNaN(num)) return ''
+  const redWave = [1, 2, 7, 8, 12, 13, 18, 19, 23, 24, 29, 30, 34, 35, 40, 45, 46]
+  const blueWave = [3, 4, 9, 10, 14, 15, 20, 25, 26, 31, 36, 37, 41, 42, 47, 48]
+  const greenWave = [5, 6, 11, 16, 17, 21, 22, 27, 28, 32, 33, 38, 39, 43, 44, 49]
+
+  const baseClass = `data-${num}`
+  if (redWave.includes(num)) return `${baseClass} red-ball`
+  if (blueWave.includes(num)) return `${baseClass} blue-ball`
+  if (greenWave.includes(num)) return `${baseClass} green-ball`
+  return baseClass
 }
 
 // 获取六合彩生肖
@@ -1803,30 +1823,20 @@ onUnmounted(() => {
   font-weight: bold;
 }
 
-/* 六合彩球号颜色（根据号码） */
-.lottery-ball.lhc-ball.data-1,
-.lottery-ball.lhc-ball.data-13,
-.lottery-ball.lhc-ball.data-25,
-.lottery-ball.lhc-ball.data-37,
-.lottery-ball.lhc-ball.data-49 {
-  background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+/* 六合彩球号波色 */
+.lottery-ball.lhc-ball.red-ball {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a5a) !important;
   border: 2px solid #ff6b6b;
 }
 
-.lottery-ball.lhc-ball.data-2,
-.lottery-ball.lhc-ball.data-14,
-.lottery-ball.lhc-ball.data-26,
-.lottery-ball.lhc-ball.data-38 {
-  background: linear-gradient(135deg, #4ecdc4, #44a08d);
+.lottery-ball.lhc-ball.blue-ball {
+  background: linear-gradient(135deg, #4ecdc4, #44a08d) !important;
   border: 2px solid #4ecdc4;
 }
 
-.lottery-ball.lhc-ball.data-3,
-.lottery-ball.lhc-ball.data-15,
-.lottery-ball.lhc-ball.data-27,
-.lottery-ball.lhc-ball.data-39 {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  border: 2px solid #667eea;
+.lottery-ball.lhc-ball.green-ball {
+  background: linear-gradient(135deg, #2ecc71, #27ae60) !important;
+  border: 2px solid #2ecc71;
 }
 
 /* 时时彩球号跑动动画 */
