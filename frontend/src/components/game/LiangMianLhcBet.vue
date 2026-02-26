@@ -171,6 +171,65 @@
         </div>
       </div>
     </div>
+
+    <!-- 生肖肖面 -->
+    <div class="bet-section">
+      <div class="section-title">{{ t('lhc.zodiac') }}</div>
+      <div class="bet-row">
+        <div
+          class="bet-item"
+          :class="{ selected: isSelected(1138615) }"
+          @click="handleToggle(1138615)"
+        >
+          <span class="bet-content">{{ t('lhc.teTianXiao') }}</span>
+          <span class="bet-odds">{{ getOdds(1138615).toFixed(3) }}</span>
+        </div>
+        <div
+          class="bet-item"
+          :class="{ selected: isSelected(1138616) }"
+          @click="handleToggle(1138616)"
+        >
+          <span class="bet-content">{{ t('lhc.teDiXiao') }}</span>
+          <span class="bet-odds">{{ getOdds(1138616).toFixed(3) }}</span>
+        </div>
+      </div>
+      <div class="bet-row">
+        <div
+          class="bet-item"
+          :class="{ selected: isSelected(1138617) }"
+          @click="handleToggle(1138617)"
+        >
+          <span class="bet-content">{{ t('lhc.teQianXiao') }}</span>
+          <span class="bet-odds">{{ getOdds(1138617).toFixed(3) }}</span>
+        </div>
+        <div
+          class="bet-item"
+          :class="{ selected: isSelected(1138618) }"
+          @click="handleToggle(1138618)"
+        >
+          <span class="bet-content">{{ t('lhc.teHouXiao') }}</span>
+          <span class="bet-odds">{{ getOdds(1138618).toFixed(3) }}</span>
+        </div>
+      </div>
+      <div class="bet-row">
+        <div
+          class="bet-item"
+          :class="{ selected: isSelected(1138619) }"
+          @click="handleToggle(1138619)"
+        >
+          <span class="bet-content">{{ t('lhc.teJiaXiao') }}</span>
+          <span class="bet-odds">{{ getOdds(1138619).toFixed(3) }}</span>
+        </div>
+        <div
+          class="bet-item"
+          :class="{ selected: isSelected(1138620) }"
+          @click="handleToggle(1138620)"
+        >
+          <span class="bet-content">{{ t('lhc.teYeXiao') }}</span>
+          <span class="bet-odds">{{ getOdds(1138620).toFixed(3) }}</span>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 

@@ -130,6 +130,67 @@
     "passes": false
   },
   {
+    "id": 18,
+    "category": "functional",
+    "priority": "high",
+    "description": "游戏 113 - 两面玩法完善",
+    "steps": [
+      "添加生肖肖面选项（特天肖、特地肖、特前肖、特后肖、特家肖、特野肖）",
+      "测试两面玩法"
+    ],
+    "passes": true
+  },
+  {
+    "id": 19,
+    "category": "functional",
+    "priority": "high",
+    "description": "游戏 113 - 色波玩法完善",
+    "steps": [
+      "添加色波组合选项",
+      "测试色波玩法"
+    ],
+    "passes": true
+  },
+  {
+    "id": 20,
+    "category": "functional",
+    "priority": "high",
+    "description": "游戏 113 - 正码玩法",
+    "steps": [
+      "创建正码投注组件",
+      "实现 1-49 号号码选择",
+      "实现总和两面选项",
+      "测试正码玩法"
+    ],
+    "passes": true
+  },
+  {
+    "id": 21,
+    "category": "functional",
+    "priority": "high",
+    "description": "游戏 113 - 正码 1-6 玩法",
+    "steps": [
+      "创建正码 1-6 投注组件",
+      "实现 6 个位置分页切换",
+      "实现每个位置的两面选项",
+      "测试正码 1-6 玩法"
+    ],
+    "passes": true
+  },
+  {
+    "id": 22,
+    "category": "functional",
+    "priority": "high",
+    "description": "游戏 113 - 正特玩法",
+    "steps": [
+      "创建正特投注组件",
+      "实现 6 个位置切换",
+      "实现号码选择和两面选项",
+      "测试正特玩法"
+    ],
+    "passes": true
+  },
+  {
     "id": 10,
     "category": "functional",
     "priority": "high",

@@ -338,6 +338,33 @@
           />
         </template>
 
+        <!-- 六合彩 - 正码玩法 -->
+        <template v-else-if="gameConfig?.group === 'group7' && currentPane?.code === 'ZM'">
+          <ZhongMaBet
+            :plays-data="playsData"
+            :selected-bets="betData['ZM'] || []"
+            @toggle-bet="(playId: number) => toggleBet(playId, 'ZM')"
+          />
+        </template>
+
+        <!-- 六合彩 - 正码 1-6 玩法 -->
+        <template v-else-if="gameConfig?.group === 'group7' && currentPane?.code === 'ZM1-6'">
+          <ZhongMaPosBet
+            :plays-data="playsData"
+            :selected-bets="betData['ZM1-6'] || []"
+            @toggle-bet="(playId: number) => toggleBet(playId, 'ZM1-6')"
+          />
+        </template>
+
+        <!-- 六合彩 - 正特玩法 -->
+        <template v-else-if="gameConfig?.group === 'group7' && currentPane?.code === 'ZT'">
+          <ZhengTeBet
+            :plays-data="playsData"
+            :selected-bets="betData['ZT'] || []"
+            @toggle-bet="(playId: number) => toggleBet(playId, 'ZT')"
+          />
+        </template>
+
         <!-- 时时彩 - 番滩玩法 -->
         <template v-else-if="gameConfig?.group === 'group2' && currentPane?.code === 'FANTAN'">
           <div class="bet-view">
@@ -458,6 +485,9 @@ import SeBoBet from '@/components/game/SeBoBet.vue'
 import AllBallsBet from '@/components/game/AllBallsBet.vue'
 import QzhBet from '@/components/game/QzhBet.vue'
 import LongHuBet from '@/components/game/LongHuBet.vue'
+import ZhongMaBet from '@/components/game/ZhongMaBet.vue'
+import ZhongMaPosBet from '@/components/game/ZhongMaPosBet.vue'
+import ZhengTeBet from '@/components/game/ZhengTeBet.vue'
 
 const route = useRoute()
 const router = useRouter()

@@ -296,6 +296,13 @@ export const messages: Record<Locale, Record<string, string>> = {
     'lhc.greenSmallOdd': '綠小單',
     'lhc.greenSmallEven': '綠小雙',
     'lhc.draw': '和局',
+    'lhc.teTianXiao': '特天肖',
+    'lhc.teDiXiao': '特地肖',
+    'lhc.teQianXiao': '特前肖',
+    'lhc.teHouXiao': '特後肖',
+    'lhc.teJiaXiao': '特家肖',
+    'lhc.teYeXiao': '特野肖',
+    'lhc.zodiac': '生肖肖面',
 
     // 用户
     'user.username': '用戶名',
@@ -876,6 +883,12 @@ export const messages: Record<Locale, Record<string, string>> = {
     'lhc.greenSmallOdd': '绿小单',
     'lhc.greenSmallEven': '绿小双',
     'lhc.draw': '和局',
+    'lhc.teTianXiao': '特天肖',
+    'lhc.teDiXiao': '特地肖',
+    'lhc.teQianXiao': '特前肖',
+    'lhc.teHouXiao': '特后肖',
+    'lhc.teJiaXiao': '特家肖',
+    'lhc.teYeXiao': '特野肖',
 
     // 用户
     'user.username': '用户名',
@@ -1453,6 +1466,13 @@ export const messages: Record<Locale, Record<string, string>> = {
     'lhc.greenSmallOdd': 'Green Small Odd',
     'lhc.greenSmallEven': 'Green Small Even',
     'lhc.draw': 'Draw',
+    'lhc.teTianXiao': 'Te Tian Xiao',
+    'lhc.teDiXiao': 'Te Di Xiao',
+    'lhc.teQianXiao': 'Te Qian Xiao',
+    'lhc.teHouXiao': 'Te Hou Xiao',
+    'lhc.teJiaXiao': 'Te Jia Xiao',
+    'lhc.teYeXiao': 'Te Ye Xiao',
+    'lhc.zodiac': 'Zodiac',
 
     // User
     'user.username': 'Username',
