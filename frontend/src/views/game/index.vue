@@ -1111,82 +1111,14 @@ async function refreshBalance() {
   }
 }
 
-// 根据玩法ID获取玩法名称
-// playId格式: gameId(55) + categoryId(101-111) + sequence(01-XX)
+// 根据玩法 ID 获取玩法名称 - 直接从 playsData 中获取
 function getPlayName(playId: number): string {
-  const id = playId
-  const gameId = Math.floor(id / 100000)
-  const categoryId = Math.floor((id % 100000) / 100)
-  const sequence = id % 100
-
-  // 冠亚和 (categoryId = 101)
-  if (categoryId === 101) {
-    if (sequence === 1) return `${t('rank.topSum')}${t('game.big')}`
-    if (sequence === 2) return `${t('rank.topSum')}${t('game.small')}`
-    if (sequence === 3) return `${t('rank.topSum')}${t('game.odd')}`
-    if (sequence === 4) return `${t('rank.topSum')}${t('game.even')}`
-    // 冠亚和数字 (sequence 5-21 对应数字 3-19)
-    if (sequence >= 5 && sequence <= 21) {
-      return `${t('rank.topSum')} ${sequence - 2}`
-    }
+  const play = playsData.value[playId.toString()]
+  if (play && play.name) {
+    return play.name
   }
-
-  // 各名次 (categoryId = 102-111 对应 第1-10名)
-  if (categoryId >= 102 && categoryId <= 111) {
-    const rank = categoryId - 101 // categoryId 102 = 第1名
-    const rankName = t(`rank.${rank}`)
-
-    // 号码投注 (sequence 1-10)
-    if (sequence >= 1 && sequence <= 10) {
-      return `${rankName} ${sequence}${t('rank.number')}`
-    }
-
-    // 两面玩法 (sequence 11-16)
-    if (sequence === 11) return `${rankName}${t('game.big')}`
-    if (sequence === 12) return `${rankName}${t('game.small')}`
-    if (sequence === 13) return `${rankName}${t('game.odd')}`
-    if (sequence === 14) return `${rankName}${t('game.even')}`
-    if (sequence === 15) return `${rankName}${t('game.dragon')}`
-    if (sequence === 16) return `${rankName}${t('game.tiger')}`
-  }
-
-  // PC 蛋蛋 (gameId = 66)
-  if (gameId === 66) {
-    // 混合玩法 (categoryId = 112)
-    if (categoryId === 112) {
-      const names: Record<number, string> = {
-        1: t('pcdd.big'),
-        2: t('pcdd.small'),
-        3: t('pcdd.odd'),
-        4: t('pcdd.even'),
-        5: t('pcdd.bigOdd'),
-        6: t('pcdd.bigEven'),
-        7: t('pcdd.smallOdd'),
-        8: t('pcdd.smallEven'),
-        9: t('pcdd.extraBig'),
-        10: t('pcdd.extraSmall'),
-        11: t('pcdd.leopard')
-      }
-      return names[sequence] || `玩法${playId}`
-    }
-    // 波色 (categoryId = 113)
-    if (categoryId === 113) {
-      const names: Record<number, string> = {
-        1: t('pcdd.redWave'),
-        2: t('pcdd.greenWave'),
-        3: t('pcdd.blueWave')
-      }
-      return names[sequence] || `玩法${playId}`
-    }
-    // 特码 (categoryId = 114)
-    if (categoryId === 114) {
-      return `${t('pcdd.teMa')} ${sequence}`
-    }
-  }
-
   return `玩法${playId}`
 }
-
 // 下注
 function placeBet() {
   if (lotteryState.value !== 1) {
