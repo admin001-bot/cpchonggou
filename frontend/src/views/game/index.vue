@@ -420,7 +420,31 @@ const lastNumbers = ref<number[]>([])
 const lotteryState = ref(1)
 
 // 开奖跑动相关
-const displayNumbers = ref<number[]>([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+const displayNumbers = ref<number[]>(getInitialNumbers())
+
+// 根据游戏类型获取初始球号数量
+function getInitialNumbers(): number[] {
+  const config = getGameConfig(gameId.value)
+  if (config?.group === 'group2') {
+    return [0, 0, 0, 0, 0] // 时时彩类型 5 个球
+  }
+  if (config?.group === 'group8') {
+    return [0, 0, 0] // PC 蛋蛋 3 个球
+  }
+  return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] // PK10 类型 10 个球
+}
+
+// 根据游戏类型获取球号数量
+function getBallCount(): number {
+  const config = getGameConfig(gameId.value)
+  if (config?.group === 'group2') {
+    return 5 // 时时彩类型 5 个球
+  }
+  if (config?.group === 'group8') {
+    return 3 // PC 蛋蛋 3 个球
+  }
+  return 10 // PK10 类型 10 个球
+}
 const isLotteryRunning = ref(false)
 const settledIndexes = ref<number[]>([])
 let lotteryRunTimer: number | null = null
@@ -449,12 +473,18 @@ function startLotteryRun() {
   isLotteryRunning.value = true
   settledIndexes.value = []
 
-  // 每100ms随机变换号码
+  const ballCount = getBallCount()
+  const isSSC = gameConfig.value?.group === 'group2'
+
+  // 每 100ms 随机变换号码
   lotteryRunTimer = window.setInterval(() => {
     const newNumbers = [...displayNumbers.value]
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < ballCount; i++) {
       if (!settledIndexes.value.includes(i)) {
-        newNumbers[i] = Math.floor(Math.random() * 10) + 1
+        // 时时彩类型是 0-9，其他类型是 1-10
+        const maxNum = isSSC ? 10 : 11
+        const minNum = isSSC ? 0 : 1
+        newNumbers[i] = Math.floor(Math.random() * (maxNum - minNum + 1)) + minNum
       }
     }
     displayNumbers.value = newNumbers
@@ -469,10 +499,12 @@ function stopLotteryRun(finalNumbers: number[]) {
     lotteryRunTimer = null
   }
 
-  // 依次定格每个号码，间隔200ms
+  const ballCount = getBallCount()
+
+  // 依次定格每个号码，间隔 200ms
   let currentIndex = 0
   settleTimer = window.setInterval(() => {
-    if (currentIndex < 10) {
+    if (currentIndex < ballCount) {
       settledIndexes.value.push(currentIndex)
       displayNumbers.value[currentIndex] = finalNumbers[currentIndex]
       currentIndex++
