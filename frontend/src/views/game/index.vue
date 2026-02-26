@@ -594,11 +594,11 @@ const lotteryResults = computed(() => {
     // 总和单双
     results.push(totalSum % 2 === 1 ? '單' : '雙')
 
-    // 龙虎：只显示第一组（第一球 VS 第二球）
-    // 龙：前者大，虎：后者大，和：相等
-    if (calcNums[0] > calcNums[1]) {
+    // 龙虎：第一球 VS 第五球
+    // 龙：第一球大，虎：第五球大，和：相等
+    if (calcNums[0] > calcNums[4]) {
       results.push('龍')
-    } else if (calcNums[0] < calcNums[1]) {
+    } else if (calcNums[0] < calcNums[4]) {
       results.push('虎')
     } else {
       results.push('和')
@@ -1646,20 +1646,7 @@ onUnmounted(() => {
 
 /* 时时彩类型的结果包装器（支持横向滚动） */
 .result-wrap.ssc-results {
-  justify-content: flex-start;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-}
-
-/* 隐藏滚动条但保留功能（iOS） */
-.result-wrap.ssc-results::-webkit-scrollbar {
-  height: 4px;
-}
-
-.result-wrap.ssc-results::-webkit-scrollbar-thumb {
-  background: #ccc;
-  border-radius: 2px;
+  justify-content: center;
 }
 
 .result-data {
