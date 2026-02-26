@@ -153,7 +153,13 @@ func (h *GameHandler) GetNextIssue(c *gin.Context) {
 		periodSeconds = 180
 		ftime = 20
 		periodsPerDay = 480
-	case "70", "113":
+	case "113":
+		// 极速六合彩：每天 480 期，每期 180 秒 (3 分钟)，封盘 15 秒
+		periodSeconds = 180
+		ftime = 15
+		periodsPerDay = 480
+	case "70":
+		// 香港六合彩：每天 1 期
 		periodSeconds = 86400
 		ftime = 1800
 		periodsPerDay = 1
@@ -178,6 +184,10 @@ func (h *GameHandler) GetNextIssue(c *gin.Context) {
 	endTime := lotteryTime.Add(-time.Duration(ftime) * time.Second)
 	dateStr := now.Format("20060102")
 	issue := fmt.Sprintf("%s%03d", dateStr, issueNum)
+
+	// 调试日志
+	fmt.Printf("[DEBUG] gameId=%s, issueNum=%d, periodSeconds=%d, ftime=%d, secondsOfDay=%d\n",
+		gameID, issueNum, periodSeconds, ftime, secondsOfDay)
 
 	// 从数据库读取上期开奖数据（最新的一条记录）
 	// 使用与历史记录完全相同的查询方式
@@ -632,7 +642,11 @@ func getGameActionInfo(gameID int) (ftime int64, actionTime int64, actionNo stri
         periodSeconds = 180
         ftime = 20
         periodsPerDay = 480
-    case 70, 113: // 六合彩
+    case 113: // 极速六合彩
+        periodSeconds = 180
+        ftime = 15
+        periodsPerDay = 480
+    case 70: // 香港六合彩
         periodSeconds = 86400
         ftime = 1800
         periodsPerDay = 1

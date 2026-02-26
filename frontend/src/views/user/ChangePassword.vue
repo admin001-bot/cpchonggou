@@ -41,7 +41,8 @@
         <!-- 新密码 -->
         <div class="input-item">
           <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0110 0v4"/>
           </svg>
           <input
             type="password"
@@ -56,7 +57,8 @@
         <!-- 确认新密码 -->
         <div class="input-item">
           <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0110 0v4"/>
           </svg>
           <input
             type="password"
@@ -89,13 +91,14 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { ElMessage } from 'element-plus'
+import { useToastStore } from '@/stores/toast'
 import { t } from '@/locales'
 import { userApi } from '@/api/user'
 import MD5 from 'crypto-js/md5'
 
 const router = useRouter()
 const userStore = useUserStore()
+const toastStore = useToastStore()
 
 const loading = ref(false)
 
@@ -126,27 +129,47 @@ const goBack = () => {
 const submitForm = async () => {
   // 验证
   if (!form.oldPwd) {
-    ElMessage.warning(t('user.enterOldPwd'))
+    toastStore.show({
+      type: 'warning',
+      title: t('common.tips'),
+      message: t('user.enterOldPwd')
+    })
     return
   }
 
   if (form.oldPwd.length < 6) {
-    ElMessage.warning(t('user.oldPwdMinLength'))
+    toastStore.show({
+      type: 'warning',
+      title: t('common.tips'),
+      message: t('user.oldPwdMinLength')
+    })
     return
   }
 
   if (!form.newPwd) {
-    ElMessage.warning(t('user.enterNewPwd'))
+    toastStore.show({
+      type: 'warning',
+      title: t('common.tips'),
+      message: t('user.enterNewPwd')
+    })
     return
   }
 
   if (form.newPwd.length < 6) {
-    ElMessage.warning(t('user.pwdMinLength'))
+    toastStore.show({
+      type: 'warning',
+      title: t('common.tips'),
+      message: t('user.pwdMinLength')
+    })
     return
   }
 
   if (form.newPwd !== form.confirmPwd) {
-    ElMessage.warning(t('user.pwdNotMatch'))
+    toastStore.show({
+      type: 'warning',
+      title: t('common.tips'),
+      message: t('user.pwdNotMatch')
+    })
     return
   }
 
@@ -158,7 +181,11 @@ const submitForm = async () => {
     )
 
     if (res.code === 0) {
-      ElMessage.success(t('user.changePwdSuccess'))
+      toastStore.show({
+        type: 'success',
+        title: t('common.success'),
+        message: t('user.changePwdSuccess')
+      })
       // 刷新用户信息
       await userStore.getUserInfo()
       setTimeout(() => {
@@ -175,10 +202,18 @@ const submitForm = async () => {
         '修改密碼失敗': t('user.changePwdFailed'),
       }
       const translatedMsg = msgMap[res.message] || res.message || t('user.changePwdFailed')
-      ElMessage.error(translatedMsg)
+      toastStore.show({
+        type: 'error',
+        title: t('common.error'),
+        message: translatedMsg
+      })
     }
   } catch (error: any) {
-    ElMessage.error(error.message || t('user.changePwdFailed'))
+    toastStore.show({
+      type: 'error',
+      title: t('common.error'),
+      message: error.message || t('user.changePwdFailed')
+    })
   } finally {
     loading.value = false
   }

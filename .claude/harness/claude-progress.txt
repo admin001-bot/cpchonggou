@@ -388,3 +388,92 @@ else                    => 正常投注 (1)
 #### 下一步计划
 - 测试各页面功能
 - 优化用户体验
+
+---
+
+### 会话 11 - 2026-02-26
+**类型**: 编码会话
+**状态**: 已完成
+
+#### 完成的工作
+完成游戏 113（极速六合綵）所有剩余玩法组件的开发
+
+**已实现的高优先级玩法**:
+- 正码 (ZM) - ZhongMaBet.vue - 已存在
+- 正码 1-6 (ZM1-6) - ZhongMaPosBet.vue - 已存在
+- 正特 (ZT) - ZhengTeBet.vue - 已存在
+
+**新创建的中优先级玩法**:
+- 连码 (LMA) - LianMaBet.vue - 新创建
+  - 支持 6 个子玩法：三全中、三中二、二全中、二中特、特串、四全中
+  - 多选号码功能（根据子玩法限制数量）
+  - 生肖显示和波色背景
+
+**新创建的低优先级玩法 (10 个)**:
+1. 连肖 (LX) - LianXiaoBet.vue - 支持 2-4 连肖
+2. 合肖 (HX) - HeXiaoBet.vue - 支持 2-11 合肖
+3. 连尾 (LW) - LianWeiBet.vue - 支持 2-4 连尾
+4. 正肖 (ZX) - ZhengXiaoBet.vue - 6 个位置正肖投注
+5. 五行 (WX) - WuXingBet.vue - 金木水火土五行投注
+6. 自选不中 (ZXBZ) - ZixuanBuzhong.vue - 5-12 个号码不中
+7. 头尾数 (TWS) - TouWeishuBet.vue - 头数 0-4、尾数 0-9
+8. 总肖 (ZOX) - ZongxiaoBet.vue - 1-12 肖总肖投注
+9. 一肖一尾 (YX) - YiXiaoYiWei.vue - 生肖 + 尾数组合
+
+**主页面更新**:
+- 在 frontend/src/views/game/index.vue 中添加了所有新组件的导入
+- 添加了各玩法的 v-else-if 条件渲染逻辑
+
+**组件文件列表** (frontend/src/components/game/):
+- TeMaBet.vue (特码 TM) - 已存在
+- LiangMianLhcBet.vue (两面 LM) - 已存在
+- ZhongMaBet.vue (正码 ZM) - 已存在
+- ZhongMaPosBet.vue (正码 1-6 ZM1-6) - 已存在
+- ZhengTeBet.vue (正特 ZT) - 已存在
+- SeBoBet.vue (色波 SB) - 已存在
+- TeXiaoBet.vue (特肖 TX) - 已存在
+- LianMaBet.vue (连码 LMA) - 新创建
+- LianXiaoBet.vue (连肖 LX) - 新创建
+- HeXiaoBet.vue (合肖 HX) - 新创建
+- LianWeiBet.vue (连尾 LW) - 新创建
+- ZhengXiaoBet.vue (正肖 ZX) - 新创建
+- WuXingBet.vue (五行 WX) - 新创建
+- ZixuanBuzhong.vue (自选不中 ZXBZ) - 新创建
+- TouWeishuBet.vue (头尾数 TWS) - 新创建
+- ZongxiaoBet.vue (总肖 ZOX) - 新创建
+- YiXiaoYiWei.vue (一肖一尾 YX) - 新创建
+
+#### 游戏 113 玩法完成状态
+| 序号 | 玩法代码 | 玩法名称 | 状态 |
+|------|----------|----------|------|
+| 1 | TM | 特码 | ✓ 已完成 |
+| 2 | LM | 两面 | ✓ 已完成 |
+| 3 | ZM | 正码 | ✓ 已完成 |
+| 4 | ZM1-6 | 正码 1-6 | ✓ 已完成 |
+| 5 | ZT | 正特 | ✓ 已完成 |
+| 6 | LMA | 连码 | ✓ 已完成 |
+| 7 | SB | 色波 | ✓ 已完成 |
+| 8 | TX | 特肖 | ✓ 已完成 |
+| 9 | LX | 连肖 | ✓ 已完成 |
+| 10 | HX | 合肖 | ✓ 已完成 |
+| 11 | LW | 连尾 | ✓ 已完成 |
+| 12 | ZX | 正肖 | ✓ 已完成 |
+| 13 | WX | 五行 | ✓ 已完成 |
+| 14 | ZXBZ | 自选不中 | ✓ 已完成 |
+| 15 | TWS | 头尾数 | ✓ 已完成 |
+| 16 | ZOX | 总肖 | ✓ 已完成 |
+| 17 | YX | 一肖一尾 | ✓ 已完成 |
+
+#### 技术要点
+- 所有组件使用 TypeScript + Vue 3 Composition API
+- 支持响应式数据绑定
+- 波色背景（红波/蓝波/绿波）
+- 生肖显示
+- 选中状态高亮
+- 已选内容标签显示和移除功能
+- 子玩法切换（连码、连肖、连尾、合肖、自选不中）
+
+#### 下一步计划
+- 测试所有玩法的投注功能
+- 验证 playId 计算逻辑
+- 完善赔率显示和更新

@@ -485,12 +485,6 @@ func (h *UserHandler) SetCoinPassword(c *gin.Context) {
 	npwd := req.NewPwd
 	loginPwd := req.LoginPwd
 
-	// 验证旧密码（如果是修改）
-	if opwd == "" && loginPwd == "" {
-		response.Error(c, i18n.T("user.oldCoinPwdEmpty"))
-		return
-	}
-
 	// 验证新密码
 	if npwd == "" {
 		response.Error(c, i18n.T("user.newCoinPwdEmpty"))
@@ -508,10 +502,10 @@ func (h *UserHandler) SetCoinPassword(c *gin.Context) {
 		return
 	}
 
-	// 检查是否已设置资金密码
+	// 根据是否已设置资金密码决定验证方式
 	var tishi string
 	if user.CoinPassword == "" {
-		// 首次设置
+		// 首次设置 - 验证登录密码
 		if loginPwd == "" {
 			response.Error(c, i18n.T("user.enterLoginPwd"))
 			return
@@ -524,7 +518,7 @@ func (h *UserHandler) SetCoinPassword(c *gin.Context) {
 		}
 		tishi = i18n.T("user.setFundPwdSuccess")
 	} else {
-		// 修改资金密码
+		// 修改资金密码 - 验证原资金密码
 		if opwd == "" {
 			response.Error(c, i18n.T("user.oldCoinPwdEmpty"))
 			return

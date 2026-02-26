@@ -365,6 +365,91 @@
           />
         </template>
 
+        <!-- 六合彩 - 连码玩法 -->
+        <template v-else-if="gameConfig?.group === 'group7' && currentPane?.code === 'LMA'">
+          <LianMaBet
+            :selected-bets="betData['LMA'] || []"
+            @toggle-bet="(playId: number) => toggleBet(playId, 'LMA')"
+          />
+        </template>
+
+        <!-- 六合彩 - 连肖玩法 -->
+        <template v-else-if="gameConfig?.group === 'group7' && currentPane?.code === 'LX'">
+          <LianXiaoBet
+            :selected-bets="betData['LX'] || []"
+            @toggle-bet="(playId: number) => toggleBet(playId, 'LX')"
+          />
+        </template>
+
+        <!-- 六合彩 - 合肖玩法 -->
+        <template v-else-if="gameConfig?.group === 'group7' && currentPane?.code === 'HX'">
+          <HeXiaoBet
+            :selected-bets="betData['HX'] || []"
+            @toggle-bet="(playId: number) => toggleBet(playId, 'HX')"
+          />
+        </template>
+
+        <!-- 六合彩 - 连尾玩法 -->
+        <template v-else-if="gameConfig?.group === 'group7' && currentPane?.code === 'LW'">
+          <LianWeiBet
+            :selected-bets="betData['LW'] || []"
+            @toggle-bet="(playId: number) => toggleBet(playId, 'LW')"
+          />
+        </template>
+
+        <!-- 六合彩 - 正肖玩法 -->
+        <template v-else-if="gameConfig?.group === 'group7' && currentPane?.code === 'ZX'">
+          <ZhengXiaoBet
+            :plays-data="playsData"
+            :selected-bets="betData['ZX'] || []"
+            @toggle-bet="(playId: number) => toggleBet(playId, 'ZX')"
+          />
+        </template>
+
+        <!-- 六合彩 - 五行玩法 -->
+        <template v-else-if="gameConfig?.group === 'group7' && currentPane?.code === 'WX'">
+          <WuXingBet
+            :plays-data="playsData"
+            :selected-bets="betData['WX'] || []"
+            @toggle-bet="(playId: number) => toggleBet(playId, 'WX')"
+          />
+        </template>
+
+        <!-- 六合彩 - 自选不中玩法 -->
+        <template v-else-if="gameConfig?.group === 'group7' && currentPane?.code === 'ZXBZ'">
+          <ZixuanBuzhong
+            :selected-bets="betData['ZXBZ'] || []"
+            @toggle-bet="(playId: number) => toggleBet(playId, 'ZXBZ')"
+          />
+        </template>
+
+        <!-- 六合彩 - 头尾数玩法 -->
+        <template v-else-if="gameConfig?.group === 'group7' && currentPane?.code === 'TWS'">
+          <TouWeishuBet
+            :plays-data="playsData"
+            :selected-bets="betData['TWS'] || []"
+            @toggle-bet="(playId: number) => toggleBet(playId, 'TWS')"
+          />
+        </template>
+
+        <!-- 六合彩 - 总肖玩法 -->
+        <template v-else-if="gameConfig?.group === 'group7' && currentPane?.code === 'ZOX'">
+          <ZongxiaoBet
+            :plays-data="playsData"
+            :selected-bets="betData['ZOX'] || []"
+            @toggle-bet="(playId: number) => toggleBet(playId, 'ZOX')"
+          />
+        </template>
+
+        <!-- 六合彩 - 一肖一尾玩法 -->
+        <template v-else-if="gameConfig?.group === 'group7' && currentPane?.code === 'YX'">
+          <YiXiaoYiWei
+            :plays-data="playsData"
+            :selected-bets="betData['YX'] || []"
+            @toggle-bet="(playId: number) => toggleBet(playId, 'YX')"
+          />
+        </template>
+
         <!-- 时时彩 - 番滩玩法 -->
         <template v-else-if="gameConfig?.group === 'group2' && currentPane?.code === 'FANTAN'">
           <div class="bet-view">
@@ -488,6 +573,16 @@ import LongHuBet from '@/components/game/LongHuBet.vue'
 import ZhongMaBet from '@/components/game/ZhongMaBet.vue'
 import ZhongMaPosBet from '@/components/game/ZhongMaPosBet.vue'
 import ZhengTeBet from '@/components/game/ZhengTeBet.vue'
+import LianMaBet from '@/components/game/LianMaBet.vue'
+import LianXiaoBet from '@/components/game/LianXiaoBet.vue'
+import HeXiaoBet from '@/components/game/HeXiaoBet.vue'
+import LianWeiBet from '@/components/game/LianWeiBet.vue'
+import ZhengXiaoBet from '@/components/game/ZhengXiaoBet.vue'
+import WuXingBet from '@/components/game/WuXingBet.vue'
+import ZixuanBuzhong from '@/components/game/ZixuanBuzhong.vue'
+import TouWeishuBet from '@/components/game/TouWeishuBet.vue'
+import ZongxiaoBet from '@/components/game/ZongxiaoBet.vue'
+import YiXiaoYiWei from '@/components/game/YiXiaoYiWei.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -602,15 +697,25 @@ function startLotteryRun() {
 
   const ballCount = getBallCount()
   const isSSC = gameConfig.value?.group === 'group2'
+  const isLHC = gameConfig.value?.group === 'group7' // 六合彩
 
   // 每 100ms 随机变换号码
   lotteryRunTimer = window.setInterval(() => {
     const newNumbers = [...displayNumbers.value]
     for (let i = 0; i < ballCount; i++) {
       if (!settledIndexes.value.includes(i)) {
-        // 时时彩类型是 0-9，其他类型是 1-10
-        const maxNum = isSSC ? 10 : 11
-        const minNum = isSSC ? 0 : 1
+        // 时时彩类型是 0-9，六合彩是 1-49，其他类型是 1-10
+        let maxNum, minNum
+        if (isSSC) {
+          maxNum = 10
+          minNum = 0
+        } else if (isLHC) {
+          maxNum = 49
+          minNum = 1
+        } else {
+          maxNum = 11
+          minNum = 1
+        }
         newNumbers[i] = Math.floor(Math.random() * (maxNum - minNum + 1)) + minNum
       }
     }
@@ -1222,8 +1327,11 @@ async function fetchIssueData() {
       if (newPreNum) {
         const nums = newPreNum.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n))
 
+        // 六合彩有 7 个号码，其他游戏（如 PK10）有 10 个号码
+        const expectedLength = gameId.value === 113 ? 7 : 10
+
         // 如果正在跑动且收到了新的开奖号码，依次定格
-        if (isLotteryRunning.value && nums.length === 10 && newPreNum !== oldPreNum) {
+        if (isLotteryRunning.value && nums.length === expectedLength && newPreNum !== oldPreNum) {
           stopLotteryRun(nums)
         } else if (!isLotteryRunning.value) {
           // 不在跑动状态，直接显示号码
