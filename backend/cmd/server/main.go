@@ -123,6 +123,7 @@ func main() {
 			game.GET("/plays", gameHandler.GetPlays)
 			game.POST("/bet", authMiddleware, gameHandler.PlaceBet)
 			game.GET("/debug/data", gameHandler.DebugGetSscData) // 调试接口
+			game.GET("/debug/playedGroup", gameHandler.DebugPlayedGroup) // 调试接口：查询玩法组
 		}
 
 		// 注单相关路由（需要登录）

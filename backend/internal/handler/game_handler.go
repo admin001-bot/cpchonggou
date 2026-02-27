@@ -294,6 +294,8 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
         return
     }
 
+    // 调试输出
+
     // 判断是否为测试用户
     isTestUser := user.TestFlag == 1
     userPanID := user.PanID
@@ -408,7 +410,7 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
         betsTable = "ssc_guestbets"
     }
     model.DB.Table(betsTable).
-        Select("COALESCE(SUM(money * totalNums), 0)").
+        Select("COALESCE(SUM(money), 0)").
         Where("uid = ? AND type = ? AND actionNo = ?", uid, gameID, actionNo).
         Scan(&actionNoMoney)
 
@@ -465,7 +467,7 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
         // 查询当前期数每个玩法已投注总额
         var playMoney float64
         model.DB.Table(betsTable).
-            Select("COALESCE(SUM(money * totalNums), 0)").
+            Select("COALESCE(SUM(money), 0)").
             Where("uid = ? AND type = ? AND actionNo = ? AND playedId = ?", uid, gameID, actionNo, playID).
             Scan(&playMoney)
 
@@ -525,8 +527,24 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
                 Where("id = ?", playID).
                 First(&played)
 
+            // 如果 played_groupid 为 0，尝试从 ssc_played2 表获取
+            if played.PlayedGroupID == 0 {
+                var pgID int
+                tx.Table("ssc_played2").
+                    Select("played_groupid").
+                    Where("id = ?", playID).
+                    Scan(&pgID)
+                played.PlayedGroupID = pgID
+            }
+
+            // 调试输出
+
             var groupName string
             tx.Table("ssc_played_group").Select("name").Where("id = ?", played.PlayedGroupID).Scan(&groupName)
+
+            // 获取游戏名称
+            var gameName string
+            tx.Table("ssc_type").Select("title").Where("id = ?", gameID).Scan(&gameName)
 
             userRebate := played.Rebate
             if user.Rebate > 0 {
@@ -564,7 +582,7 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
                 "actionNo":    actionNo,
                 "actionTime":  currentTime,
                 "actionIP":    clientIP,
-                "actionData":  played.Name,
+                "actionData":  buildFullActionData(gameName, groupName, played.Name),
                 "rebate":      userRebate,
                 "money":       money,
                 "totalNums":   totalNumsForBet,
@@ -898,4 +916,75 @@ func (h *GameHandler) DebugGetSscData(c *gin.Context) {
         "message": i18n.T("common.success"),
         "data":    records,
     })
+}
+
+// buildFullActionData 构建完整的下注内容（包含名次/球位信息）
+func buildFullActionData(gameName, groupName, playName string) string {
+    // PK10 类型游戏：玩法组名称包含 "冠军"、"亚军"、"第三名" 等
+    pk10Groups := []string{"冠军", "亚军", "第三名", "第四名", "第五名", "第六名", "第七名", "第八名", "第九名", "第十名"}
+    for _, group := range pk10Groups {
+        if strings.Contains(groupName, group) {
+            // 冠亚和玩法：返回 "冠亚单"、"冠亚双"、"冠亚大"、"冠亚小"
+            if strings.Contains(playName, "冠亚和") {
+                return playName
+            }
+            // 其他玩法：直接返回组名 + 玩法名，如 "冠军单"、"亚军大"
+            return fmt.Sprintf("%s%s", group, playName)
+        }
+    }
+
+    // 时时彩类型游戏：玩法组名称包含 "第一球"、"第二球" 等
+    sscBalls := []string{"第一球", "第二球", "第三球", "第四球", "第五球"}
+    for _, ball := range sscBalls {
+        if strings.Contains(groupName, ball) {
+            if strings.Contains(playName, "总和") {
+                return playName
+            }
+            return fmt.Sprintf("%s%s", ball, playName)
+        }
+    }
+
+    // PC 蛋蛋类型
+    if strings.Contains(gameName, "PC 蛋蛋") {
+        return playName
+    }
+
+    // 默认返回：玩法名称
+    return playName
+}
+
+// DebugPlayedGroup 调试接口：查询玩法组数据
+func (h *GameHandler) DebugPlayedGroup(c *gin.Context) {
+	playID := c.Query("playId")
+	if playID == "" {
+		c.JSON(200, gin.H{"error": "playId is required"})
+		return
+	}
+
+	var result struct {
+		ID            int    `gorm:"column:id"`
+		Name          string `gorm:"column:name"`
+		PlayedGroupID int    `gorm:"column:played_groupid"`
+		Type          int    `gorm:"column:type"`
+	}
+
+	// 查询 ssc_played2
+	err := model.DB.Table("ssc_played2").
+		Select("id, name, played_groupid, type").
+		Where("id = ?", playID).
+		First(&result).Error
+
+	if err != nil {
+		c.JSON(200, gin.H{"error": err.Error()})
+		return
+	}
+
+	// 查询玩法组名称
+	var groupName string
+	model.DB.Table("ssc_played_group").Select("name").Where("id = ?", result.PlayedGroupID).Scan(&groupName)
+
+	c.JSON(200, gin.H{
+		"play":      result,
+		"groupName": groupName,
+	})
 }
