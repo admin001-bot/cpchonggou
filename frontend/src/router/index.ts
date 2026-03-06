@@ -77,13 +77,13 @@ const routes: RouteRecordRaw[] = [
     path: '/game/:id',
     name: 'Game',
     component: () => import('@/views/game/index.vue'),
-    meta: { title: 'common.game' },
+    meta: { title: 'common.game', requiresAuth: true },
   },
   {
     path: '/game/history/:gameId',
     name: 'GameHistory',
     component: () => import('@/views/game/index.vue'),
-    meta: { title: 'game.lotteryResult' },
+    meta: { title: 'game.lotteryResult', requiresAuth: true },
   },
   {
     path: '/notcount',

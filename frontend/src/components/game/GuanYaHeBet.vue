@@ -3,23 +3,23 @@
     <!-- 冠亚和大小单双 -->
     <div class="bet-section">
       <div class="row text-center">
-        <div class="col title-no">冠、亞軍 組合</div>
+        <div class="col title-no">{{ t('game.guanYaHeCombo') }}</div>
       </div>
       <div class="bet-row">
         <div
           class="bet-item"
           :class="{ selected: isSelected(getPlayId('big')) }"
-          @click="handleToggle(getPlayId('big'), '冠亞大')"
+          @click="handleToggle(getPlayId('big'), t('game.guanYaBig'))"
         >
-          <span class="bet-content">冠亞大</span>
+          <span class="bet-content">{{ t('game.guanYaBig') }}</span>
           <span class="bet-odds">{{ getOdds(getPlayId('big')).toFixed(2) }}</span>
         </div>
         <div
           class="bet-item"
           :class="{ selected: isSelected(getPlayId('small')) }"
-          @click="handleToggle(getPlayId('small'), '冠亞小')"
+          @click="handleToggle(getPlayId('small'), t('game.guanYaSmall'))"
         >
-          <span class="bet-content">冠亞小</span>
+          <span class="bet-content">{{ t('game.guanYaSmall') }}</span>
           <span class="bet-odds">{{ getOdds(getPlayId('small')).toFixed(2) }}</span>
         </div>
       </div>
@@ -27,17 +27,17 @@
         <div
           class="bet-item"
           :class="{ selected: isSelected(getPlayId('odd')) }"
-          @click="handleToggle(getPlayId('odd'), '冠亞單')"
+          @click="handleToggle(getPlayId('odd'), t('game.guanYaOdd'))"
         >
-          <span class="bet-content">冠亞單</span>
+          <span class="bet-content">{{ t('game.guanYaOdd') }}</span>
           <span class="bet-odds">{{ getOdds(getPlayId('odd')).toFixed(2) }}</span>
         </div>
         <div
           class="bet-item"
           :class="{ selected: isSelected(getPlayId('even')) }"
-          @click="handleToggle(getPlayId('even'), '冠亞雙')"
+          @click="handleToggle(getPlayId('even'), t('game.guanYaEven'))"
         >
-          <span class="bet-content">冠亞雙</span>
+          <span class="bet-content">{{ t('game.guanYaEven') }}</span>
           <span class="bet-odds">{{ getOdds(getPlayId('even')).toFixed(2) }}</span>
         </div>
       </div>
@@ -137,6 +137,7 @@
 
 <script setup lang="ts">
 import type { PlayInfo } from '@/api/game'
+import { t } from '@/locales'
 
 interface Props {
   gameId: number

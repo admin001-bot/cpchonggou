@@ -46,7 +46,7 @@
 
       <!-- 注单列表 -->
       <div class="bet-list" v-if="dataList.length > 0">
-        <div class="bet-card" v-for="(item, index) in dataList" :key="item.id">
+        <div class="bet-card" v-for="item in mergedDataList" :key="item.id">
           <div class="bet-header">
             <div class="period-tag">
               <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -66,7 +66,7 @@
               <div class="play-name">{{ item.playName }}</div>
               <div class="play-detail">
                 <span class="odds-badge">@{{ item.odds.toFixed(2) }}</span>
-                <span class="bet-info">{{ getFullBetInfo(item) }}</span>
+                <span class="bet-info">{{ item.betInfo }}</span>
                 <span class="content-badge" v-if="item.content">{{ item.content }}</span>
               </div>
             </div>
@@ -99,7 +99,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { betApi, type BetDetailItem } from '@/api/game'
 import { t } from '@/locales'
@@ -111,6 +111,42 @@ const dataList = ref<BetDetailItem[]>([])
 const totalBetMoney = ref(0)
 const gameId = ref(Number(route.params.gameId) || 0)
 const gameName = ref((route.query.name as string) || '')
+
+// 合并后的注单列表（按转 Num + playId + content 分组，相同内容合并金额）
+const mergedDataList = computed(() => {
+  // 使用更精确的分组键：期数 + 玩法 + 完整内容
+  const map = new Map<string, BetDetailItem>()
+
+  dataList.value.forEach(item => {
+    // 使用 content 作为唯一键（包含名次信息）
+    // 如果没有 content，使用 betInfo
+    const content = item.content || item.betInfo || ''
+    const key = `${item.turnNum}-${item.playId}-${content}`
+
+    const existing = map.get(key)
+    if (existing) {
+      // 合并金额
+      existing.money += item.money
+      existing.resultMoney += item.resultMoney
+    } else {
+      // 创建新条目
+      map.set(key, {
+        ...item,
+        key // 保存 key 用于 v-for
+      })
+    }
+  })
+
+  // 转换为数组并按时间排序（最新的在前）
+  return Array.from(map.values()).sort((a, b) => {
+    // 先按期号降序
+    if (a.turnNum !== b.turnNum) {
+      return b.turnNum.localeCompare(a.turnNum)
+    }
+    // 同期号按 ID 降序
+    return b.id - a.id
+  })
+})
 
 // 下拉刷新相关
 let refreshStartY = 0
@@ -144,7 +180,6 @@ function getFullBetInfo(item: BetDetailItem): string {
 }
 
 async function loadData() {
-  loading.value = true
   try {
     const res = await betApi.getNotCountDetail(gameId.value)
     if (res.code === 0) {

@@ -11,7 +11,7 @@
           :class="{ active: isSelected(getTouPlayId(tou.id)) }"
           @click="toggleBet(getTouPlayId(tou.id))"
         >
-          <span class="bet-name">{{ tou.name }}尾</span>
+          <span class="bet-name">{{ t('game.wei', { num: tou.name }) }}</span>
           <span class="bet-numbers">{{ tou.numbers }}</span>
           <span class="odds">{{ getOdds(getTouPlayId(tou.id)) }}</span>
         </div>
@@ -29,7 +29,7 @@
           :class="{ active: isSelected(getWeiPlayId(wei.id)) }"
           @click="toggleBet(getWeiPlayId(wei.id))"
         >
-          <span class="bet-name">{{ wei.name }}尾</span>
+          <span class="bet-name">{{ t('game.wei', { num: wei.name }) }}</span>
           <span class="bet-numbers">{{ wei.numbers }}</span>
           <span class="odds">{{ getOdds(getWeiPlayId(wei.id)) }}</span>
         </div>

@@ -9,13 +9,13 @@
         :class="{ active: currentCount === count }"
         @click="selectCount(count)"
       >
-        选{{ count }}不中
+        {{ t('play.ZXBZ') }}{{ count }}
       </div>
     </div>
 
     <!-- 提示信息 -->
     <div class="tip-bar">
-      选择 {{ currentCount }} 个号码，开奖号码全部不在所选号码中即中奖
+      {{ t('game.selectNumberTip', { count: currentCount }) }}
     </div>
 
     <!-- 号码网格 -->
@@ -39,7 +39,7 @@
 
     <!-- 已选号码显示 -->
     <div class="selected-numbers" v-if="selectedBets.length > 0">
-      <div class="selected-title">已选号码 ({{ selectedBets.length }}/{{ currentCount }})</div>
+      <div class="selected-title">{{ t('game.selectedNumbers', { current: selectedBets.length, total: currentCount }) }}</div>
       <div class="selected-list">
         <span
           v-for="num in selectedBets"
@@ -85,7 +85,7 @@ const toggleNumber = (num: number) => {
     selectedNumbers.value.splice(index, 1)
   } else {
     if (selectedNumbers.value.length >= currentCount.value) {
-      alert(`最多选择 ${currentCount.value} 个号码`)
+      alert(t('game.maxNumberSelect', { count: currentCount.value }))
       return
     }
     selectedNumbers.value.push(num)
@@ -112,18 +112,18 @@ const getNumberClass = (num: number) => {
 // 获取生肖
 const getZodiac = (num: number) => {
   const zodiacMap: Record<number, string> = {
-    1: '羊', 13: '羊', 25: '羊', 37: '羊', 49: '羊',
-    12: '猴', 24: '猴', 36: '猴', 48: '猴',
-    11: '雞', 23: '雞', 35: '雞', 47: '雞',
-    10: '狗', 22: '狗', 34: '狗', 46: '狗',
-    9: '豬', 21: '豬', 33: '豬', 45: '豬',
-    8: '鼠', 20: '鼠', 32: '鼠', 44: '鼠',
-    7: '牛', 19: '牛', 31: '牛', 43: '牛',
-    6: '虎', 18: '虎', 30: '虎', 42: '虎',
-    5: '兔', 17: '兔', 29: '兔', 41: '兔',
-    4: '龍', 16: '龍', 28: '龍', 40: '龍',
-    3: '蛇', 15: '蛇', 27: '蛇', 39: '蛇',
-    2: '馬', 14: '馬', 26: '馬', 38: '馬'
+    1: t('lhc.goat'), 13: t('lhc.goat'), 25: t('lhc.goat'), 37: t('lhc.goat'), 49: t('lhc.goat'),
+    12: t('lhc.monkey'), 24: t('lhc.monkey'), 36: t('lhc.monkey'), 48: t('lhc.monkey'),
+    11: t('lhc.rooster'), 23: t('lhc.rooster'), 35: t('lhc.rooster'), 47: t('lhc.rooster'),
+    10: t('lhc.dog'), 22: t('lhc.dog'), 34: t('lhc.dog'), 46: t('lhc.dog'),
+    9: t('lhc.pig'), 21: t('lhc.pig'), 33: t('lhc.pig'), 45: t('lhc.pig'),
+    8: t('lhc.rat'), 20: t('lhc.rat'), 32: t('lhc.rat'), 44: t('lhc.rat'),
+    7: t('lhc.ox'), 19: t('lhc.ox'), 31: t('lhc.ox'), 43: t('lhc.ox'),
+    6: t('lhc.tiger'), 18: t('lhc.tiger'), 30: t('lhc.tiger'), 42: t('lhc.tiger'),
+    5: t('lhc.rabbit'), 17: t('lhc.rabbit'), 29: t('lhc.rabbit'), 41: t('lhc.rabbit'),
+    4: t('lhc.dragon'), 16: t('lhc.dragon'), 28: t('lhc.dragon'), 40: t('lhc.dragon'),
+    3: t('lhc.snake'), 15: t('lhc.snake'), 27: t('lhc.snake'), 39: t('lhc.snake'),
+    2: t('lhc.horse'), 14: t('lhc.horse'), 26: t('lhc.horse'), 38: t('lhc.horse')
   }
   return zodiacMap[num] || ''
 }

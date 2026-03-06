@@ -610,7 +610,7 @@ func (h *UserHandler) GuestLogin(c *gin.Context) {
 
 	// 获取创建的用户
 	var createdGuest model.GuestMembers
-	if err := model.DB.Where("username = ?", guestUsername).First(&createdGuest).Error; err != nil {
+	if err := model.DB.Where("username = ?", guestUsername).Take(&createdGuest).Error; err != nil {
 		response.Error(c, i18n.T("login.invalid_credentials"))
 		return
 	}

@@ -9,13 +9,13 @@
         :class="{ active: currentCount === count }"
         @click="selectCount(count)"
       >
-        {{ count }}合肖
+        {{ count }}{{ t('play.HX') }}
       </div>
     </div>
 
     <!-- 提示信息 -->
     <div class="tip-bar">
-      选择 {{ currentCount }} 个生肖，全部选中即中奖
+      {{ t('game.selectZodiacTip', { count: currentCount }) }}
     </div>
 
     <!-- 生肖网格 -->
@@ -36,7 +36,7 @@
 
     <!-- 已选生肖显示 -->
     <div class="selected-zodiacs" v-if="selectedZodiacs.length > 0">
-      <div class="selected-title">已选生肖 ({{ selectedZodiacs.length }}/{{ currentCount }})</div>
+      <div class="selected-title">{{ t('game.selectedNumbers', { current: selectedZodiacs.length, total: currentCount }) }}</div>
       <div class="selected-list">
         <span
           v-for="id in selectedZodiacs"
@@ -69,20 +69,20 @@ const currentCount = ref(2)
 const selectedZodiacs = ref<number[]>([])
 
 // 生肖列表 (playId: 1138801-1138812)
-const zodiacList = [
-  { id: 1, name: '鼠', numbers: '08,20,32,44' },
-  { id: 2, name: '牛', numbers: '07,19,31,43' },
-  { id: 3, name: '虎', numbers: '06,18,30,42' },
-  { id: 4, name: '兔', numbers: '05,17,29,41' },
-  { id: 5, name: '龍', numbers: '04,16,28,40' },
-  { id: 6, name: '蛇', numbers: '03,15,27,39' },
-  { id: 7, name: '馬', numbers: '02,14,26,38' },
-  { id: 8, name: '羊', numbers: '01,13,25,37,49' },
-  { id: 9, name: '猴', numbers: '12,24,36,48' },
-  { id: 10, name: '雞', numbers: '11,23,35,47' },
-  { id: 11, name: '狗', numbers: '10,22,34,46' },
-  { id: 12, name: '豬', numbers: '09,21,33,45' }
-]
+const zodiacList = computed(() => [
+  { id: 1, name: t('lhc.rat'), numbers: '08,20,32,44' },
+  { id: 2, name: t('lhc.ox'), numbers: '07,19,31,43' },
+  { id: 3, name: t('lhc.tiger'), numbers: '06,18,30,42' },
+  { id: 4, name: t('lhc.rabbit'), numbers: '05,17,29,41' },
+  { id: 5, name: t('lhc.dragon'), numbers: '04,16,28,40' },
+  { id: 6, name: t('lhc.snake'), numbers: '03,15,27,39' },
+  { id: 7, name: t('lhc.horse'), numbers: '02,14,26,38' },
+  { id: 8, name: t('lhc.goat'), numbers: '01,13,25,37,49' },
+  { id: 9, name: t('lhc.monkey'), numbers: '12,24,36,48' },
+  { id: 10, name: t('lhc.rooster'), numbers: '11,23,35,47' },
+  { id: 11, name: t('lhc.dog'), numbers: '10,22,34,46' },
+  { id: 12, name: t('lhc.pig'), numbers: '09,21,33,45' }
+])
 
 // 选择合肖数量
 const selectCount = (count: number) => {
@@ -97,7 +97,7 @@ const toggleZodiac = (id: number) => {
     selectedZodiacs.value.splice(index, 1)
   } else {
     if (selectedZodiacs.value.length >= currentCount.value) {
-      alert(`最多选择 ${currentCount.value} 个生肖`)
+      alert(t('game.maxZodiacSelect', { count: currentCount.value }))
       return
     }
     selectedZodiacs.value.push(id)
@@ -114,7 +114,7 @@ const removeZodiac = (id: number) => {
 
 // 获取生肖名称
 const getZodiacName = (id: number) => {
-  const zodiac = zodiacList.find(z => z.id === id)
+  const zodiac = zodiacList.value.find(z => z.id === id)
   return zodiac?.name || ''
 }
 

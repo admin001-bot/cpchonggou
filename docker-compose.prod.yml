@@ -1,0 +1,31 @@
+# 生产环境 - 使用构建优化
+services:
+  # Go 后端
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: lottery-backend-prod
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=43.156.122.170
+      - DB_PORT=3306
+      - DB_NAME=pj
+      - DB_USER=pj
+      - DB_PASS=pj
+      - GIN_MODE=release
+    working_dir: /app
+
+  # Vue 前端 - 生产构建 (nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: lottery-frontend-prod
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend

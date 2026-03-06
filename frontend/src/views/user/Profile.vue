@@ -285,22 +285,22 @@ const bankForm = reactive({
 })
 
 // 银行列表
-const bankList = ref([
-  { id: 1, name: '中国工商银行' },
-  { id: 2, name: '中国农业银行' },
-  { id: 3, name: '中国建设银行' },
-  { id: 4, name: '中国银行' },
-  { id: 5, name: '交通银行' },
-  { id: 6, name: '招商银行' },
-  { id: 7, name: '中国民生银行' },
-  { id: 8, name: '中国光大银行' },
-  { id: 9, name: '中国浦发银行' },
-  { id: 10, name: '北京银行' },
-  { id: 11, name: '上海银行' },
-  { id: 12, name: '平安银行' },
-  { id: 13, name: '华夏银行' },
-  { id: 14, name: '农村信用合作社' },
-  { id: 15, name: '其他银行' }
+const bankList = computed(() => [
+  { id: 1, name: t('bank.icbc') },
+  { id: 2, name: t('bank.abc') },
+  { id: 3, name: t('bank.ccb') },
+  { id: 4, name: t('bank.boc') },
+  { id: 5, name: t('bank.comm') },
+  { id: 6, name: t('bank.cmb') },
+  { id: 7, name: t('bank.cmbc') },
+  { id: 8, name: t('bank.ceb') },
+  { id: 9, name: t('bank.spdb') },
+  { id: 10, name: t('bank.bjb') },
+  { id: 11, name: t('bank.shb') },
+  { id: 12, name: t('bank.pab') },
+  { id: 13, name: t('bank.hxb') },
+  { id: 14, name: t('bank.rcc') },
+  { id: 15, name: t('bank.other') }
 ])
 
 const editTitles: Record<string, string> = {

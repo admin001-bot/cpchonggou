@@ -216,7 +216,7 @@ const submitWithdraw = async () => {
   if (!form.amount || isNaN(amount) || amount < withdrawConfig.minMoney) {
     toastStore.show({
       type: 'warning',
-      title: '金额过低',
+      title: t('common.amountTooLow'),
       message: t('bank.amountMinLimit')
     })
     return
@@ -225,7 +225,7 @@ const submitWithdraw = async () => {
   if (amount > withdrawConfig.maxMoney) {
     toastStore.show({
       type: 'warning',
-      title: '金额过高',
+      title: t('common.amountTooHigh'),
       message: t('bank.amountMaxLimit')
     })
     return
@@ -235,7 +235,7 @@ const submitWithdraw = async () => {
   if (!form.password) {
     toastStore.show({
       type: 'warning',
-      title: '需要密码',
+      title: t('common.passwordRequired'),
       message: t('bank.enterPassword')
     })
     return
@@ -245,7 +245,7 @@ const submitWithdraw = async () => {
   if (!checkWithdrawTime()) {
     toastStore.show({
       type: 'warning',
-      title: '非提现时间',
+      title: t('common.notWithdrawTime'),
       message: timeWarning.value
     })
     return
@@ -265,7 +265,7 @@ const submitWithdraw = async () => {
     if (res.code === 0) {
       toastStore.show({
         type: 'success',
-        title: '提款成功',
+        title: t('common.withdrawSuccessTitle'),
         message: res.data?.message || t('bank.withdrawSuccess'),
         duration: 3000
       })
@@ -286,7 +286,7 @@ const submitWithdraw = async () => {
 
       toastStore.show({
         type: 'error',
-        title: '提款失败',
+        title: t('common.withdrawFailedTitle'),
         message: errorMessage
       })
     }

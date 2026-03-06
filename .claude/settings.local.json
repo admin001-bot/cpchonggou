@@ -34,7 +34,11 @@
       "Bash(cd C:/Users/Administrator/Desktop/chonggou/frontend && npm run 2>&1)",
       "Bash(cd C:\\\\Users\\\\Administrator\\\\Desktop\\\\chonggou:*)",
       "Bash(git add:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)",
+      "Bash(docker-compose ps:*)",
+      "Bash(docker-compose:*)"
     ]
   }
 }

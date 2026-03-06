@@ -15,6 +15,9 @@ export default {
   'common.cancel': '取消',
   'common.userAgreement': '用戶協議',
   'common.unauthorized': '未授權',
+  'common.tips': '提示',
+  'common.success': '成功',
+  'common.error': '錯誤',
 
   // 下注相关
   'bet.success': '投注成功',
@@ -579,4 +582,69 @@ export default {
   // 首页
   'home.guestComingSoon': '試玩功能開發中',
   'home.logoutConfirm': '確定要退出登錄嗎？',
+
+  // 退出登录
+  'logout.success': '退出成功',
+  'logout.successMessage': '您已成功退出登錄',
+
+  // 银行列表
+  'bank.icbc': '中國工商銀行',
+  'bank.abc': '中國農業銀行',
+  'bank.ccb': '中國建設銀行',
+  'bank.boc': '中國銀行',
+  'bank.comm': '交通銀行',
+  'bank.cmb': '招商銀行',
+  'bank.cmbc': '中國民生銀行',
+  'bank.ceb': '中國光大銀行',
+  'bank.spdb': '中國浦發銀行',
+  'bank.bjb': '北京銀行',
+  'bank.shb': '上海銀行',
+  'bank.pab': '平安銀行',
+  'bank.hxb': '華夏銀行',
+  'bank.rcc': '農村信用合作社',
+  'bank.other': '其他銀行',
+
+  // 通用消息
+  'common.needLoginPwd': '需要登錄密碼',
+  'common.pwdLengthNotEnough': '密碼長度不足',
+  'common.pwdNotMatch': '密碼不匹配',
+  'common.pwdCannotSame': '密碼不能相同',
+  'common.needOldPwd': '需要原密碼',
+  'common.setSuccessTitle': '設置成功',
+  'common.setFailedTitle': '設置失敗',
+  'common.changeSuccessTitle': '修改成功',
+  'common.changeFailedTitle': '修改失敗',
+  'bank.completeProfile': '請先完善個人资料',
+  'bank.bindBankCardFirst': '请先绑定提款地址',
+
+  // 游戏投注 - 冠亚和
+  'game.guanYaHeCombo': '冠、亞軍 組合',
+  'game.guanYaBig': '冠亞大',
+  'game.guanYaSmall': '冠亞小',
+  'game.guanYaOdd': '冠亞單',
+  'game.guanYaEven': '冠亞雙',
+  'game.guanYaHe': '冠亞和{num}',
+
+  // 游戏投注 - 正特
+  'game.zhengTe1': '正 1 特',
+  'game.zhengTe2': '正 2 特',
+  'game.zhengTe3': '正 3 特',
+  'game.zhengTe4': '正 4 特',
+  'game.zhengTe5': '正 5 特',
+  'game.zhengTe6': '正 6 特',
+
+  // 游戏投注 - 头尾数
+  'game.wei': '{num}尾',
+
+  // 游戏投注 - 总肖/合肖
+  'game.xiaoCount': '{count}肖',
+  'game.selectZodiac': '選擇生肖',
+  'game.selectedZodiac': '已選生肖 ({count}肖)',
+  'game.selectZodiacTip': '選擇 {count} 個生肖，全部選中即中獎',
+  'game.maxZodiacSelect': '最多選擇 {count} 個生肖',
+
+  // 游戏投注 - 自选不中
+  'game.selectNumberTip': '選擇 {count} 個號碼，開獎號碼全部不在所選號碼中即中獎',
+  'game.maxNumberSelect': '最多選擇 {count} 個號碼',
+  'game.selectedNumbers': '已選號碼 ({current}/{total})',
 }

@@ -278,7 +278,7 @@
               </svg>
             </div>
             <h3 class="confirm-dialog-title">{{ t('user.logoutConfirm') }}</h3>
-            <p class="confirm-dialog-message">确定要退出登录吗？</p>
+            <p class="confirm-dialog-message">{{ t('user.logoutConfirm') }}</p>
             <div class="confirm-dialog-actions">
               <button class="confirm-btn cancel" @click="handleLogoutCancel">
                 {{ t('common.cancel') }}
@@ -414,8 +414,8 @@ const handleLogoutConfirm = () => {
   userStore.logout()
   toastStore.show({
     type: 'success',
-    title: '退出成功',
-    message: '您已成功退出登录'
+    title: t('logout.success'),
+    message: t('logout.successMessage')
   })
   setTimeout(() => {
     router.push('/home')

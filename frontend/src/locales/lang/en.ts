@@ -15,6 +15,9 @@ export default {
   'common.userAgreement': 'User Agreement',
   'common.unauthorized': 'Unauthorized',
   'common.loading': 'Loading...',
+  'common.tips': 'Tips',
+  'common.success': 'Success',
+  'common.error': 'Error',
 
   // Betting
   'bet.success': 'Bet successful',
@@ -578,4 +581,69 @@ export default {
   // Home
   'home.guestComingSoon': 'Demo feature coming soon',
   'home.logoutConfirm': 'Are you sure to logout?',
+
+  // Logout
+  'logout.success': 'Logout Success',
+  'logout.successMessage': 'You have been logged out successfully',
+
+  // Bank list
+  'bank.icbc': 'ICBC',
+  'bank.abc': 'Agricultural Bank',
+  'bank.ccb': 'China Construction Bank',
+  'bank.boc': 'Bank of China',
+  'bank.comm': 'Bank of Communications',
+  'bank.cmb': 'China Merchants Bank',
+  'bank.cmbc': 'China Minsheng Bank',
+  'bank.ceb': 'China Everbright Bank',
+  'bank.spdb': 'SPDB',
+  'bank.bjb': 'Bank of Beijing',
+  'bank.shb': 'Bank of Shanghai',
+  'bank.pab': 'Ping An Bank',
+  'bank.hxb': 'Hua Xia Bank',
+  'bank.rcc': 'Rural Credit Cooperative',
+  'bank.other': 'Other Bank',
+
+  // Common messages
+  'common.needLoginPwd': 'Login password required',
+  'common.pwdLengthNotEnough': 'Password length insufficient',
+  'common.pwdNotMatch': 'Passwords do not match',
+  'common.pwdCannotSame': 'Passwords cannot be the same',
+  'common.needOldPwd': 'Old password required',
+  'common.setSuccessTitle': 'Set Successfully',
+  'common.setFailedTitle': 'Set Failed',
+  'common.changeSuccessTitle': 'Changed Successfully',
+  'common.changeFailedTitle': 'Change Failed',
+  'bank.completeProfile': 'Please complete your profile first',
+  'bank.bindBankCardFirst': 'Please bind withdraw address first',
+
+  // Game betting - Top 2 Sum
+  'game.guanYaHeCombo': 'Top 2 Combo',
+  'game.guanYaBig': 'Top 2 Big',
+  'game.guanYaSmall': 'Top 2 Small',
+  'game.guanYaOdd': 'Top 2 Odd',
+  'game.guanYaEven': 'Top 2 Even',
+  'game.guanYaHe': 'Top 2 Sum {num}',
+
+  // Game betting - Special Pair
+  'game.zhengTe1': '1st Special',
+  'game.zhengTe2': '2nd Special',
+  'game.zhengTe3': '3rd Special',
+  'game.zhengTe4': '4th Special',
+  'game.zhengTe5': '5th Special',
+  'game.zhengTe6': '6th Special',
+
+  // Game betting - Head/Tail
+  'game.wei': '{num} Tail',
+
+  // Game betting - Zodiac
+  'game.xiaoCount': '{count} Zodiac',
+  'game.selectZodiac': 'Select Zodiac',
+  'game.selectedZodiac': 'Selected ({count} Zodiac)',
+  'game.selectZodiacTip': 'Select {count} zodiacs, win if all match',
+  'game.maxZodiacSelect': 'Maximum {count} zodiacs',
+
+  // Game betting - Select Not Hit
+  'game.selectNumberTip': 'Select {count} numbers, win if none hit',
+  'game.maxNumberSelect': 'Maximum {count} numbers',
+  'game.selectedNumbers': 'Selected ({current}/{total})',
 }

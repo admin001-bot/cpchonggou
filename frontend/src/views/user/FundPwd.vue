@@ -232,7 +232,7 @@ const submitForm = async () => {
   if (!form.loginPwd) {
     toastStore.show({
       type: 'warning',
-      title: '需要登录密码',
+      title: t('common.needLoginPwd'),
       message: t('user.enterLoginPwd')
     })
     return
@@ -260,7 +260,7 @@ const submitForm = async () => {
   if (form.loginPwd === form.coinPwd) {
     toastStore.show({
       type: 'warning',
-      title: '密码不能相同',
+      title: t('common.pwdCannotSame'),
       message: t('user.pwdSame')
     })
     return
@@ -277,7 +277,7 @@ const submitForm = async () => {
     if (res.code === 0) {
       toastStore.show({
         type: 'success',
-        title: '设置成功',
+        title: t('common.setSuccessTitle'),
         message: t('user.setSuccess')
       })
       // 刷新用户信息
@@ -311,7 +311,7 @@ const submitEditForm = async () => {
   if (!form.oldPwd || form.oldPwd.length < 6) {
     toastStore.show({
       type: 'warning',
-      title: '需要原密码',
+      title: t('common.needOldPwd'),
       message: t('user.enterOldCoinPwd')
     })
     return
@@ -345,7 +345,7 @@ const submitEditForm = async () => {
     if (res.code === 0) {
       toastStore.show({
         type: 'success',
-        title: '修改成功',
+        title: t('common.changeSuccessTitle'),
         message: t('user.changeSuccess')
       })
       isEditMode.value = false

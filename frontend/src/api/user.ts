@@ -80,10 +80,10 @@ export const userApi = {
 
   // 游客登录
   guestLogin(): Promise<{ code: number; message: string; data: GuestLoginResponse }> {
-    return request.post('/user/guestLogin', {
-      username: '!guest!',
-      password: '!guest!'
-    }, {
+    const params = new URLSearchParams()
+    params.append('username', '!guest!')
+    params.append('password', '!guest!')
+    return request.post('/user/guestLogin', params, {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       }

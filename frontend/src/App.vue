@@ -74,10 +74,15 @@ onMounted(() => {
   box-sizing: border-box;
 }
 
-html, body, #app {
+html, body {
   height: 100%;
   font-family: 'Microsoft YaHei', sans-serif;
-  background: #f5f5f5;
+  background: #fcfcfc;
+}
+
+#app {
+  height: 100%;
+  background: #fcfcfc;
 }
 
 /* 新页面滑入 - 前进 */

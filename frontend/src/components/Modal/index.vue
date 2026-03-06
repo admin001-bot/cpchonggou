@@ -69,6 +69,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import { t } from '@/locales'
 
 export type ModalType = 'success' | 'error' | 'warning' | 'info'
 
@@ -90,8 +91,8 @@ const props = withDefaults(defineProps<Props>(), {
   showClose: true,
   showFooter: true,
   showCancel: false,
-  confirmText: '确定',
-  cancelText: '取消',
+  confirmText: () => t('common.confirm'),
+  cancelText: () => t('common.cancel'),
   closeOnClickOverlay: true
 })
 

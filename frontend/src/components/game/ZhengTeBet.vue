@@ -154,7 +154,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { t } from '@/locales'
 import { type PlayInfo } from '@/api/game'
 
@@ -167,7 +167,14 @@ const emit = defineEmits<{
   (e: 'toggle-bet', playId: number): void
 }>()
 
-const posNames = ['正 1 特', '正 2 特', '正 3 特', '正 4 特', '正 5 特', '正 6 特']
+const posNames = computed(() => [
+  t('game.zhengTe1'),
+  t('game.zhengTe2'),
+  t('game.zhengTe3'),
+  t('game.zhengTe4'),
+  t('game.zhengTe5'),
+  t('game.zhengTe6')
+])
 const currentPos = ref(0)
 
 // playId 规律（基于 PHP 模板）：
