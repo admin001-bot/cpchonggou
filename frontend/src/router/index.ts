@@ -283,7 +283,7 @@ router.beforeEach(async (to, _from, next) => {
   // 设置页面标题
   const titleKey = to.meta.title as string
   // 如果标题是翻译 key 则翻译，否则直接使用
-  if (titleKey && (titleKey.startsWith('bet.') || titleKey.startsWith('home.') || titleKey.startsWith('common.') || titleKey.startsWith('bank.'))) {
+  if (titleKey && (titleKey.includes('.'))) {
     document.title = t(titleKey)
   } else {
     document.title = titleKey || t('common.appTitle')
