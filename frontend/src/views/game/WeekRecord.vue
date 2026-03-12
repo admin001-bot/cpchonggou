@@ -103,9 +103,10 @@ async function loadData() {
   try {
     const res = await betApi.getStatBets()
     console.log('API response:', res)
-    // 处理响应：res.data 直接是数组
+    // 处理响应：res.data 可能直接是数组，也可能是嵌套的 { data: [...] }
     if (res.code === 0 && res.data) {
-      dataList.value = Array.isArray(res.data) ? res.data : []
+      const data = res.data as any
+      dataList.value = Array.isArray(data) ? data : (Array.isArray(data?.data) ? data.data : [])
     } else {
       dataList.value = []
     }

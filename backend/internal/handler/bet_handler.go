@@ -30,35 +30,41 @@ type NotCountItem struct {
 
 // NotCountDetailItem 即时注单明细项
 type NotCountDetailItem struct {
-	ID          int     `json:"id"`
-	UserID      int     `json:"userId"`
-	UserName    string  `json:"userName"`
-	PlayID      int     `json:"playId"`
-	PlayCateID  int     `json:"playCateId"`
-	PlayName    string  `json:"playName"`
-	Odds        float64 `json:"odds"`
-	Rebate      float64 `json:"rebate"`
-	AddTime     string  `json:"addTime"`
-	TurnNum     string  `json:"turnNum"`
-	GameID      int     `json:"gameId"`
-	Status      int     `json:"status"`      // 0未结 1已结
-	Money       float64 `json:"money"`       // 下注金额
-	ResultMoney float64 `json:"resultMoney"` // 可赢金额
-	OrderNo     string  `json:"orderNo"`
-	LotteryNo   string  `json:"lotteryNo"`
-	OpenTime    string  `json:"openTime"`
-	BetInfo     string  `json:"betInfo"`
-	Content     string  `json:"content"`     // 投注内容（如：单、双等）
+	ID            int     `json:"id"`
+	UserID        int     `json:"userId"`
+	UserName      string  `json:"userName"`
+	PlayID        int     `json:"playId"`
+	PlayCateID    int     `json:"playCateId"`
+	PlayName      string  `json:"playName"`
+	Odds          float64 `json:"odds"`
+	Rebate        float64 `json:"rebate"`
+	AddTime       string  `json:"addTime"`
+	TurnNum       string  `json:"turnNum"`
+	GameID        int     `json:"gameId"`
+	Status        int     `json:"status"`          // 0未结 1已结
+	Money         float64 `json:"money"`           // 下注金额
+	ResultMoney   float64 `json:"resultMoney"`     // 可赢金额
+	OrderNo       string  `json:"orderNo"`
+	LotteryNo     string  `json:"lotteryNo"`
+	OpenTime      string  `json:"openTime"`
+	BetInfo       string  `json:"betInfo"`
+	Content       string  `json:"content"`         // 投注内容（如：单、双等）
+	PlayedGroupID int     `json:"playedGroupId"`   // 玩法组ID
+	GroupName     string  `json:"groupName"`       // 玩法组名称
 }
 
 // SettledItem 今日已结项
 type SettledItem struct {
-	TurnNum     string  `json:"turnNum"`
-	Detail      string  `json:"detail"`
-	Content     string  `json:"content"`     // 投注内容（如：双、冠亚单等）
-	Money       float64 `json:"money"`
-	ResultMoney float64 `json:"resultMoney"`
-	Rebate      float64 `json:"rebate"`
+	TurnNum       string  `json:"turnNum"`
+	Detail        string  `json:"detail"`
+	Content       string  `json:"content"`       // 投注内容（如：双、冠亚单等）
+	Money         float64 `json:"money"`
+	ResultMoney   float64 `json:"resultMoney"`
+	Rebate        float64 `json:"rebate"`
+	GameID        int     `json:"gameId"`        // 游戏ID
+	GroupName     string  `json:"groupName"`     // 玩法组名称（含名次信息）
+	PlayedGroupID int     `json:"playedGroupId"` // 玩法组ID
+	PlayedID      int     `json:"playedId"`      // 玩法ID
 }
 
 // WeekRecordItem 下注记录项
@@ -160,26 +166,34 @@ func (h *BetHandler) GetNotCountDetail(c *gin.Context) {
 		betMoney := bet.Money
 		resultMoney := bet.Money*bet.Odds - betMoney + betMoney*bet.Rebate
 
+		// 获取玩法组名称
+		var groupName string
+		if bet.PlayedGroup > 0 {
+			model.DB.Table("ssc_played_group").Select("name").Where("id = ?", bet.PlayedGroup).Scan(&groupName)
+		}
+
 		result = append(result, NotCountDetailItem{
-			ID:          bet.ID,
-			UserID:      bet.Uid,
-			UserName:    bet.Username,
-			PlayID:      bet.PlayedId,
-			PlayCateID:  bet.PlayedGroup,
-			PlayName:    "",  // 不再需要
-			Odds:        bet.Odds,
-			Rebate:      bet.Rebate,
-			AddTime:     time.Unix(bet.ActionTime, 0).Format("2006-01-02 15:04:05"),
-			TurnNum:     bet.ActionNo,
-			GameID:      bet.Type,
-			Status:      0,
-			Money:       betMoney,
-			ResultMoney: resultMoney,
-			OrderNo:     bet.WjorderId,
-			LotteryNo:   bet.LotteryNo,
-			OpenTime:    time.Unix(bet.KjTime, 0).Format("2006-01-02 15:04:05"),
-			BetInfo:     bet.BetInfo,
-			Content:     fullContent,
+			ID:            bet.ID,
+			UserID:        bet.Uid,
+			UserName:      bet.Username,
+			PlayID:        bet.PlayedId,
+			PlayCateID:    bet.PlayedGroup,
+			PlayName:      groupName,
+			Odds:          bet.Odds,
+			Rebate:        bet.Rebate,
+			AddTime:       time.Unix(bet.ActionTime, 0).Format("2006-01-02 15:04:05"),
+			TurnNum:       bet.ActionNo,
+			GameID:        bet.Type,
+			Status:        0,
+			Money:         betMoney,
+			ResultMoney:   resultMoney,
+			OrderNo:       bet.WjorderId,
+			LotteryNo:     bet.LotteryNo,
+			OpenTime:      time.Unix(bet.KjTime, 0).Format("2006-01-02 15:04:05"),
+			BetInfo:       bet.BetInfo,
+			Content:       fullContent,
+			PlayedGroupID: bet.PlayedGroup,
+			GroupName:     groupName,
 		})
 
 		totalBetMoney += betMoney
@@ -212,24 +226,24 @@ func (h *BetHandler) GetBetBills(c *gin.Context) {
 	todayStartInt := todayStart.Unix()
 
 	var bets []struct {
-		ID          int
-		Uid         int
-		Username    string
-		PlayedId    int
-		PlayedGroup int
-		Odds        float64
-		Rebate      float64
-		ActionTime  int64
-		ActionNo    string
-		Type        int
-		Money       float64
-		TotalNums   int
-		WjorderId   string
-		LotteryNo   string
-		KjTime      int64
-		Bonus       float64
-		BetInfo     string
-		Content     string
+		ID          int     `gorm:"column:id"`
+		Uid         int     `gorm:"column:uid"`
+		Username    string  `gorm:"column:username"`
+		PlayedId    int     `gorm:"column:playedId"`
+		PlayedGroup int     `gorm:"column:playedGroup"`
+		Odds        float64 `gorm:"column:odds"`
+		Rebate      float64 `gorm:"column:rebate"`
+		ActionTime  int64   `gorm:"column:actionTime"`
+		ActionNo    string  `gorm:"column:actionNo"`
+		Type        int     `gorm:"column:type"`
+		Money       float64 `gorm:"column:money"`
+		TotalNums   int     `gorm:"column:totalNums"`
+		WjorderId   string  `gorm:"column:wjorderId"`
+		LotteryNo   string  `gorm:"column:lotteryNo"`
+		KjTime      int64   `gorm:"column:kjTime"`
+		Bonus       float64 `gorm:"column:bonus"`
+		BetInfo     string  `gorm:"column:betInfo"`
+		Content     string  `gorm:"column:content"`
 	}
 
 	query := model.DB.Table("ssc_bets").
@@ -273,12 +287,16 @@ func (h *BetHandler) GetBetBills(c *gin.Context) {
 		fullContent := bet.Content
 
 		result = append(result, SettledItem{
-			TurnNum:     gameName + "<br>" + bet.ActionNo,
-			Detail:      playName + "<br>@" + fmt.Sprintf("%.2f", bet.Odds) + "<br>#" + fmt.Sprintf("%.3f", bet.Rebate),
-			Content:     fullContent,
-			Money:       betMoney,
-			ResultMoney: resultMoney,
-			Rebate:      bet.Rebate,
+			TurnNum:       gameName + "<br>" + bet.ActionNo,
+			Detail:        playName + "<br>@" + fmt.Sprintf("%.2f", bet.Odds) + "<br>#" + fmt.Sprintf("%.3f", bet.Rebate),
+			Content:       fullContent,
+			Money:         betMoney,
+			ResultMoney:   resultMoney,
+			Rebate:        bet.Rebate,
+			GameID:        bet.Type,
+			GroupName:     groupName,
+			PlayedGroupID: bet.PlayedGroup,
+			PlayedID:      bet.PlayedId,
 		})
 
 		totalBetMoney += betMoney
@@ -316,10 +334,10 @@ func (h *BetHandler) GetStatBets(c *gin.Context) {
 
 	// 查询每天统计
 	var stats []struct {
-		StatDate     string
-		BetCount     int
-		BetMoney     float64
-		RewardRebate float64
+		StatDate     string  `gorm:"column:statDate"`
+		BetCount     int     `gorm:"column:betCount"`
+		BetMoney     float64 `gorm:"column:betMoney"`
+		RewardRebate float64 `gorm:"column:rewardRebate"`
 	}
 
 	// 将日期字符串转为时间戳范围（使用北京时间）
@@ -328,11 +346,12 @@ func (h *BetHandler) GetStatBets(c *gin.Context) {
 	endTime = endTime.Add(24*time.Hour - 1*time.Second) // 到当天的最后一秒
 
 	// 从 ssc_bets 表实时统计（不再依赖 report 表）
-	// 使用 kjTime（开奖时间）来统计，而不是 actionTime（投注时间）
+	// 使用 actionTime（投注时间）来统计，与 GetBetBills 和 GetLotteryData 保持一致
+	// MySQL 系统时区是 UTC，需要用 CONVERT_TZ 转换为北京时间分组
 	model.DB.Table("ssc_bets").
-		Select("DATE(FROM_UNIXTIME(kjTime, '+8')) as statDate, COUNT(*) as betCount, SUM(money) as betMoney, SUM(bonus - money + money * rebate) as rewardRebate").
-		Where("isDelete = 0 AND uid = ? AND lotteryNo != '' AND kjTime >= ? AND kjTime <= ?", uid, startTime.Unix(), endTime.Unix()).
-		Group("DATE(FROM_UNIXTIME(kjTime, '+8'))").
+		Select("DATE(CONVERT_TZ(FROM_UNIXTIME(actionTime), '+00:00', '+08:00')) as statDate, COUNT(*) as betCount, SUM(money) as betMoney, SUM(bonus - money + money * rebate) as rewardRebate").
+		Where("isDelete = 0 AND uid = ? AND lotteryNo != '' AND actionTime >= ? AND actionTime <= ?", uid, startTime.Unix(), endTime.Unix()).
+		Group("DATE(CONVERT_TZ(FROM_UNIXTIME(actionTime), '+00:00', '+08:00'))").
 		Order("statDate DESC").
 		Find(&stats)
 
@@ -343,12 +362,17 @@ func (h *BetHandler) GetStatBets(c *gin.Context) {
 
 	// 填充最近7天数据
 	for i := 0; i < 7; i++ {
-		date := time.Now().AddDate(0, 0, -i).Format("2006-01-02")
-		weekDay := i18n.T("week." + fmt.Sprintf("%d", int(time.Now().AddDate(0, 0, -i).Weekday())))
+		date := now.AddDate(0, 0, -i).Format("2006-01-02")
+		weekDay := i18n.T("week." + fmt.Sprintf("%d", int(now.AddDate(0, 0, -i).Weekday())))
 
 		found := false
 		for _, stat := range stats {
-			if stat.StatDate == date {
+			// StatDate 可能是 "2026-03-12" 或 "2026-03-12T00:00:00Z" 格式
+			statDateStr := stat.StatDate
+			if len(statDateStr) > 10 {
+				statDateStr = statDateStr[:10]
+			}
+			if statDateStr == date {
 				result = append(result, WeekRecordItem{
 					StatDate:     date,
 					Week:         weekDay,
@@ -369,9 +393,7 @@ func (h *BetHandler) GetStatBets(c *gin.Context) {
 		}
 	}
 
-	response.Success(c, gin.H{
-		"data": result,
-	})
+	response.Success(c, result)
 }
 
 // GetUserBets 获取某天某游戏的投注明细
@@ -386,28 +408,30 @@ func (h *BetHandler) GetUserBets(c *gin.Context) {
 		date = time.Now().Format("2006-01-02")
 	}
 
-	// 转换日期为时间戳
-	dateStart, _ := time.Parse("2006-01-02", date)
+	// 转换日期为时间戳（使用北京时间）
+	loc, _ := time.LoadLocation("Asia/Shanghai")
+	dateStart, _ := time.ParseInLocation("2006-01-02", date, loc)
 	dateEnd := dateStart.Add(24 * time.Hour)
 
 	var bets []struct {
-		ID          int
-		PlayedId    int
-		Odds        float64
-		Rebate      float64
-		ActionTime  int64
-		ActionNo    string
-		Type        int
-		Money       float64
-		TotalNums   int
-		LotteryNo   string
-		Bonus       float64
-		BetInfo     string
-		ActionData  string
+		ID          int     `gorm:"column:id"`
+		PlayedId    int     `gorm:"column:playedId"`
+		PlayedGroup int     `gorm:"column:playedGroup"`
+		Odds        float64 `gorm:"column:odds"`
+		Rebate      float64 `gorm:"column:rebate"`
+		ActionTime  int64   `gorm:"column:actionTime"`
+		ActionNo    string  `gorm:"column:actionNo"`
+		Type        int     `gorm:"column:type"`
+		Money       float64 `gorm:"column:money"`
+		TotalNums   int     `gorm:"column:totalNums"`
+		LotteryNo   string  `gorm:"column:lotteryNo"`
+		Bonus       float64 `gorm:"column:bonus"`
+		BetInfo     string  `gorm:"column:betInfo"`
+		ActionData  string  `gorm:"column:actionData"`
 	}
 
 	query := model.DB.Table("ssc_bets").
-		Select("id, playedId, odds, rebate, actionTime, actionNo, type, money, totalNums, lotteryNo, bonus, betInfo, actionData").
+		Select("id, playedId, playedGroup, odds, rebate, actionTime, actionNo, type, money, totalNums, lotteryNo, bonus, betInfo, actionData").
 		Where("isDelete = 0 AND lotteryNo != '' AND uid = ? AND actionTime >= ? AND actionTime < ?", uid, dateStart.Unix(), dateEnd.Unix())
 	if gameID > 0 {
 		query = query.Where("type = ?", gameID)
@@ -421,21 +445,29 @@ func (h *BetHandler) GetUserBets(c *gin.Context) {
 		betMoney := bet.Money
 		resultMoney := bet.Bonus - betMoney + betMoney*bet.Rebate
 
+		// 获取玩法组名称
+		var groupName string
+		if bet.PlayedGroup > 0 {
+			model.DB.Table("ssc_played_group").Select("name").Where("id = ?", bet.PlayedGroup).Scan(&groupName)
+		}
+
 		result = append(result, NotCountDetailItem{
-			ID:          bet.ID,
-			PlayID:      bet.PlayedId,
-			PlayName:    "",
-			Odds:        bet.Odds,
-			Rebate:      bet.Rebate,
-			AddTime:     time.Unix(bet.ActionTime, 0).Format("2006-01-02 15:04:05"),
-			TurnNum:     bet.ActionNo,
-			GameID:      bet.Type,
-			Status:      1,
-			Money:       betMoney,
-			ResultMoney: resultMoney,
-			LotteryNo:   bet.LotteryNo,
-			BetInfo:     bet.BetInfo,
-			Content:     bet.ActionData,
+			ID:            bet.ID,
+			PlayID:        bet.PlayedId,
+			PlayName:      groupName,
+			Odds:          bet.Odds,
+			Rebate:        bet.Rebate,
+			AddTime:       time.Unix(bet.ActionTime, 0).Format("2006-01-02 15:04:05"),
+			TurnNum:       bet.ActionNo,
+			GameID:        bet.Type,
+			Status:        1,
+			Money:         betMoney,
+			ResultMoney:   resultMoney,
+			LotteryNo:     bet.LotteryNo,
+			BetInfo:       bet.BetInfo,
+			Content:       bet.ActionData,
+			PlayedGroupID: bet.PlayedGroup,
+			GroupName:     groupName,
 		})
 
 		totalBetMoney += betMoney
@@ -461,7 +493,8 @@ func (h *BetHandler) GetTotalStatBets(c *gin.Context) {
 		date = time.Now().Format("2006-01-02")
 	}
 
-	dateStart, _ := time.Parse("2006-01-02", date)
+	loc, _ := time.LoadLocation("Asia/Shanghai")
+	dateStart, _ := time.ParseInLocation("2006-01-02", date, loc)
 	dateEnd := dateStart.Add(24 * time.Hour)
 
 	// 获取游戏列表
@@ -475,9 +508,9 @@ func (h *BetHandler) GetTotalStatBets(c *gin.Context) {
 
 	for _, game := range gameTypes {
 		var stats struct {
-			BetCount     int
-			BetMoney     float64
-			RewardRebate float64
+			BetCount     int     `gorm:"column:betCount"`
+			BetMoney     float64 `gorm:"column:betMoney"`
+			RewardRebate float64 `gorm:"column:rewardRebate"`
 		}
 
 		model.DB.Table("ssc_bets").
@@ -494,9 +527,7 @@ func (h *BetHandler) GetTotalStatBets(c *gin.Context) {
 		})
 	}
 
-	response.Success(c, gin.H{
-		"data": result,
-	})
+	response.Success(c, result)
 }
 
 // GetLotteryData 获取游戏数据（未结算金额、今日输赢）
@@ -523,15 +554,17 @@ func (h *BetHandler) GetLotteryData(c *gin.Context) {
 	}
 	query.Scan(&unbalancedMoney)
 
-	// 今日已结算金额和奖金（使用 kjTime 开奖时间）
+	// 今日已结算金额和奖金（使用 kjTime 开奖时间，同时考虑 actionTime 投注时间）
 	var settled struct {
-		TotalBet   float64
-		TotalBonus float64
-		TotalRebate float64
+		TotalBet    float64 `gorm:"column:totalBet"`
+		TotalBonus  float64 `gorm:"column:totalBonus"`
+		TotalRebate float64 `gorm:"column:totalRebate"`
 	}
+	// 使用 COALESCE 防止 NULL 值
+	// 统一使用 actionTime（投注时间），与 GetBetBills 和 GetStatBets 保持一致
 	query2 := model.DB.Table("ssc_bets").
-		Select("SUM(money) as totalBet, SUM(bonus) as totalBonus, SUM(money * rebate) as totalRebate").
-		Where("isDelete = 0 AND lotteryNo != '' AND uid = ? AND kjTime >= ? AND kjTime <= ?", uid, todayStartInt, time.Now().Unix())
+		Select("COALESCE(SUM(money), 0) as totalBet, COALESCE(SUM(bonus), 0) as totalBonus, COALESCE(SUM(money * rebate), 0) as totalRebate").
+		Where("isDelete = 0 AND lotteryNo != '' AND uid = ? AND actionTime >= ?", uid, todayStartInt)
 	if gameID > 0 {
 		query2 = query2.Where("type = ?", gameID)
 	}
@@ -540,6 +573,8 @@ func (h *BetHandler) GetLotteryData(c *gin.Context) {
 	// 今日输赢 = 总奖金 - 已结算投注金额 + 退水
 	totalTotalMoney := settled.TotalBonus - settled.TotalBet + settled.TotalRebate
 
+	fmt.Printf("[GetLotteryData] uid=%d, gameId=%d, todayStart=%d, totalBet=%.2f, totalBonus=%.2f, totalRebate=%.2f, totalTotalMoney=%.2f\n",
+		uid, gameID, todayStartInt, settled.TotalBet, settled.TotalBonus, settled.TotalRebate, totalTotalMoney)
 
 	// 用户余额
 	var balance float64

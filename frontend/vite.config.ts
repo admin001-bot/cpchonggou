@@ -22,12 +22,12 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: 'http://172.20.0.2:8080',
+        target: 'http://localhost:8080',
         changeOrigin: true,
       },
       // /safe 开头的请求代理到 PHP 后端
       '/safe': {
-        target: 'http://172.20.0.2:80',
+        target: 'http://localhost:80',
         changeOrigin: true,
       },
     },

@@ -243,8 +243,33 @@ function createMySQLClient(){
 	}
 }
 
+function isType55Debug(data){
+	return data && data.type==55;
+}
+
+function debugJSONStringify(value){
+	if(value instanceof Error){
+		return value.stack || value.message || String(value);
+	}
+	try{
+		return JSON.stringify(value);
+	}catch(err){
+		return String(value);
+	}
+}
+
+function getSQLPreview(sqls, limit){
+	return sqls.slice(0, limit).map(function(sql){
+		if(!sql) return sql;
+		return sql.length>200 ? sql.substr(0, 200)+'...' : sql;
+	});
+}
+
 function calcJ(data, flag){
 	var client=createMySQLClient();
+	if(isType55Debug(data)){
+		log('[TYPE55][calcJ.enter] type='+data.type+', number='+data.number+', data='+data.data+', flag='+flag);
+	}
 	sql="select id,playedId,actionData,Groupname,betInfo from ssc_bets where isDelete=0 and type=? and actionNo=?";
 	if(flag) sql+=" and lotteryNo=''";
 	client.query(sql, [data.type, data.number], function(err, bets){
@@ -253,14 +278,26 @@ function calcJ(data, flag){
 		}else{
 			var sql, sqls=[];
 			sql='call kanJiang(?, ?, ?, ?)';
+			if(isType55Debug(data)){
+				log('[TYPE55][calcJ.query] type='+data.type+', actionNo='+data.number+', bets.length='+bets.length);
+				if(bets.length==0){
+					log('[TYPE55][calcJ.query] 未命中注单 type='+data.type+', actionNo='+data.number);
+				}
+			}
 			bets.forEach(function(bet){
-				var fun;
+				var fun, ruleFunName=played[bet.playedId];
 				try{
-					fun=parse[played[bet.playedId]];
+					fun=parse[ruleFunName];
 					if(typeof fun!='function') throw new Error('算法不是可用的函数');
 				}catch(err){
+					if(isType55Debug(data)){
+						log('[TYPE55][calcJ.bet_rule_missing] betId='+bet.id+', playedId='+bet.playedId+', ruleFun='+ruleFunName+', err='+err.message);
+					}
 					log('计算玩法[%f]中奖号码算法不可用：%s'.format(bet.playedId, err.message));
 					return;
+				}
+				if(isType55Debug(data)){
+					log('[TYPE55][calcJ.bet_before] betId='+bet.id+', playedId='+bet.playedId+', Groupname='+bet.Groupname+', actionData='+bet.actionData+', betInfo='+bet.betInfo+', ruleFun='+ruleFunName);
 				}
 				try{
 					if(data.type==70 || data.type==113){
@@ -270,22 +307,31 @@ function calcJ(data, flag){
 						var lhcWxMu=setting['lhcWxMu'];
 						var lhcWxShui=setting['lhcWxShui'];
 						var lhcWxHuo=setting['lhcWxHuo'];
-						var lhcWxTu=setting['lhcWxTu']; 						
+						var lhcWxTu=setting['lhcWxTu'];
 						alias=playedalias[bet.playedId];
-						zjCount=fun(bet.actionData, data.data, bet.Groupname, bet.betInfo, animalsYear, alias, lhcWxJin, lhcWxMu, lhcWxShui, lhcWxHuo, lhcWxTu)||0;							
+						zjCount=fun(bet.actionData, data.data, bet.Groupname, bet.betInfo, animalsYear, alias, lhcWxJin, lhcWxMu, lhcWxShui, lhcWxHuo, lhcWxTu)||0;
 					}else if(bet.actionData){
 						zjCount=fun(bet.actionData, data.data, bet.Groupname, bet.betInfo)||0;
 					}else{
-						zjCount=0;	
+						zjCount=0;
 					}
 				}catch(err){
+					if(isType55Debug(data)){
+						log('[TYPE55][calcJ.bet_error] betId='+bet.id+', err='+err);
+					}
 					log('计算中奖号码时出错：'+err);
 					return;
 				}
+				if(isType55Debug(data)){
+					log('[TYPE55][calcJ.bet_after] betId='+bet.id+', zjCount='+zjCount);
+				}
 				//console.log(zjCount);
 				//console.log(sql+'/'+bet.id+'/'+zjCount+'/'+data.data);
-				sqls.push(client.format(sql, [bet.id, zjCount, data.data, 'ssc-'+encrypt_key]));				
+				sqls.push(client.format(sql, [bet.id, zjCount, data.data, 'ssc-'+encrypt_key]));
 			});
+			if(isType55Debug(data)){
+				log('[TYPE55][calcJ.sqls] type='+data.type+', actionNo='+data.number+', sqls.length='+sqls.length+', preview='+debugJSONStringify(getSQLPreview(sqls, 3)));
+			}
 			try{
 				setPj(sqls, data);
 			}catch(err){
@@ -435,6 +481,9 @@ function liRunData(data, conf){
 	client.end();
 }
 function setPj(sqls, data){
+	if(isType55Debug(data)){
+		log('[TYPE55][setPj.start] type='+data.type+', actionNo='+data.number+', sqls.length='+sqls.length);
+	}
 	if(sqls.length==0) throw('彩种[%f]第%s期没有投注'.format(data.type, data.number));
 	var client=createMySQLClient();
 	if(client==false){
@@ -443,13 +492,19 @@ function setPj(sqls, data){
 	}else{
 		client.query(sqls.join(';'), function(err,result){
 			if(err){
+				if(isType55Debug(data)){
+					log('[TYPE55][setPj.result] type='+data.type+', actionNo='+data.number+', sqls.length='+sqls.length+', success=false, error='+debugJSONStringify(err));
+				}
 				console.log(err);
 			}else{
+				if(isType55Debug(data)){
+					log('[TYPE55][setPj.result] type='+data.type+', actionNo='+data.number+', sqls.length='+sqls.length+', success=true');
+				}
 				log('成功');
 			}
 		});
 		client.end();
-	}	
+	}
 }
 
 // 前台添加数据接口

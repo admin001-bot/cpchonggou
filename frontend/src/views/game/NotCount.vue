@@ -164,7 +164,9 @@ function formatMoney(money: number): string {
 
 function goDetail(gameId: number, name: string, count: number) {
   if (count > 0) {
-    router.push(`/notcount/${gameId}?name=${encodeURIComponent(name)}`)
+    // Use i18n game name instead of backend Chinese name
+    const gameName = t(`game.${gameId}`)
+    router.push(`/notcount/${gameId}?name=${encodeURIComponent(gameName)}`)
   }
 }
 

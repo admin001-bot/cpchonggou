@@ -74,7 +74,7 @@
 
           <div class="bet-content">
             <div class="detail-info">
-              <div class="play-name">{{ item.playName }}</div>
+              <div class="play-name">{{ getDisplayPlayName(item) }}</div>
               <div class="play-detail">
                 <span class="odds-badge">@{{ item.odds.toFixed(2) }}</span>
                 <span class="bet-info">{{ item.betInfo }}</span>
@@ -122,7 +122,23 @@ const dataList = ref<BetDetailItem[]>([])
 
 const gameId = Number(route.params.gameId)
 const date = route.query.date as string || route.params.date as string
-const gameName = ref('')
+const gameName = ref(t(`game.${gameId}`))
+
+// 玩法组ID到i18n key的映射
+const groupIdToI18nKey: Record<number, string> = {
+  100: 'rank.topSumNum', 101: 'rank.topSum',
+  102: 'rank.1', 103: 'rank.2', 104: 'rank.3', 105: 'rank.4',
+  106: 'rank.5', 107: 'rank.6', 108: 'rank.7', 109: 'rank.8',
+  110: 'rank.9', 111: 'rank.10',
+}
+
+function getDisplayPlayName(item: BetDetailItem): string {
+  if (item.playedGroupId && groupIdToI18nKey[item.playedGroupId]) {
+    return t(groupIdToI18nKey[item.playedGroupId])
+  }
+  if (item.playName) return item.playName
+  return ''
+}
 
 // 下拉刷新相关
 let refreshStartY = 0
@@ -149,19 +165,20 @@ async function loadData() {
   try {
     const res = await betApi.getUserBets(gameId, date)
     if (res.code === 0) {
-      // 处理返回的数据格式（可能是数组或对象）
+      // 处理返回的嵌套数据格式
+      const rawData = res.data as any
       let apiData: any[] = []
-      if (Array.isArray(res.data)) {
-        apiData = res.data
-      } else if (res.data && typeof res.data === 'object') {
-        // 如果是对象，尝试转换为数组
-        apiData = Object.values(res.data)
+      if (Array.isArray(rawData)) {
+        apiData = rawData
+      } else if (rawData && typeof rawData === 'object') {
+        // 嵌套格式: { data: [...], otherData: {...} }
+        if (Array.isArray(rawData.data)) {
+          apiData = rawData.data
+        } else {
+          apiData = Object.values(rawData)
+        }
       }
       dataList.value = apiData
-      // 获取游戏名称
-      if (dataList.value.length > 0) {
-        gameName.value = dataList.value[0].playName || ''
-      }
     }
   } catch (e) {
     console.error('Failed to load data', e)

@@ -126,6 +126,8 @@ export interface BetDetailItem {
   openTime: string
   betInfo: string
   content: string    // 投注内容（如：单、双等）
+  playedGroupId: number  // 玩法组ID
+  groupName: string      // 玩法组名称
 }
 
 // 今日已结项
@@ -136,6 +138,10 @@ export interface SettledItem {
   money: number
   resultMoney: number
   rebate: number
+  gameId: number     // 游戏ID
+  groupName: string  // 玩法组名称（含名次信息）
+  playedGroupId: number  // 玩法组ID
+  playedId: number       // 玩法ID
 }
 
 // 周记录项

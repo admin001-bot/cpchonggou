@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"net/http"
@@ -95,6 +96,21 @@ type BetPlayInfo struct {
 	MinMoney      int
 	MaxMoney      int
 	MaxTurnMoney  int
+}
+
+func logType55Debug(gameID int, format string, args ...interface{}) {
+	if gameID != 55 {
+		return
+	}
+	fmt.Printf("[TYPE55_DEBUG] "+format+"\n", args...)
+}
+
+func marshalType55Debug(value interface{}) string {
+	data, err := json.Marshal(value)
+	if err != nil {
+		return fmt.Sprintf("%+v", value)
+	}
+	return string(data)
 }
 
 // GetGameList 获取游戏列表
@@ -202,10 +218,6 @@ func (h *GameHandler) GetNextIssue(c *gin.Context) {
 	endTime := lotteryTime.Add(-time.Duration(ftime) * time.Second)
 	issue := fmt.Sprintf("%s%03d", dateStr, issueNum)
 
-	// 调试日志
-	fmt.Printf("[DEBUG] gameId=%s, issueNum=%d, periodSeconds=%d, ftime=%d, secondsOfDay=%d\n",
-		gameID, issueNum, periodSeconds, ftime, secondsOfDay)
-
 	// 从数据库读取上期开奖数据（最新的一条记录）
 	// 使用与历史记录完全相同的查询方式
 	var preIssue string
@@ -237,6 +249,8 @@ func (h *GameHandler) GetNextIssue(c *gin.Context) {
 			preIssue = fmt.Sprintf("%s%03d", yesterday.Format("20060102"), periodsPerDay)
 		}
 	}
+
+	logType55Debug(gameIDInt, "[ISSUE] gameId=%d issue=%s lotteryTime=%s endTime=%s preIssue=%s", gameIDInt, issue, lotteryTime.Format("2006-01-02 15:04:05"), endTime.Format("2006-01-02 15:04:05"), preIssue)
 
 	response.Success(c, NextIssueData{
 		Issue:       issue,
@@ -278,6 +292,8 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
         })
         return
     }
+
+    logType55Debug(req.GameID, "[BET_REQUEST] uid=%d gameId=%d turnNum=%s ftime=%d totalNums=%d totalMoney=%.4f betBean=%s", uid, req.GameID, req.TurnNum, req.FTime, req.TotalNums, req.TotalMoney, marshalType55Debug(req.BetBean))
 
     betInfo := BetResponse{
         Success: false,
@@ -345,9 +361,12 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
 
     // 获取游戏配置(封单时间、当期时间、当期期号)
     ftime, actionTime, actionNo := getGameActionInfo(gameID)
+    expiredByCloseTime := currentTime > (actionTime - ftime)
+    turnMismatch := actionNo != turnNum
+    logType55Debug(gameID, "[BET_SERVER_ISSUE] uid=%d gameId=%d clientTurnNum=%s clientFtime=%d serverActionNo=%s serverActionTime=%d serverActionTimeText=%s serverFtime=%d currentTime=%d currentTimeText=%s expiredByCloseTime=%t turnMismatch=%t", uid, gameID, turnNum, req.FTime, actionNo, actionTime, time.Unix(actionTime, 0).Format("2006-01-02 15:04:05"), ftime, currentTime, time.Unix(currentTime, 0).Format("2006-01-02 15:04:05"), expiredByCloseTime, turnMismatch)
 
     // 检查封单时间
-    if currentTime > (actionTime - ftime) {
+    if expiredByCloseTime {
         betInfo.Msg = i18n.Tf("bet.expired", turnNum)
         betInfo.MsgKey = "bet.expired"
         betInfo.MsgArgs = []string{turnNum}
@@ -356,7 +375,7 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
     }
 
     // 检查期号是否正确
-    if actionNo != turnNum {
+    if turnMismatch {
         betInfo.Msg = i18n.Tf("bet.expired", turnNum)
         betInfo.MsgKey = "bet.expired"
         betInfo.MsgArgs = []string{turnNum}
@@ -566,6 +585,7 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
             }
 
             clientIP := c.ClientIP()
+            actionData := buildFullActionData(gameName, groupName, played.Name)
 
             insertData := map[string]interface{}{
                 "wjorderId":   wjOrderID,
@@ -582,7 +602,7 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
                 "actionNo":    actionNo,
                 "actionTime":  currentTime,
                 "actionIP":    clientIP,
-                "actionData":  buildFullActionData(gameName, groupName, played.Name),
+                "actionData":  actionData,
                 "rebate":      userRebate,
                 "money":       money,
                 "totalNums":   totalNumsForBet,
@@ -593,12 +613,31 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
                 insertData["betInfo"] = betInfoStr
             }
 
+            logType55Debug(gameID, "[BET_PRE_INSERT] uid=%d gameId=%d playID=%d playedName=%s playedGroupID=%d groupName=%s actionNo=%s actionTime=%d kjTime=%d actionData=%s betInfo=%s insertData=%s", uid, gameID, playID, played.Name, played.PlayedGroupID, groupName, actionNo, currentTime, actionTime, actionData, betInfoStr, marshalType55Debug(map[string]interface{}{
+                "wjorderId":   wjOrderID,
+                "orderId":     orderID,
+                "serializeId": serializeID,
+                "type":        gameID,
+                "playedGroup": played.PlayedGroupID,
+                "playedId":    playID,
+                "Groupname":   groupName,
+                "actionNo":    actionNo,
+                "actionTime":  currentTime,
+                "actionData":  actionData,
+                "betInfo":     betInfoStr,
+                "money":       money,
+                "totalNums":   totalNumsForBet,
+                "totalMoney":  totalMoneyForBet,
+                "kjTime":      actionTime,
+            }))
+
             if err := tx.Table(betsTable).Create(&insertData).Error; err != nil {
                 return err
             }
 
             var lastInsertID int64
             tx.Raw("SELECT LAST_INSERT_ID()").Scan(&lastInsertID)
+            logType55Debug(gameID, "[BET_INSERTED] betId=%d wjorderId=%s serializeId=%s actionNo=%s playedId=%d Groupname=%s actionData=%s money=%.4f totalNums=%d totalMoney=%.4f", lastInsertID, wjOrderID, serializeID, actionNo, playID, groupName, actionData, money, totalNumsForBet, totalMoneyForBet)
 
             if isTestUser {
                 if err := tx.Table("ssc_guestmembers").

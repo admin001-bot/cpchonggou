@@ -34,8 +34,8 @@
         <div class="bet-card" v-for="(item, index) in dataList" :key="index">
           <div class="bet-header">
             <div class="period-info">
-              <div class="period-num">{{ item.turnNum.split('<br>')[0] }}</div>
-              <div class="period-no">{{ item.turnNum.split('<br>')[1] || '' }}</div>
+              <div class="period-num">{{ getGameDisplayName(item) }}</div>
+              <div class="period-no">{{ getPeriodNo(item.turnNum) }}</div>
             </div>
             <div class="result-money" :class="item.resultMoney >= 0 ? 'positive' : 'negative'">
               <span class="label">{{ item.resultMoney >= 0 ? t('game.win') : t('game.lose') }}</span>
@@ -46,7 +46,7 @@
           <div class="bet-content">
             <div class="detail-info">
               <!-- 解析 detail 字段：玩法名称<br>@赔率#返点 -->
-              <div class="play-name">{{ parseDetail(item.detail).playName }}</div>
+              <div class="play-name">{{ getDisplayPlayInfo(item) }}</div>
               <div class="play-meta">
                 <span class="odds-tag">@{{ parseDetail(item.detail).odds }}</span>
                 <span class="rebate-tag">#{{ parseDetail(item.detail).rebate }}</span>
@@ -55,7 +55,7 @@
             <div class="bet-info-right">
               <div class="bet-content-display">
                 <div class="content-label">{{ t('game.betContent') }}</div>
-                <div class="content-value">{{ getFullContent(item) }}</div>
+                <div class="content-value">{{ getDisplayContent(item) }}</div>
               </div>
               <div class="bet-amount">
                 <div class="amount-label">{{ t('game.betAmount') }}</div>
@@ -128,19 +128,59 @@ onMounted(() => {
   loadData()
 })
 
+// 玩法组ID到i18n key的映射
+const groupIdToI18nKey: Record<number, string> = {
+  100: 'rank.topSumNum',   // 连码
+  101: 'rank.topSum',       // 冠亚和值
+  102: 'rank.1',            // 冠军
+  103: 'rank.2',            // 亚军
+  104: 'rank.3',            // 第三名
+  105: 'rank.4',            // 第四名
+  106: 'rank.5',            // 第五名
+  107: 'rank.6',            // 第六名
+  108: 'rank.7',            // 第七名
+  109: 'rank.8',            // 第八名
+  110: 'rank.9',            // 第九名
+  111: 'rank.10',           // 第十名
+}
+
+// 中文投注内容到i18n key的映射
+const betContentToI18nKey: Record<string, string> = {
+  '大': 'game.big',
+  '小': 'game.small',
+  '单': 'game.odd',
+  '双': 'game.even',
+  '龙': 'game.dragon',
+  '虎': 'game.tiger',
+  '冠亚大': 'game.big',
+  '冠亚小': 'game.small',
+  '冠亚单': 'game.odd',
+  '冠亚双': 'game.even',
+}
+
+// 翻译投注内容
+function translateContent(content: string): string {
+  if (!content) return ''
+  const key = betContentToI18nKey[content]
+  if (key) return t(key)
+  // 如果是数字，直接返回
+  if (/^\d+$/.test(content)) return content
+  return content
+}
+
 // 解析 detail 字段
 function parseDetail(detail: string) {
-  // detail 格式：玩法名称<br>@赔率#返点
+  // detail 格式：玩法名称<br>@赔率<br>#返点
   const parts = detail.split('<br>')
   const playName = parts[0] || ''
-  const meta = parts[1] || ''
+  // 赔率和返点可能在 parts[1] 和 parts[2]，或者合在 parts[1] 中
+  const allMeta = parts.slice(1).join(' ')
 
-  // 解析 @赔率#返点
   let odds = '0.00'
   let rebate = '0.000'
 
-  const oddsMatch = meta.match(/@([\d.]+)/)
-  const rebateMatch = meta.match(/#([\d.]+)/)
+  const oddsMatch = allMeta.match(/@([\d.]+)/)
+  const rebateMatch = allMeta.match(/#([\d.]+)/)
 
   if (oddsMatch) odds = oddsMatch[1]
   if (rebateMatch) rebate = rebateMatch[1]
@@ -148,77 +188,56 @@ function parseDetail(detail: string) {
   return { playName, odds, rebate }
 }
 
-// 获取完整的下注内容（包含名次信息）
-function getFullContent(item: SettledItem): string {
-  const playName = parseDetail(item.detail).playName
-  const content = item.content || ''
-
-  // 如果 content 已经包含完整信息，直接返回
-  if (content.includes('第') && (content.includes('名') || content.includes('球'))) {
-    return content
+// 获取游戏显示名称（使用 gameId 进行 i18n 翻译）
+function getGameDisplayName(item: SettledItem): string {
+  if (item.gameId) {
+    return t(`game.${item.gameId}`)
   }
-
-  // 根据玩法名称判断是否需要添加名次前缀
-  // PK10 类型游戏（幸运飞艇、北京赛车、极速飞艇、极速赛车）
-  const pk10Games = [55, 50, 52, 72] // 游戏 ID
-  const currentGameId = getCurrentGameId(item.turnNum)
-
-  if (pk10Games.includes(currentGameId)) {
-    // 冠亚和玩法
-    if (playName.includes('冠亚和')) {
-      return `${playName}${content}`
-    }
-    // 各名次玩法：玩法名称通常包含 "大"、"小"、"单"、"双"、"龙"、"虎"
-    if (['大', '小', '单', '双', '龙', '虎'].includes(content)) {
-      // 从玩法名称中提取名次，如 "第一名大" -> 玩法名称可能是 "冠军大" 或类似
-      // 如果玩法名称已经包含名次信息，直接使用
-      if (playName.match(/(冠军|亚军|第三|第四|第五|第六|第七|第八|第九|第十)/)) {
-        return `${playName}`
-      }
-      // 否则需要添加名次前缀
-      return `${content}`
-    }
-  }
-
-  // 时时彩类型游戏（五分时时彩、极速分分彩）
-  const sscGames = [122, 100] // 游戏 ID
-  if (sscGames.includes(currentGameId)) {
-    // 总和玩法
-    if (playName.includes('总和') || playName.includes('总')) {
-      return `${playName}${content}`
-    }
-    // 各球玩法：玩法名称可能包含 "第一球"、"第二球" 等
-    if (playName.match(/(第一球|第二球|第三球|第四球|第五球)/)) {
-      return `${playName}${content}`
-    }
-  }
-
-  // PC 蛋蛋类型
-  const pcdGames = [66]
-  if (pcdGames.includes(currentGameId)) {
-    return `${playName}${content}`
-  }
-
-  // 默认返回：玩法名称 + 内容
-  return `${playName}${content}`
+  // fallback: 从 turnNum 中取第一部分
+  return item.turnNum.split('<br>')[0] || ''
 }
 
-// 从期号中获取游戏 ID（通过 turnNum 格式：游戏名称<br>期号）
-function getCurrentGameId(turnNum: string): number {
-  const parts = turnNum.split('<br>')
-  const gameName = parts[0] || ''
+// 获取期号
+function getPeriodNo(turnNum: string): string {
+  return turnNum.split('<br>')[1] || ''
+}
 
-  // 根据游戏名称判断游戏 ID
-  if (gameName.includes('幸运飞艇')) return 55
-  if (gameName.includes('北京赛车')) return 50
-  if (gameName.includes('极速飞艇')) return 52
-  if (gameName.includes('极速赛车')) return 72
-  if (gameName.includes('五分时时彩')) return 122
-  if (gameName.includes('极速分分彩')) return 100
-  if (gameName.includes('PC 蛋蛋')) return 66
-  if (gameName.includes('极速六合')) return 113
+// 获取显示的玩法信息（含名次）
+function getDisplayPlayInfo(item: SettledItem): string {
+  // 优先使用 playedGroupId 进行 i18n 翻译
+  if (item.playedGroupId && groupIdToI18nKey[item.playedGroupId]) {
+    return t(groupIdToI18nKey[item.playedGroupId])
+  }
+  // fallback: 使用 groupName
+  if (item.groupName) {
+    return item.groupName
+  }
+  const playName = parseDetail(item.detail).playName
+  return translateContent(playName) || playName
+}
 
-  return 55 // 默认
+// 获取显示的投注内容
+function getDisplayContent(item: SettledItem): string {
+  const content = item.content || ''
+  const playName = parseDetail(item.detail).playName
+
+  if (!content) return translateContent(playName) || playName
+
+  // 翻译投注内容
+  const translatedContent = translateContent(content)
+
+  // 获取翻译后的名次
+  let translatedGroup = ''
+  if (item.playedGroupId && groupIdToI18nKey[item.playedGroupId]) {
+    translatedGroup = t(groupIdToI18nKey[item.playedGroupId])
+  }
+
+  // 如果有名次信息且与玩法名不同，组合显示
+  if (translatedGroup) {
+    return `${translatedGroup} ${translatedContent}`
+  }
+
+  return translatedContent
 }
 
 async function loadData() {

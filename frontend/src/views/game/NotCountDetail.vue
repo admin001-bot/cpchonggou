@@ -63,11 +63,11 @@
 
           <div class="bet-content">
             <div class="play-info">
-              <div class="play-name">{{ item.playName }}</div>
+              <div class="play-name">{{ getDisplayPlayName(item) }}</div>
               <div class="play-detail">
                 <span class="odds-badge">@{{ item.odds.toFixed(2) }}</span>
                 <span class="bet-info">{{ item.betInfo }}</span>
-                <span class="content-badge" v-if="item.content">{{ item.content }}</span>
+                <span class="content-badge" v-if="item.content">{{ translateBetContent(item.content) }}</span>
               </div>
             </div>
             <div class="bet-money">
@@ -172,6 +172,37 @@ onUnmounted(() => {
     clearTimeout(refreshTimer)
   }
 })
+
+// 玩法组ID到i18n key的映射
+const groupIdToI18nKey: Record<number, string> = {
+  100: 'rank.topSumNum', 101: 'rank.topSum',
+  102: 'rank.1', 103: 'rank.2', 104: 'rank.3', 105: 'rank.4',
+  106: 'rank.5', 107: 'rank.6', 108: 'rank.7', 109: 'rank.8',
+  110: 'rank.9', 111: 'rank.10',
+}
+
+// 中文投注内容到i18n key的映射
+const betContentToI18nKey: Record<string, string> = {
+  '大': 'game.big', '小': 'game.small', '单': 'game.odd', '双': 'game.even',
+  '龙': 'game.dragon', '虎': 'game.tiger',
+  '冠亚大': 'game.big', '冠亚小': 'game.small', '冠亚单': 'game.odd', '冠亚双': 'game.even',
+}
+
+function getDisplayPlayName(item: BetDetailItem): string {
+  if (item.playedGroupId && groupIdToI18nKey[item.playedGroupId]) {
+    return t(groupIdToI18nKey[item.playedGroupId])
+  }
+  if (item.playName) return item.playName
+  return ''
+}
+
+function translateBetContent(content: string): string {
+  if (!content) return ''
+  const key = betContentToI18nKey[content]
+  if (key) return t(key)
+  if (/^\d+$/.test(content)) return content
+  return content
+}
 
 // 获取完整的下注信息（后端已返回完整内容，直接使用 betInfo 或 content）
 function getFullBetInfo(item: BetDetailItem): string {
