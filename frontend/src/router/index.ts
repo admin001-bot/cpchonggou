@@ -74,6 +74,12 @@ const routes: RouteRecordRaw[] = [
     meta: { title: 'home.help', requiresAuth: true },
   },
   {
+    path: '/user/agreement',
+    name: 'UserAgreement',
+    component: () => import('@/views/user/Agreement.vue'),
+    meta: { title: 'agreement.title' },
+  },
+  {
     path: '/game/:id',
     name: 'Game',
     component: () => import('@/views/game/index.vue'),

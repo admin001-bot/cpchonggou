@@ -591,6 +591,22 @@ export default {
   'login.title': '登錄',
   'login.token_invalid': '令牌無效',
 
+  // 用户协议
+  'agreement.title': '用戶協議',
+  'agreement.welcomeTitle': '用戶協議',
+  'agreement.welcomeSubtitle': '使用本平台前請仔細閱讀以下條款',
+  'agreement.term1': '為避免爭議，客戶在進入本網站前必須仔細閱讀本公司制定的規則。',
+  'agreement.term2': '所有投注項目，若在公佈賠率時出現打字錯誤或無意的人為錯誤，本公司保留更正權利。',
+  'agreement.term3': '本公司將保持服務器穩定，但不對服務器、網絡或未知因素引起的一系列投注問題或損失負責。',
+  'agreement.term4': '本公司堅持公平、公正、公開原則。惡意刷流水、同時投注、作弊等行為視為套利。',
+  'agreement.term5': '若發現客戶以任何不正當或非法方式下注，或注單異常，本公司有權取消投注。',
+  'agreement.term6': '為避免爭議，客戶下注後必須核對注單詳情並打印信息。投訴必須在開獎前提出。',
+  'agreement.term7': '如因黑客入侵或不可抗力災害導致網站故障、數據損壞或數據丟失，備份數據將作為最終依據。',
+  'agreement.term8': '客戶有責任確保其帳號和密碼的保密性。',
+  'agreement.term9': '若官方開獎結果錯誤，導致本系統同時採集的數據出現錯誤，將重新結算投注。',
+  'agreement.term10': '本平台為在線娛樂平台，按照國家稅收標準執行。個人需繳納相應稅款。',
+  'agreement.footerNotice': '使用本平台即表示您已閱讀並同意以上所有條款。如有任何疑問，請聯繫客服。',
+
   // 注册
   'register.usernameRule': '請使用 6-15 位英文或數字的組合',
   'register.passwordRule': '請使用 6-20 位字符',

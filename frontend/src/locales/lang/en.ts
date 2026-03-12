@@ -591,6 +591,22 @@ export default {
   'login.title': 'Login',
   'login.token_invalid': 'Invalid token',
 
+  // User Agreement
+  'agreement.title': 'User Agreement',
+  'agreement.welcomeTitle': 'User Agreement',
+  'agreement.welcomeSubtitle': 'Please read the following terms carefully before using this platform',
+  'agreement.term1': 'In order to avoid disputes, customers must carefully read the rules set by our company before entering the website.',
+  'agreement.term2': 'For all betting items, if there are any typing errors or unintentional human errors when publishing odds, the company reserves the right to correct them.',
+  'agreement.term3': 'Our company will keep the server stable, but we will not be responsible for a series of betting problems or losses caused by server, network, or unknown factors.',
+  'agreement.term4': 'Our company maintains the principle of fairness, justice and openness. Malicious betting on turnover, simultaneous bets, and cheating are regarded as arbitrage.',
+  'agreement.term5': 'If it is found that a customer has placed bets in any improper or illegal manner or the bet orders are abnormal, the company may cancel bets.',
+  'agreement.term6': 'To avoid disputes, customers must check the bet details and print the information after placing bets. Complaints must be made before the lottery is drawn.',
+  'agreement.term7': 'In the event of website failure, data damage, or data loss due to hacker intrusion or force majeure disaster, backup data will be the final basis.',
+  'agreement.term8': 'The customer is responsible for ensuring the confidentiality of his or her account and password.',
+  'agreement.term9': 'If the official lottery results are incorrect, causing errors in the data collected by this system at the same time, bets will be re-settled.',
+  'agreement.term10': 'This platform is an online entertainment platform and is implemented in accordance with national tax standards. Individuals must pay applicable taxes.',
+  'agreement.footerNotice': 'By using this platform, you acknowledge that you have read and agree to all the above terms. If you have any questions, please contact customer service.',
+
   // Register
   'register.usernameRule': 'Please use 6-15 letters or numbers',
   'register.passwordRule': 'Please use 6-20 characters',

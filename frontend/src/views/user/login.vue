@@ -53,7 +53,7 @@
               </div>
               <div class="row" style="margin-top: 1em">
                 <span class="text-center">
-                  <a href="#">《{{ t('common.userAgreement') }}》</a>
+                  <router-link to="/user/agreement">《{{ t('common.userAgreement') }}》</router-link>
                 </span>
               </div>
 
