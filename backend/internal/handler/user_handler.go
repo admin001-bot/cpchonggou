@@ -676,23 +676,20 @@ func (h *UserHandler) GuestLogin(c *gin.Context) {
 		return
 	}
 
-	// 获取创建的用户
-	var createdGuest model.GuestMembers
-	if err := model.DB.Where("username = ?", guestUsername).Take(&createdGuest).Error; err != nil {
-		response.Error(c, i18n.T("login.invalid_credentials"))
-		return
-	}
+	// 获取刚插入的用户ID
+	var guestUID int
+	model.DB.Raw("SELECT LAST_INSERT_ID()").Scan(&guestUID)
 
-	// 生成随机 session ID
-	sessionBytes := make([]byte, 32)
+	// 生成随机 session ID (40字符以内)
+	sessionBytes := make([]byte, 16)
 	rand.Read(sessionBytes)
-	sessionKey := hex.EncodeToString(sessionBytes)
+	sessionKey := hex.EncodeToString(sessionBytes) // 32字符
 
 	// 创建会话 - loginIP 是 varchar，直接存储字符串
 	sessionSQL := `INSERT INTO ssc_member_session (uid, username, session_key, loginTime, accessTime, loginIP, os, browser, isOnLine)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)`
 
-	if err := model.DB.Exec(sessionSQL, createdGuest.UID, createdGuest.Username, sessionKey, currentTime, currentTime, clientIP, c.GetHeader("sec-ch-ua-platform"), c.GetHeader("sec-ch-ua")).Error; err != nil {
+	if err := model.DB.Exec(sessionSQL, guestUID, guestUsername, sessionKey, currentTime, currentTime, clientIP, c.GetHeader("sec-ch-ua-platform"), c.GetHeader("sec-ch-ua")).Error; err != nil {
 		response.Error(c, i18n.T("login.failed"))
 		return
 	}
@@ -701,7 +698,7 @@ func (h *UserHandler) GuestLogin(c *gin.Context) {
 	token := md5Hash(guestUsername + password + time.Now().String())
 
 	// 保存 token 到内存
-	saveToken(token, int(createdGuest.UID), true)
+	saveToken(token, guestUID, true)
 
 	// 获取最大返点
 	var fanDian float32
@@ -709,11 +706,11 @@ func (h *UserHandler) GuestLogin(c *gin.Context) {
 
 	response.Success(c, GuestLoginResponse{
 		Token:     token,
-		UID:       createdGuest.UID,
-		Username:  createdGuest.Username,
-		Nickname:  createdGuest.Nickname,
-		Coin:      fmt.Sprintf("%.2f", createdGuest.Coin),
-		TestFlag:  int(createdGuest.TestFlag),
+		UID:       uint(guestUID),
+		Username:  guestUsername,
+		Nickname:  guestUsername,
+		Coin:      "2000.00",
+		TestFlag:  1,
 		FanDian:   fanDian,
 	})
 }
