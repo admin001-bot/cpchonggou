@@ -70,8 +70,8 @@
         </div>
       </div>
 
-      <!-- 手机号 -->
-      <div class="form-item" @click="editField('phone')">
+      <!-- 手机号 - 不可修改 -->
+      <div class="form-item">
         <div class="form-label">
           <svg class="label-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
@@ -79,53 +79,10 @@
           </svg>
           {{ t('user.phone') }}
         </div>
-        <div class="form-value">
+        <div class="form-value readonly">
           <span v-if="profileData.phone">{{ profileData.phone }}</span>
           <span v-else class="placeholder">{{ t('user.bindPhone') }}</span>
-          <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 18l6-6-6-6"/>
-          </svg>
-        </div>
-      </div>
-    </div>
-
-    <!-- 账户安全区块 -->
-    <div class="form-section">
-      <div class="section-title">{{ t('user.accountSecurity') }}</div>
-
-      <!-- 登录密码 -->
-      <div class="form-item" @click="router.push('/user/change-password')">
-        <div class="form-label">
-          <svg class="label-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-            <path d="M7 11V7a5 5 0 0110 0v4"/>
-          </svg>
-          {{ t('user.loginPassword') }}
-        </div>
-        <div class="form-value">
-          <span class="placeholder">{{ t('user.passwordSet') }}</span>
-          <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 18l6-6-6-6"/>
-          </svg>
-        </div>
-      </div>
-
-      <!-- 提款密码 -->
-      <div class="form-item" @click="router.push('/user/fund-password')">
-        <div class="form-label">
-          <svg class="label-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-            <line x1="1" y1="10" x2="23" y2="10"/>
-          </svg>
-          {{ t('user.fundPassword') }}
-        </div>
-        <div class="form-value">
-          <span :class="{ placeholder: !hasFundPwd }">
-            {{ hasFundPwd ? t('user.passwordSet') : t('user.passwordNotSet') }}
-          </span>
-          <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M9 18l6-6-6-6"/>
-          </svg>
+          <span class="readonly-tip">{{ t('user.cannotModify') }}</span>
         </div>
       </div>
     </div>
@@ -267,7 +224,6 @@ const bankData = reactive<BankInfo>({
   subAddress: ''
 })
 
-const hasFundPwd = ref(false)
 const loading = ref(false)
 
 // 弹窗状态
@@ -489,8 +445,6 @@ const loadUserInfo = async () => {
     profileData.phone = info.phone || ''
     profileData.email = info.email || ''
     profileData.qq = ''
-
-    hasFundPwd.value = !!(info as any).hasFundPwd || false
   }
 
   loadBankInfo()
