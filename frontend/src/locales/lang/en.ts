@@ -579,6 +579,7 @@ export default {
   'login.enterUsernamePassword': 'Please enter username and password',
   'login.failed': 'Login failed',
   'login.failedRetry': 'Login failed, please try again later',
+  'login.success': 'Login successful',
   'login.guestComingSoon': 'Demo feature coming soon',
   'login.guestSuccess': 'Demo login successful',
   'login.username': 'Please enter username',

@@ -126,10 +126,12 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { userApi } from '@/api/user'
 import { useUserStore } from '@/stores/user'
+import { useToastStore } from '@/stores/toast'
 import { setLocale, t, type Locale } from '@/locales'
 
 const router = useRouter()
 const userStore = useUserStore()
+const toastStore = useToastStore()
 const loading = ref(false)
 const showLanguage = ref(false)
 
@@ -140,7 +142,11 @@ const form = reactive({
 
 const handleLogin = async () => {
   if (!form.username || !form.password) {
-    alert(t('login.enterUsernamePassword'))
+    toastStore.show({
+      type: 'warning',
+      title: t('common.tips'),
+      message: t('login.enterUsernamePassword')
+    })
     return
   }
 
@@ -168,13 +174,30 @@ const handleLogin = async () => {
       userStore.setUserInfo(userInfo)
       // 保存到localStorage
       localStorage.setItem('userInfo', JSON.stringify(userInfo))
-      router.push('/')
+
+      toastStore.show({
+        type: 'success',
+        title: t('common.success'),
+        message: t('login.success')
+      })
+
+      setTimeout(() => {
+        router.push('/')
+      }, 1000)
     } else {
-      alert(res.message || t('login.failed'))
+      toastStore.show({
+        type: 'error',
+        title: t('common.error'),
+        message: res.message || t('login.failed')
+      })
     }
   } catch (error: any) {
     console.error('Login failed:', error)
-    alert(error.response?.data?.message || t('login.failedRetry'))
+    toastStore.show({
+      type: 'error',
+      title: t('common.error'),
+      message: error.response?.data?.message || t('login.failedRetry')
+    })
   } finally {
     loading.value = false
   }
@@ -202,14 +225,30 @@ const guestLogin = async () => {
       userStore.setUserInfo(userInfo)
       // 保存到 localStorage
       localStorage.setItem('userInfo', JSON.stringify(userInfo))
-      // 跳转到首页
-      router.push('/')
+
+      toastStore.show({
+        type: 'success',
+        title: t('common.success'),
+        message: t('login.success')
+      })
+
+      setTimeout(() => {
+        router.push('/')
+      }, 1000)
     } else {
-      alert(res.message || t('login.failed'))
+      toastStore.show({
+        type: 'error',
+        title: t('common.error'),
+        message: res.message || t('login.failed')
+      })
     }
   } catch (error: any) {
     console.error('Guest login failed:', error)
-    alert(error.response?.data?.message || t('login.failedRetry'))
+    toastStore.show({
+      type: 'error',
+      title: t('common.error'),
+      message: error.response?.data?.message || t('login.failedRetry')
+    })
   }
 }
 

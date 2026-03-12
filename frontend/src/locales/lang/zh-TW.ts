@@ -579,6 +579,7 @@ export default {
   'login.enterUsernamePassword': '請輸入用戶名和密碼',
   'login.failed': '登錄失敗',
   'login.failedRetry': '登錄失敗，請稍後重試',
+  'login.success': '登錄成功',
   'login.guestComingSoon': '免費試玩功能開發中',
   'login.guestSuccess': '試玩成功',
   'login.username': '請輸入用戶名',
