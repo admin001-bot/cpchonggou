@@ -718,17 +718,18 @@ func (h *UserHandler) GuestLogin(c *gin.Context) {
 	})
 }
 
-// ip2long 将 IP 地址转换为整数（类似 PHP 的 ip2long 函数）
-func ip2long(ip string) int64 {
+// ip2long 将 IP 地址转换为整数（类似 PHP 的 ip2long 函数，返回有符号整数）
+func ip2long(ip string) int {
 	parts := strings.Split(ip, ".")
 	if len(parts) != 4 {
 		return 0
 	}
-	var result int64
+	var result uint32
 	for i := 0; i < 4; i++ {
-		var part int
+		var part uint32
 		fmt.Sscanf(parts[i], "%d", &part)
-		result = (result << 8) | int64(part&0xFF)
+		result = (result << 8) | (part & 0xFF)
 	}
-	return result
+	// 转换为有符号整数（与 PHP ip2long 行为一致）
+	return int(int32(result))
 }
