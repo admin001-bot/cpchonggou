@@ -130,7 +130,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/bank',
     component: () => import('@/views/bank/index.vue'),
-    meta: { title: 'bank.fundManage', requiresAuth: true },
+    meta: { title: 'bank.fundManage', requiresAuth: true, guestForbidden: true },
     children: [
       {
         path: '',
@@ -140,31 +140,31 @@ const routes: RouteRecordRaw[] = [
         path: 'deposit',
         name: 'Deposit',
         component: () => import('@/views/bank/Deposit.vue'),
-        meta: { title: 'bank.deposit' },
+        meta: { title: 'bank.deposit', guestForbidden: true },
       },
       {
         path: 'withdraw',
         name: 'Withdraw',
         component: () => import('@/views/bank/Withdraw.vue'),
-        meta: { title: 'bank.withdraw' },
+        meta: { title: 'bank.withdraw', guestForbidden: true },
       },
       {
         path: 'records/:type',
         name: 'Records',
         component: () => import('@/views/bank/Records.vue'),
-        meta: { title: 'bank.record' },
+        meta: { title: 'bank.record', guestForbidden: true },
       },
       {
         path: 'alipay',
         name: 'AlipayDeposit',
         component: () => import('@/views/bank/AlipayDeposit.vue'),
-        meta: { title: 'bank.alipayTransfer' },
+        meta: { title: 'bank.alipayTransfer', guestForbidden: true },
       },
       {
         path: 'bind-address',
         name: 'BindAddress',
         component: () => import('@/views/bank/BindAddress.vue'),
-        meta: { title: 'bank.bindAddress', requiresAuth: true },
+        meta: { title: 'bank.bindAddress', requiresAuth: true, guestForbidden: true },
       },
     ],
   },
@@ -301,6 +301,31 @@ router.beforeEach(async (to, _from, next) => {
     if (!token) {
       next({ name: 'Login', query: { redirect: to.fullPath } })
       return
+    }
+  }
+
+  // 检查游客权限限制
+  if (to.meta.guestForbidden) {
+    const userInfoStr = localStorage.getItem('userInfo')
+    if (userInfoStr) {
+      try {
+        const userInfo = JSON.parse(userInfoStr)
+        if (userInfo.testFlag === 1) {
+          // 游客用户禁止访问，显示提示
+          const toastStore = (router as any).__toastStore
+          if (toastStore) {
+            toastStore.show({
+              type: 'warning',
+              title: t('common.tips'),
+              message: t('user.guestForbidden')
+            })
+          }
+          next({ name: 'Home' })
+          return
+        }
+      } catch (e) {
+        // 解析失败，继续
+      }
     }
   }
 

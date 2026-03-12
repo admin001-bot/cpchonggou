@@ -766,6 +766,7 @@ export default {
 
   // 通用
   'common.appTitle': '彩票系統',
+  'common.guestForbidden': '試玩帳號無法使用此功能，請註冊正式帳號',
 
   // 开奖结果
   'game.draw': '和',

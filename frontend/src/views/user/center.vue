@@ -62,7 +62,7 @@
 
     <!-- 快捷操作 -->
     <div class="quick-actions">
-      <div class="action-item" @click="goDeposit">
+      <div class="action-item" @click="goDeposit" v-if="!isGuest">
         <div class="action-icon deposit">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
@@ -70,7 +70,7 @@
         </div>
         <span class="action-text">{{ t('user.deposit') }}</span>
       </div>
-      <div class="action-item" @click="goWithdraw">
+      <div class="action-item" @click="goWithdraw" v-if="!isGuest">
         <div class="action-icon withdraw">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
@@ -78,7 +78,7 @@
         </div>
         <span class="action-text">{{ t('user.withdraw') }}</span>
       </div>
-      <div class="action-item" @click="goBankCard">
+      <div class="action-item" @click="goBankCard" v-if="!isGuest">
         <div class="action-icon bankcard">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
@@ -308,6 +308,7 @@ const toastStore = useToastStore()
 
 const pendingCount = ref(0)
 const username = computed(() => userStore.userInfo?.username || '')
+const isGuest = computed(() => userStore.userInfo?.testFlag === 1)
 const userInfo = computed(() => {
   const info = userStore.userInfo
   if (!info) {

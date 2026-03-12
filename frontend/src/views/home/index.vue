@@ -69,8 +69,14 @@
       <!-- 功能菜单 -->
       <div class="index-menu">
         <ul>
-          <li>
+          <li v-if="!isGuest">
             <a @click.prevent="router.push('/bank/deposit')">
+              <img src="/images/icon01.png" />
+              <p style="color: #ef4a42">{{ t('home.deposit') }}</p>
+            </a>
+          </li>
+          <li v-if="isGuest">
+            <a @click.prevent="showGuestForbidden">
               <img src="/images/icon01.png" />
               <p style="color: #ef4a42">{{ t('home.deposit') }}</p>
             </a>
@@ -139,19 +145,23 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
+import { useToastStore } from '@/stores/toast'
 import { setLocale, t, type Locale } from '@/locales'
+import { userApi } from '@/api/user'
 
 const showLanguage = ref(false)
 
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
+const toastStore = useToastStore()
 
 const skin = ref('blue')
 
 // 计算属性
 const isLogin = computed(() => userStore.isLoggedIn)
 const username = computed(() => userStore.userInfo?.username || '')
+const isGuest = computed(() => userStore.userInfo?.testFlag === 1)
 
 // 轮播图列表
 const slideList = ref(['/images/slide/zc/24218.jpg'])
@@ -191,9 +201,51 @@ const goToHelp = () => {
   router.push('/user/help')
 }
 
+// 显示游客禁止提示
+const showGuestForbidden = () => {
+  toastStore.show({
+    type: 'warning',
+    title: t('common.tips'),
+    message: t('common.guestForbidden')
+  })
+}
+
 // 试玩登录
-const guestLogin = () => {
-  alert(t('home.guestComingSoon'))
+const guestLogin = async () => {
+  try {
+    const res = await userApi.guestLogin()
+    if (res.code === 0 && res.data) {
+      userStore.setToken(res.data.token)
+      const userInfo = {
+        uid: res.data.uid,
+        username: res.data.username,
+        nickname: res.data.nickname,
+        balance: parseFloat(res.data.coin) || 2000,
+        testFlag: res.data.testFlag || 1
+      }
+      userStore.setUserInfo(userInfo)
+      toastStore.show({
+        type: 'success',
+        title: t('common.success'),
+        message: t('login.success')
+      })
+      setTimeout(() => {
+        router.push('/home')
+      }, 1000)
+    } else {
+      toastStore.show({
+        type: 'error',
+        title: t('common.error'),
+        message: res.message || t('login.failed')
+      })
+    }
+  } catch (error: any) {
+    toastStore.show({
+      type: 'error',
+      title: t('common.error'),
+      message: error.response?.data?.message || t('login.failedRetry')
+    })
+  }
 }
 
 // 语言切换

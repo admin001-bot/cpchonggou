@@ -765,6 +765,7 @@ export default {
 
   // Common
   'common.appTitle': 'Lottery System',
+  'common.guestForbidden': 'Demo account cannot use this feature, please register a real account',
 
   // Lottery results
   'game.draw': 'Draw',
