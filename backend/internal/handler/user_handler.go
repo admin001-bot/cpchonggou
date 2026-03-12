@@ -662,28 +662,16 @@ func (h *UserHandler) GuestLogin(c *gin.Context) {
 	// 密码 MD5 加密
 	hashedPassword := md5Hash(password)
 
-	// 获取客户端 IP
+	// 获取客户端 IP 并转换为整数（类似 PHP 的 ip2long）
 	clientIP := c.ClientIP()
+	regIPInt := ip2long(clientIP)
 
-	// 创建游客用户
-	guest := model.GuestMembers{
-		Username:   guestUsername,
-		Nickname:   guestUsername,
-		Name:       guestUsername,
-		Password:   hashedPassword,
-		Coin:       2000, // 游客初始资金 2000
-		Fcoin:      0,
-		RegIP:      clientIP,
-		RegTime:    currentTime,
-		UpdateTime: time.Now(),
-		TestFlag:   1, // 标记为游客
-		IsDelete:   0,
-		Admin:      0,
-		Enable:     1,
-	}
+	// 使用原生 SQL 插入，避免 GORM 类型转换问题
+	insertSQL := `INSERT INTO ssc_guestmembers
+		(username, nickname, name, password, coin, fcoin, regIP, regTime, updateTime, testFlag, isDelete, admin, enable)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), 1, 0, 0, 1)`
 
-	// 保存游客用户
-	if err := model.DB.Create(&guest).Error; err != nil {
+	if err := model.DB.Exec(insertSQL, guestUsername, guestUsername, guestUsername, hashedPassword, 2000, 0, regIPInt, currentTime).Error; err != nil {
 		response.Error(c, i18n.T("register.failed"))
 		return
 	}
@@ -700,21 +688,11 @@ func (h *UserHandler) GuestLogin(c *gin.Context) {
 	rand.Read(sessionBytes)
 	sessionKey := hex.EncodeToString(sessionBytes)
 
-	// 创建会话
-	session := model.MemberSession{
-		UID:        createdGuest.UID,
-		Username:   createdGuest.Username,
-		SessionKey: sessionKey,
-		LoginTime:  currentTime,
-		AccessTime: currentTime,
-		LoginIP:    clientIP,
-		Os:         c.GetHeader("sec-ch-ua-platform"),
-		Browser:    c.GetHeader("sec-ch-ua"),
-		IsOnLine:   1,
-	}
+	// 创建会话 - loginIP 是 varchar，直接存储字符串
+	sessionSQL := `INSERT INTO ssc_member_session (uid, username, session_key, loginTime, accessTime, loginIP, os, browser, isOnLine)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)`
 
-	// 保存会话
-	if err := model.DB.Create(&session).Error; err != nil {
+	if err := model.DB.Exec(sessionSQL, createdGuest.UID, createdGuest.Username, sessionKey, currentTime, currentTime, clientIP, c.GetHeader("sec-ch-ua-platform"), c.GetHeader("sec-ch-ua")).Error; err != nil {
 		response.Error(c, i18n.T("login.failed"))
 		return
 	}
@@ -738,4 +716,19 @@ func (h *UserHandler) GuestLogin(c *gin.Context) {
 		TestFlag:  int(createdGuest.TestFlag),
 		FanDian:   fanDian,
 	})
+}
+
+// ip2long 将 IP 地址转换为整数（类似 PHP 的 ip2long 函数）
+func ip2long(ip string) int64 {
+	parts := strings.Split(ip, ".")
+	if len(parts) != 4 {
+		return 0
+	}
+	var result int64
+	for i := 0; i < 4; i++ {
+		var part int
+		fmt.Sscanf(parts[i], "%d", &part)
+		result = (result << 8) | int64(part&0xFF)
+	}
+	return result
 }
