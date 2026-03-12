@@ -17,9 +17,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// 简单的token数据结构
+// TokenData token数据结构
 type TokenData struct {
 	UID      int   `json:"uid"`
+	IsGuest  bool  `json:"isGuest"`
 	ExpireAt int64 `json:"expireAt"`
 }
 
@@ -52,10 +53,29 @@ func ParseToken(token string) (int, error) {
 	return 0, fmt.Errorf(i18n.T("login.token_invalid"))
 }
 
+// ParseTokenFull 解析token获取完整信息
+func ParseTokenFull(token string) (*TokenData, error) {
+	// 处理Bearer前缀
+	if strings.HasPrefix(token, "Bearer ") {
+		token = strings.TrimPrefix(token, "Bearer ")
+	}
+
+	// 从内存中查找token
+	if data, ok := tokenStore[token]; ok {
+		if data.ExpireAt > time.Now().Unix() {
+			return &data, nil
+		}
+		delete(tokenStore, token)
+	}
+
+	return nil, fmt.Errorf(i18n.T("login.token_invalid"))
+}
+
 // saveToken 保存token
-func saveToken(token string, uid int) {
+func saveToken(token string, uid int, isGuest bool) {
 	tokenStore[token] = TokenData{
 		UID:      uid,
+		IsGuest:  isGuest,
 		ExpireAt: time.Now().Add(24 * time.Hour).Unix(),
 	}
 }
@@ -265,7 +285,7 @@ func (h *UserHandler) Login(c *gin.Context) {
 	token := md5Hash(username + password + time.Now().String())
 
 	// 保存token到内存
-	saveToken(token, int(user.UID))
+	saveToken(token, int(user.UID), false)
 
 	// 更新登录时间
 	model.DB.Model(&user).Updates(map[string]interface{}{
@@ -296,14 +316,42 @@ func (h *UserHandler) GetUserInfo(c *gin.Context) {
 		return
 	}
 
-	// 解析token获取用户ID
-	uid, err := ParseToken(token)
+	// 解析token获取用户ID和是否为游客
+	tokenData, err := ParseTokenFull(token)
 	if err != nil {
 		response.Error(c, i18n.T("login.token_invalid"))
 		return
 	}
 
-	// 查询用户信息
+	uid := tokenData.UID
+	isGuest := tokenData.IsGuest
+
+	// 根据是否为游客查询不同的表
+	if isGuest {
+		// 游客用户从guestmembers表查询
+		var guestUser model.GuestMembers
+		if err := model.DB.First(&guestUser, uid).Error; err != nil {
+			response.Error(c, i18n.T("bet.user_not_found"))
+			return
+		}
+		response.Success(c, gin.H{
+			"uid":        guestUser.UID,
+			"username":   guestUser.Username,
+			"nickname":   guestUser.Nickname,
+			"name":       guestUser.Name,
+			"phone":      "",
+			"email":      "",
+			"coin":       fmt.Sprintf("%.2f", guestUser.Coin),
+			"type":       0,
+			"grade":      1,
+			"testFlag":   1,
+			"hasFundPwd": false,
+			"fanDian":    float32(0),
+		})
+		return
+	}
+
+	// 普通用户从members表查询
 	var user model.User
 	if err := model.DB.First(&user, uid).Error; err != nil {
 		response.Error(c, i18n.T("bet.user_not_found"))
@@ -340,8 +388,8 @@ func (h *UserHandler) Init(c *gin.Context) {
 		return
 	}
 
-	// 解析token获取用户ID
-	uid, err := ParseToken(token)
+	// 解析token获取用户ID和是否为游客
+	tokenData, err := ParseTokenFull(token)
 	if err != nil {
 		c.JSON(200, gin.H{
 			"code":    401,
@@ -351,7 +399,39 @@ func (h *UserHandler) Init(c *gin.Context) {
 		return
 	}
 
-	// 查询用户信息
+	uid := tokenData.UID
+	isGuest := tokenData.IsGuest
+
+	// 根据是否为游客查询不同的表
+	if isGuest {
+		// 游客用户从guestmembers表查询
+		var guestUser model.GuestMembers
+		if err := model.DB.First(&guestUser, uid).Error; err != nil {
+			c.JSON(200, gin.H{
+				"code":    401,
+				"message": i18n.T("bet.user_not_found"),
+				"data":    nil,
+			})
+			return
+		}
+		response.Success(c, InitResponse{
+			Token:      token,
+			UID:        guestUser.UID,
+			Username:   guestUser.Username,
+			Nickname:   guestUser.Nickname,
+			Coin:       fmt.Sprintf("%.2f", guestUser.Coin),
+			Email:      "",
+			Name:       guestUser.Name,
+			Phone:      "",
+			TestFlag:   1,
+			HasFundPwd: false,
+			FanDian:    0,
+			ServerTime: time.Now().Unix(),
+		})
+		return
+	}
+
+	// 普通用户从members表查询
 	var user model.User
 	if err := model.DB.First(&user, uid).Error; err != nil {
 		c.JSON(200, gin.H{
@@ -643,7 +723,7 @@ func (h *UserHandler) GuestLogin(c *gin.Context) {
 	token := md5Hash(guestUsername + password + time.Now().String())
 
 	// 保存 token 到内存
-	saveToken(token, int(createdGuest.UID))
+	saveToken(token, int(createdGuest.UID), true)
 
 	// 获取最大返点
 	var fanDian float32

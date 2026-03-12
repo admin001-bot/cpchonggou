@@ -89,6 +89,16 @@ func (h *BetHandler) GetNotCount(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	uid := userID.(int)
 
+	// 获取是否为游客用户
+	isGuest, _ := c.Get("isGuest")
+	isGuestUser, _ := isGuest.(bool)
+
+	// 根据是否为游客选择不同的表
+	betsTable := "ssc_bets"
+	if isGuestUser {
+		betsTable = "ssc_guestbets"
+	}
+
 	// 获取游戏列表
 	var gameTypes []struct {
 		ID   int    `gorm:"column:id"`
@@ -103,7 +113,7 @@ func (h *BetHandler) GetNotCount(c *gin.Context) {
 			TotalMoney float64 `gorm:"column:totalMoney"`
 		}
 		// 查询未结算注单 (lotteryNo为空)
-		model.DB.Table("ssc_bets").
+		model.DB.Table(betsTable).
 			Select("SUM(totalNums) as totalNums, SUM(money) as totalMoney").
 			Where("isDelete = 0 AND lotteryNo = '' AND uid = ? AND type = ?", uid, game.ID).
 			Scan(&count)
@@ -125,6 +135,16 @@ func (h *BetHandler) GetNotCount(c *gin.Context) {
 func (h *BetHandler) GetNotCountDetail(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	uid := userID.(int)
+
+	// 获取是否为游客用户
+	isGuest, _ := c.Get("isGuest")
+	isGuestUser, _ := isGuest.(bool)
+
+	// 根据是否为游客选择不同的表
+	betsTable := "ssc_bets"
+	if isGuestUser {
+		betsTable = "ssc_guestbets"
+	}
 
 	gameID, _ := strconv.Atoi(c.Query("gameId"))
 
@@ -148,7 +168,7 @@ func (h *BetHandler) GetNotCountDetail(c *gin.Context) {
 		ActionData  string  `gorm:"column:actionData"`
 	}
 
-	query := model.DB.Table("ssc_bets").
+	query := model.DB.Table(betsTable).
 		Select("id, uid, username, playedId, playedGroup, odds, rebate, actionTime, actionNo, type, money, totalNums, wjorderId, lotteryNo, kjTime, betInfo, actionData").
 		Where("isDelete = 0 AND lotteryNo = '' AND uid = ?", uid)
 	if gameID > 0 {
@@ -214,6 +234,16 @@ func (h *BetHandler) GetBetBills(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	uid := userID.(int)
 
+	// 获取是否为游客用户
+	isGuest, _ := c.Get("isGuest")
+	isGuestUser, _ := isGuest.(bool)
+
+	// 根据是否为游客选择不同的表
+	betsTable := "ssc_bets"
+	if isGuestUser {
+		betsTable = "ssc_guestbets"
+	}
+
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	rows, _ := strconv.Atoi(c.DefaultQuery("rows", "30"))
 	gameID, _ := strconv.Atoi(c.Query("gameId"))
@@ -246,7 +276,7 @@ func (h *BetHandler) GetBetBills(c *gin.Context) {
 		Content     string  `gorm:"column:content"`
 	}
 
-	query := model.DB.Table("ssc_bets").
+	query := model.DB.Table(betsTable).
 		Select("id, uid, username, playedId, playedGroup, odds, rebate, actionTime, actionNo, type, money, totalNums, wjorderId, lotteryNo, kjTime, bonus, betInfo, actionData as content").
 		Where("isDelete = 0 AND lotteryNo != '' AND uid = ? AND actionTime >= ?", uid, todayStartInt)
 	if gameID > 0 {
@@ -318,6 +348,16 @@ func (h *BetHandler) GetStatBets(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	uid := userID.(int)
 
+	// 获取是否为游客用户
+	isGuest, _ := c.Get("isGuest")
+	isGuestUser, _ := isGuest.(bool)
+
+	// 根据是否为游客选择不同的表
+	betsTable := "ssc_bets"
+	if isGuestUser {
+		betsTable = "ssc_guestbets"
+	}
+
 	// 使用北京时间（Asia/Shanghai）
 	loc, _ := time.LoadLocation("Asia/Shanghai")
 	now := time.Now().In(loc)
@@ -348,7 +388,7 @@ func (h *BetHandler) GetStatBets(c *gin.Context) {
 	// 从 ssc_bets 表实时统计（不再依赖 report 表）
 	// 使用 actionTime（投注时间）来统计，与 GetBetBills 和 GetLotteryData 保持一致
 	// MySQL 系统时区是 UTC，需要用 CONVERT_TZ 转换为北京时间分组
-	model.DB.Table("ssc_bets").
+	model.DB.Table(betsTable).
 		Select("DATE(CONVERT_TZ(FROM_UNIXTIME(actionTime), '+00:00', '+08:00')) as statDate, COUNT(*) as betCount, SUM(money) as betMoney, SUM(bonus - money + money * rebate) as rewardRebate").
 		Where("isDelete = 0 AND uid = ? AND lotteryNo != '' AND actionTime >= ? AND actionTime <= ?", uid, startTime.Unix(), endTime.Unix()).
 		Group("DATE(CONVERT_TZ(FROM_UNIXTIME(actionTime), '+00:00', '+08:00'))").
@@ -401,6 +441,16 @@ func (h *BetHandler) GetUserBets(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	uid := userID.(int)
 
+	// 获取是否为游客用户
+	isGuest, _ := c.Get("isGuest")
+	isGuestUser, _ := isGuest.(bool)
+
+	// 根据是否为游客选择不同的表
+	betsTable := "ssc_bets"
+	if isGuestUser {
+		betsTable = "ssc_guestbets"
+	}
+
 	gameID, _ := strconv.Atoi(c.Query("gameId"))
 	date := c.Query("date")
 
@@ -430,7 +480,7 @@ func (h *BetHandler) GetUserBets(c *gin.Context) {
 		ActionData  string  `gorm:"column:actionData"`
 	}
 
-	query := model.DB.Table("ssc_bets").
+	query := model.DB.Table(betsTable).
 		Select("id, playedId, playedGroup, odds, rebate, actionTime, actionNo, type, money, totalNums, lotteryNo, bonus, betInfo, actionData").
 		Where("isDelete = 0 AND lotteryNo != '' AND uid = ? AND actionTime >= ? AND actionTime < ?", uid, dateStart.Unix(), dateEnd.Unix())
 	if gameID > 0 {
@@ -488,6 +538,16 @@ func (h *BetHandler) GetTotalStatBets(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	uid := userID.(int)
 
+	// 获取是否为游客用户
+	isGuest, _ := c.Get("isGuest")
+	isGuestUser, _ := isGuest.(bool)
+
+	// 根据是否为游客选择不同的表
+	betsTable := "ssc_bets"
+	if isGuestUser {
+		betsTable = "ssc_guestbets"
+	}
+
 	date := c.Query("date")
 	if date == "" {
 		date = time.Now().Format("2006-01-02")
@@ -513,7 +573,7 @@ func (h *BetHandler) GetTotalStatBets(c *gin.Context) {
 			RewardRebate float64 `gorm:"column:rewardRebate"`
 		}
 
-		model.DB.Table("ssc_bets").
+		model.DB.Table(betsTable).
 			Select("COUNT(*) as betCount, SUM(money) as betMoney, SUM(bonus - money + money * rebate) as rewardRebate").
 			Where("isDelete = 0 AND lotteryNo != '' AND uid = ? AND type = ? AND actionTime >= ? AND actionTime < ?", uid, game.ID, dateStart.Unix(), dateEnd.Unix()).
 			Scan(&stats)
@@ -535,6 +595,18 @@ func (h *BetHandler) GetLotteryData(c *gin.Context) {
 	userID, _ := c.Get("userID")
 	uid := userID.(int)
 
+	// 获取是否为游客用户
+	isGuest, _ := c.Get("isGuest")
+	isGuestUser, _ := isGuest.(bool)
+
+	// 根据是否为游客选择不同的表
+	betsTable := "ssc_bets"
+	membersTable := "ssc_members"
+	if isGuestUser {
+		betsTable = "ssc_guestbets"
+		membersTable = "ssc_guestmembers"
+	}
+
 	gameID, _ := strconv.Atoi(c.Query("gameId"))
 
 	// 今天0点
@@ -546,7 +618,7 @@ func (h *BetHandler) GetLotteryData(c *gin.Context) {
 
 	// 未结算金额
 	var unbalancedMoney float64
-	query := model.DB.Table("ssc_bets").
+	query := model.DB.Table(betsTable).
 		Select("COALESCE(SUM(money), 0)").
 		Where("isDelete = 0 AND lotteryNo = '' AND uid = ?", uid)
 	if gameID > 0 {
@@ -562,7 +634,7 @@ func (h *BetHandler) GetLotteryData(c *gin.Context) {
 	}
 	// 使用 COALESCE 防止 NULL 值
 	// 统一使用 actionTime（投注时间），与 GetBetBills 和 GetStatBets 保持一致
-	query2 := model.DB.Table("ssc_bets").
+	query2 := model.DB.Table(betsTable).
 		Select("COALESCE(SUM(money), 0) as totalBet, COALESCE(SUM(bonus), 0) as totalBonus, COALESCE(SUM(money * rebate), 0) as totalRebate").
 		Where("isDelete = 0 AND lotteryNo != '' AND uid = ? AND actionTime >= ?", uid, todayStartInt)
 	if gameID > 0 {
@@ -578,7 +650,7 @@ func (h *BetHandler) GetLotteryData(c *gin.Context) {
 
 	// 用户余额
 	var balance float64
-	model.DB.Table("ssc_members").Select("coin").Where("uid = ?", uid).Scan(&balance)
+	model.DB.Table(membersTable).Select("coin").Where("uid = ?", uid).Scan(&balance)
 
 	response.Success(c, gin.H{
 		"balance":         balance,

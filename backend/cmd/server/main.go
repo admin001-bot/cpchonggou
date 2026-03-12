@@ -72,14 +72,15 @@ func main() {
 			return
 		}
 		// 这里简化处理，实际应验证JWT token
-		// 从token中解析用户ID
-		uid, err := handler.ParseToken(token)
+		// 从token中解析用户ID和是否为游客
+		tokenData, err := handler.ParseTokenFull(token)
 		if err != nil {
 			c.JSON(401, gin.H{"code": 401, "message": i18n.T("login.token_invalid")})
 			c.Abort()
 			return
 		}
-		c.Set("userID", uid)
+		c.Set("userID", tokenData.UID)
+		c.Set("isGuest", tokenData.IsGuest)
 		c.Next()
 	}
 

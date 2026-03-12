@@ -20,6 +20,18 @@ import (
 // GameHandler 游戏处理器
 type GameHandler struct{}
 
+// BetUserInfo 投注用户信息（通用结构，兼容普通用户和游客）
+type BetUserInfo struct {
+	UID          uint
+	Username     string
+	Nickname     string
+	Coin         float64
+	TestFlag     int8
+	PanID        int8
+	Type         int8
+	MaxTurnMoney int
+}
+
 // NewGameHandler 创建游戏处理器
 func NewGameHandler() *GameHandler {
 	return &GameHandler{}
@@ -282,6 +294,10 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
     }
     uid := userID.(int)
 
+    // 获取是否为游客用户
+    isGuest, _ := c.Get("isGuest")
+    isGuestUser, _ := isGuest.(bool)
+
     var req BetRequest
     if err := c.ShouldBindJSON(&req); err != nil {
         c.JSON(http.StatusOK, BetResponse{
@@ -301,16 +317,47 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
         Code:    0,
     }
 
-    // 获取用户信息
-    var user model.User
-    if err := model.DB.First(&user, uid).Error; err != nil {
-        betInfo.Msg = i18n.T("bet.user_not_found")
-        betInfo.MsgKey = "bet.user_not_found"
-        c.JSON(http.StatusOK, betInfo)
-        return
+    // 根据是否为游客用户查询不同的表
+    var user BetUserInfo
+    if isGuestUser {
+        // 游客用户从guestmembers表查询
+        var guestUser model.GuestMembers
+        if err := model.DB.First(&guestUser, uid).Error; err != nil {
+            betInfo.Msg = i18n.T("bet.user_not_found")
+            betInfo.MsgKey = "bet.user_not_found"
+            c.JSON(http.StatusOK, betInfo)
+            return
+        }
+        user = BetUserInfo{
+            UID:          guestUser.UID,
+            Username:     guestUser.Username,
+            Nickname:     guestUser.Nickname,
+            Coin:         guestUser.Coin,
+            TestFlag:     guestUser.TestFlag,
+            PanID:        2, // 游客默认使用B盘
+            Type:         0,
+            MaxTurnMoney: 0,
+        }
+    } else {
+        // 普通用户从members表查询
+        var normalUser model.User
+        if err := model.DB.First(&normalUser, uid).Error; err != nil {
+            betInfo.Msg = i18n.T("bet.user_not_found")
+            betInfo.MsgKey = "bet.user_not_found"
+            c.JSON(http.StatusOK, betInfo)
+            return
+        }
+        user = BetUserInfo{
+            UID:          normalUser.UID,
+            Username:     normalUser.Username,
+            Nickname:     normalUser.Nickname,
+            Coin:         normalUser.Coin,
+            TestFlag:     normalUser.TestFlag,
+            PanID:        normalUser.PanID,
+            Type:         normalUser.Type,
+            MaxTurnMoney: normalUser.MaxTurnMoney,
+        }
     }
-
-    // 调试输出
 
     // 判断是否为测试用户
     isTestUser := user.TestFlag == 1
