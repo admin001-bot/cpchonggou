@@ -51,8 +51,8 @@ service.interceptors.response.use(
         return Promise.reject(new Error(res.message || t('common.unauthorized')))
       }
 
-      ElMessage.error(res.message || t('common.error'))
-      return Promise.reject(new Error(res.message || t('common.error')))
+      // 返回完整的响应数据，让调用方自己处理错误显示
+      return res
     }
 
     return res
@@ -77,7 +77,9 @@ service.interceptors.response.use(
       return Promise.reject(error)
     }
 
-    ElMessage.error(error.message || t('common.error'))
+    // 网络错误等，显示错误消息
+    const errorMessage = error.response?.data?.message || error.message || t('common.error')
+    ElMessage.error(errorMessage)
     return Promise.reject(error)
   }
 )
