@@ -668,8 +668,8 @@ func (h *UserHandler) GuestLogin(c *gin.Context) {
 
 	// 使用原生 SQL 插入，避免 GORM 类型转换问题
 	insertSQL := `INSERT INTO ssc_guestmembers
-		(username, nickname, name, password, coin, fcoin, regIP, regTime, updateTime, testFlag, isDelete, admin, enable)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), 1, 0, 0, 1)`
+		(username, nickname, name, password, coin, fcoin, regIP, regTime, updateTime, testFlag, isDelete, admin, enable, email, qq, phone, conCommStatus, lossCommStatus, care)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), 1, 0, 0, 1, '', '', '', 0, 0, '')`
 
 	if err := model.DB.Exec(insertSQL, guestUsername, guestUsername, guestUsername, hashedPassword, 2000, 0, regIPInt, currentTime).Error; err != nil {
 		response.Error(c, i18n.T("register.failed"))
