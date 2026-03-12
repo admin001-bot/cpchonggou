@@ -13,7 +13,6 @@
     :message="toastStore.currentMessage"
     :duration="toastStore.currentDuration"
     :show-progress="toastStore.shouldShowProgress"
-    @close="toastStore.close"
   />
 
   <!-- 全局加载动画 -->
