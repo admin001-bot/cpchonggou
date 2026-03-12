@@ -39,7 +39,12 @@
       "Bash(git pull:*)",
       "Bash(docker-compose ps:*)",
       "Bash(docker-compose:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(cd /c/Users/Administrator/Desktop/chonggou/backend && go build ./... 2>&1)",
+      "Bash(pip install playwright 2>&1 && python -m playwright install chromium 2>&1)",
+      "Bash(python:*)",
+      "Bash(printf 'SELECT COUNT\\(*\\) cnt FROM ssc_bets WHERE uid=2742 AND isDelete=0 AND lotteryNo!=\"\" AND actionTime >= 1773244800;\\\\n' | docker exec -i lottery-mysql-dev mysql -upj -ppj pj 2>&1)",
+      "Bash(echo \"SELECT COUNT\\(*\\) FROM ssc_bets WHERE uid=2742 AND isDelete=0 AND lotteryNo!='' AND actionTime >= 1773244800\" | docker exec -i lottery-mysql-dev mysql -upj -ppj pj 2>&1)"
     ]
   }
 }
