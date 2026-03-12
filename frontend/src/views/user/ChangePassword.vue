@@ -94,7 +94,6 @@ import { useUserStore } from '@/stores/user'
 import { useToastStore } from '@/stores/toast'
 import { t } from '@/locales'
 import { userApi } from '@/api/user'
-import MD5 from 'crypto-js/md5'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -176,8 +175,8 @@ const submitForm = async () => {
   loading.value = true
   try {
     const res = await userApi.changePassword(
-      MD5(form.oldPwd).toString(),
-      MD5(form.newPwd).toString()
+      form.oldPwd,
+      form.newPwd
     )
 
     if (res.code === 0) {

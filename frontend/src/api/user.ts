@@ -110,13 +110,13 @@ export const userApi = {
     return request.post('/user/logout')
   },
 
-  // 设置/修改提款密码 - 使用 PHP 后端
+  // 设置/修改提款密码
   setCoinPwd(params: {
     oldPwd: string
     newPwd: string
     loginPwd?: string
   }): Promise<{ code: number; message: string }> {
-    return request.post('/safe/setCoinPwddo', params)
+    return request.post('/user/setCoinPassword', params)
   },
 
   // 设置/修改提款密码（别名）
@@ -125,7 +125,7 @@ export const userApi = {
     newPwd: string
     loginPwd?: string
   }): Promise<{ code: number; message: string }> {
-    return request.post('/safe/setCoinPwddo', params)
+    return request.post('/user/setCoinPassword', params)
   },
 
   // 更新用户资料
@@ -143,9 +143,9 @@ export const userApi = {
     return request.post('/user/setFullNamedo', { fullName: name })
   },
 
-  // 修改登录密码 - 使用 PHP 后端
+  // 修改登录密码
   changePassword(oldPwd: string, newPwd: string): Promise<{ code: number; message: string }> {
-    return request.post('/safe/setPasswddo', {
+    return request.post('/user/setPassword', {
       oldPwd: oldPwd,
       newPwd: newPwd
     })

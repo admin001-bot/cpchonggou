@@ -99,6 +99,8 @@ func main() {
 			user.POST("/login", userHandler.Login)
 			user.POST("/guestLogin", userHandler.GuestLogin)
 			user.GET("/info", userHandler.GetUserInfo)
+			user.POST("/setPassword", authMiddleware, userHandler.SetPassword)
+			user.POST("/setCoinPassword", authMiddleware, userHandler.SetCoinPassword)
 		}
 
 		// 安全相关路由（需要登录）- 与前端路径保持一致 /api/safe

@@ -127,7 +127,6 @@ import { useUserStore } from '@/stores/user'
 import { userApi } from '@/api/user'
 import { ElMessage } from 'element-plus'
 import { t } from '@/locales'
-import MD5 from 'crypto-js/md5'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -233,9 +232,9 @@ const handleSetCoinPwd = async () => {
   loading.value = true
   try {
     const res = await userApi.setCoinPassword({
-      oldPwd: coinPwdForm.oldPwd ? MD5(coinPwdForm.oldPwd).toString() : '',
-      newPwd: MD5(coinPwdForm.newPwd).toString(),
-      loginPwd: coinPwdForm.loginPwd ? MD5(coinPwdForm.loginPwd).toString() : ''
+      oldPwd: coinPwdForm.oldPwd,
+      newPwd: coinPwdForm.newPwd,
+      loginPwd: coinPwdForm.loginPwd
     })
     if (res.code === 0) {
       ElMessage.success(hasFundPwd.value ? t('user.changeCoinPwdSuccess') : t('user.setFundPwdSuccess'))
