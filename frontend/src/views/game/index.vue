@@ -797,20 +797,20 @@ const lotteryResults = computed(() => {
     results.push(totalSum)
 
     // 总和大小（六合彩总和范围：7-343，中间值约 175）
-    results.push(totalSum >= 175 ? '大' : '小')
+    results.push(totalSum >= 175 ? t('game.big') : t('game.small'))
 
     // 总和单双
-    results.push(totalSum % 2 === 1 ? '單' : '雙')
+    results.push(totalSum % 2 === 1 ? t('game.odd') : t('game.even'))
 
     // 特码（第 7 个球）
     const specialCode = nums[6]
-    results.push('特碼')
+    results.push(t('lhc.specialCode'))
 
     // 特码大小
-    results.push(specialCode >= 25 ? '大' : '小')
+    results.push(specialCode >= 25 ? t('game.big') : t('game.small'))
 
     // 特码单双
-    results.push(specialCode % 2 === 1 ? '單' : '雙')
+    results.push(specialCode % 2 === 1 ? t('game.odd') : t('game.even'))
 
     // 特码色波
     const color = getLhcColor(specialCode)
@@ -839,19 +839,19 @@ const lotteryResults = computed(() => {
 
     // 总和大小
     // 时时彩总和范围：5-50（0 当 10 算），中间值 27.5
-    results.push(totalSum >= 28 ? '大' : '小')
+    results.push(totalSum >= 28 ? t('game.big') : t('game.small'))
 
     // 总和单双
-    results.push(totalSum % 2 === 1 ? '單' : '雙')
+    results.push(totalSum % 2 === 1 ? t('game.odd') : t('game.even'))
 
     // 龙虎：第一球 VS 第五球
     // 龙：第一球大，虎：第五球大，和：相等
     if (calcNums[0] > calcNums[4]) {
-      results.push('龍')
+      results.push(t('game.dragon'))
     } else if (calcNums[0] < calcNums[4]) {
-      results.push('虎')
+      results.push(t('game.tiger'))
     } else {
-      results.push('和')
+      results.push(t('game.draw'))
     }
 
     return results
@@ -867,17 +867,17 @@ const lotteryResults = computed(() => {
   results.push(sum)
 
   // 冠亚大小
-  results.push(sum > 11 ? '大' : '小')
+  results.push(sum > 11 ? t('game.big') : t('game.small'))
 
   // 冠亚单双
-  results.push(sum % 2 === 1 ? '單' : '雙')
+  results.push(sum % 2 === 1 ? t('game.odd') : t('game.even'))
 
   // 龙虎：1vs10, 2vs9, 3vs8, 4vs7, 5vs6
-  results.push(nums[0] > nums[9] ? '龍' : '虎')
-  results.push(nums[1] > nums[8] ? '龍' : '虎')
-  results.push(nums[2] > nums[7] ? '龍' : '虎')
-  results.push(nums[3] > nums[6] ? '龍' : '虎')
-  results.push(nums[4] > nums[5] ? '龍' : '虎')
+  results.push(nums[0] > nums[9] ? t('game.dragon') : t('game.tiger'))
+  results.push(nums[1] > nums[8] ? t('game.dragon') : t('game.tiger'))
+  results.push(nums[2] > nums[7] ? t('game.dragon') : t('game.tiger'))
+  results.push(nums[3] > nums[6] ? t('game.dragon') : t('game.tiger'))
+  results.push(nums[4] > nums[5] ? t('game.dragon') : t('game.tiger'))
 
   return results
 })
@@ -888,9 +888,9 @@ const getLhcColor = (num: number): string => {
   const blueWave = [3, 4, 9, 10, 14, 15, 20, 25, 26, 31, 36, 37, 41, 42, 47, 48]
   const greenWave = [5, 6, 11, 16, 17, 21, 22, 27, 28, 32, 33, 38, 39, 43, 44, 49]
 
-  if (redWave.includes(num)) return '紅波'
-  if (blueWave.includes(num)) return '藍波'
-  if (greenWave.includes(num)) return '綠波'
+  if (redWave.includes(num)) return t('lhc.redWave')
+  if (blueWave.includes(num)) return t('lhc.blueWave')
+  if (greenWave.includes(num)) return t('lhc.greenWave')
   return ''
 }
 
@@ -911,20 +911,21 @@ const getLhcBallClass = (num: number): string => {
 // 获取六合彩生肖
 const getLhcZodiac = (num: number): string => {
   const zodiacMap: Record<number, string> = {
-    1: '羊', 13: '羊', 25: '羊', 37: '羊', 49: '羊',
-    12: '猴', 24: '猴', 36: '猴', 48: '猴',
-    11: '雞', 23: '雞', 35: '雞', 47: '雞',
-    10: '狗', 22: '狗', 34: '狗', 46: '狗',
-    9: '豬', 21: '豬', 33: '豬', 45: '豬',
-    8: '鼠', 20: '鼠', 32: '鼠', 44: '鼠',
-    7: '牛', 19: '牛', 31: '牛', 43: '牛',
-    6: '虎', 18: '虎', 30: '虎', 42: '虎',
-    5: '兔', 17: '兔', 29: '兔', 41: '兔',
-    4: '龍', 16: '龍', 28: '龍', 40: '龍',
-    3: '蛇', 15: '蛇', 27: '蛇', 39: '蛇',
-    2: '馬', 14: '馬', 26: '馬', 38: '馬'
+    1: 'lhc.goat', 13: 'lhc.goat', 25: 'lhc.goat', 37: 'lhc.goat', 49: 'lhc.goat',
+    12: 'lhc.monkey', 24: 'lhc.monkey', 36: 'lhc.monkey', 48: 'lhc.monkey',
+    11: 'lhc.rooster', 23: 'lhc.rooster', 35: 'lhc.rooster', 47: 'lhc.rooster',
+    10: 'lhc.dog', 22: 'lhc.dog', 34: 'lhc.dog', 46: 'lhc.dog',
+    9: 'lhc.pig', 21: 'lhc.pig', 33: 'lhc.pig', 45: 'lhc.pig',
+    8: 'lhc.rat', 20: 'lhc.rat', 32: 'lhc.rat', 44: 'lhc.rat',
+    7: 'lhc.ox', 19: 'lhc.ox', 31: 'lhc.ox', 43: 'lhc.ox',
+    6: 'lhc.tiger', 18: 'lhc.tiger', 30: 'lhc.tiger', 42: 'lhc.tiger',
+    5: 'lhc.rabbit', 17: 'lhc.rabbit', 29: 'lhc.rabbit', 41: 'lhc.rabbit',
+    4: 'lhc.dragon', 16: 'lhc.dragon', 28: 'lhc.dragon', 40: 'lhc.dragon',
+    3: 'lhc.snake', 15: 'lhc.snake', 27: 'lhc.snake', 39: 'lhc.snake',
+    2: 'lhc.horse', 14: 'lhc.horse', 26: 'lhc.horse', 38: 'lhc.horse'
   }
-  return zodiacMap[num] || ''
+  const key = zodiacMap[num]
+  return key ? t(key) : ''
 }
 
 // 获取某玩法的注数
@@ -1023,7 +1024,7 @@ async function loadHistoryList(page = 1) {
       historyPage.value = page
     }
   } catch (error) {
-    console.error('加载历史开奖失败:', error)
+    console.error('Failed to load lottery history:', error)
   } finally {
     loadingMore.value = false
   }
@@ -1107,7 +1108,7 @@ async function refreshBalance() {
       userStore.setUserInfo(data.data)
     }
   } catch (error) {
-    console.error('刷新余额失败:', error)
+    console.error('Failed to refresh balance:', error)
   }
 }
 
@@ -1222,9 +1223,9 @@ function parseTime(timeStr: string): number {
 // 获取期号数据
 async function fetchIssueData() {
   try {
-    console.log('[游戏页面] 开始获取期号数据，游戏 ID:', gameId.value)
+    console.log('[Game] Start fetching issue data, game ID:', gameId.value)
     const result = await gameApi.getNextIssue(gameId.value)
-    console.log('[游戏页面] 期号数据响应:', result)
+    console.log('[Game] Issue data response:', result)
     if (result.code === 0 && result.data) {
       const data: NextIssueData = result.data
 
@@ -1273,7 +1274,7 @@ async function fetchIssueData() {
       }
     }
   } catch (error) {
-    console.error('[游戏页面] 获取期号数据失败:', error, '游戏 ID:', gameId.value)
+    console.error('[Game] Failed to fetch issue data:', error, 'Game ID:', gameId.value)
   }
 }
 
@@ -1286,7 +1287,7 @@ async function fetchPlaysData() {
       playsData.value = result.data
     }
   } catch (error) {
-    console.error('获取玩法赔率失败:', error)
+    console.error('Failed to get play odds:', error)
   }
 }
 
@@ -1320,7 +1321,7 @@ function startCountdown() {
 
 // 监听游戏ID变化
 watch(gameId, (newId, oldId) => {
-  console.log('[游戏页面] 游戏 ID 变化:', oldId, '->', newId)
+  console.log('[Game] Game ID changed:', oldId, '->', newId)
   // 切换游戏时，重置定时器
   if (countdownTimer) {
     clearInterval(countdownTimer)

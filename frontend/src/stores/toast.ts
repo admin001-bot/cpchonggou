@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { t } from '@/locales'
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info'
 
@@ -75,13 +76,13 @@ export const useToastStore = defineStore('toast', () => {
   function getDefaultTitle(type?: ToastType): string {
     switch (type) {
       case 'success':
-        return '成功'
+        return t('toast.success')
       case 'error':
-        return '错误'
+        return t('toast.error')
       case 'warning':
-        return '警告'
+        return t('toast.warning')
       default:
-        return '提示'
+        return t('toast.info')
     }
   }
 

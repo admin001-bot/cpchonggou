@@ -9,13 +9,13 @@
         :class="{ active: currentCount === count }"
         @click="selectCount(count)"
       >
-        {{ count }}连尾
+        {{ t('lianwei.title', { count }) }}
       </div>
     </div>
 
     <!-- 提示信息 -->
     <div class="tip-bar">
-      选择 {{ currentCount }} 个尾数，全部选中即中奖
+      {{ t('lianwei.desc', { count: currentCount }) }}
     </div>
 
     <!-- 尾数网格 -->
@@ -28,7 +28,7 @@
           :class="{ active: selectedWei.includes(wei.id) }"
           @click="toggleWei(wei.id)"
         >
-          <span class="wei-name">{{ wei.name }}尾</span>
+          <span class="wei-name">{{ t('lianwei.wei', { name: wei.name }) }}</span>
           <span class="wei-numbers">{{ wei.numbers }}</span>
         </div>
       </div>
@@ -36,14 +36,14 @@
 
     <!-- 已选尾数显示 -->
     <div class="selected-wei" v-if="selectedWei.length > 0">
-      <div class="selected-title">已选尾数 ({{ selectedWei.length }}/{{ currentCount }})</div>
+      <div class="selected-title">{{ t('lianwei.selected', { count: selectedWei.length, total: currentCount }) }}</div>
       <div class="selected-list">
         <span
           v-for="id in selectedWei"
           :key="id"
           class="selected-tag"
         >
-          {{ id }}尾
+          {{ t('lianwei.wei', { name: id }) }}
           <i @click.stop="removeWei(id)"></i>
         </span>
       </div>
@@ -95,7 +95,7 @@ const toggleWei = (id: number) => {
     selectedWei.value.splice(index, 1)
   } else {
     if (selectedWei.value.length >= currentCount.value) {
-      alert(`最多选择 ${currentCount.value} 个尾数`)
+      alert(t('lianwei.maxSelect', { count: currentCount.value }))
       return
     }
     selectedWei.value.push(id)

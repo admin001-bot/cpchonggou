@@ -88,7 +88,7 @@ export const useUserStore = defineStore('user', () => {
         return res.data
       }
     } catch (error) {
-      console.error('获取用户信息失败:', error)
+      console.error('Failed to get user info:', error)
     }
     return null
   }

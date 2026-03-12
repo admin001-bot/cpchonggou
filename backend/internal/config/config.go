@@ -81,13 +81,13 @@ func Init(configPath string) error {
 		viper.SetConfigFile(configPath)
 		viper.SetConfigType("yaml")
 		if err := viper.ReadInConfig(); err == nil {
-			fmt.Println("使用配置文件:", configPath)
+			fmt.Println("using config file:", configPath)
 		}
 	}
 
 	GlobalConfig = &Config{}
 	if err := viper.Unmarshal(GlobalConfig); err != nil {
-		return fmt.Errorf("解析配置失败: %w", err)
+		return fmt.Errorf("parse config failed: %w", err)
 	}
 
 	return nil

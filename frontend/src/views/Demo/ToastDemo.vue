@@ -1,14 +1,14 @@
 <template>
   <div class="demo-page">
     <div class="demo-header">
-      <h1>全局提示组件演示</h1>
-      <p>红白主题风格的 Toast 和 Modal 提示组件</p>
+      <h1>{{ t('demo.title') }}</h1>
+      <p>{{ t('demo.subtitle') }}</p>
     </div>
 
     <!-- Toast 演示区 -->
     <div class="demo-section">
-      <h2>Toast 轻提示</h2>
-      <p class="demo-desc">轻量级提示，自动关闭，适合简短的消息通知</p>
+      <h2>{{ t('demo.toastTitle') }}</h2>
+      <p class="demo-desc">{{ t('demo.toastDesc') }}</p>
 
       <div class="demo-buttons">
         <button class="btn btn-success" @click="showSuccessToast">
@@ -16,7 +16,7 @@
             <circle cx="12" cy="12" r="10"/>
             <path d="M9 12l2 2 4-4"/>
           </svg>
-          成功提示
+          {{ t('demo.successToast') }}
         </button>
 
         <button class="btn btn-error" @click="showErrorToast">
@@ -25,7 +25,7 @@
             <line x1="15" y1="9" x2="9" y2="15"/>
             <line x1="9" y1="9" x2="15" y2="15"/>
           </svg>
-          错误提示
+          {{ t('demo.errorToast') }}
         </button>
 
         <button class="btn btn-warning" @click="showWarningToast">
@@ -34,7 +34,7 @@
             <line x1="12" y1="9" x2="12" y2="13"/>
             <line x1="12" y1="17" x2="12.01" y2="17"/>
           </svg>
-          警告提示
+          {{ t('demo.warningToast') }}
         </button>
 
         <button class="btn btn-info" @click="showInfoToast">
@@ -43,15 +43,15 @@
             <line x1="12" y1="16" x2="12" y2="12"/>
             <line x1="12" y1="8" x2="12.01" y2="8"/>
           </svg>
-          信息提示
+          {{ t('demo.infoToast') }}
         </button>
       </div>
     </div>
 
     <!-- Modal 演示区 -->
     <div class="demo-section">
-      <h2>Modal 对话框</h2>
-      <p class="demo-desc">模态对话框，需要用户确认或输入，适合重要的消息和操作确认</p>
+      <h2>{{ t('demo.modalTitle') }}</h2>
+      <p class="demo-desc">{{ t('demo.modalDesc') }}</p>
 
       <div class="demo-buttons">
         <button class="btn btn-success" @click="showSuccessModal">
@@ -59,7 +59,7 @@
             <circle cx="12" cy="12" r="10"/>
             <path d="M9 12l2 2 4-4"/>
           </svg>
-          成功弹窗
+          {{ t('demo.successModal') }}
         </button>
 
         <button class="btn btn-error" @click="showErrorModal">
@@ -68,7 +68,7 @@
             <line x1="15" y1="9" x2="9" y2="15"/>
             <line x1="9" y1="9" x2="15" y2="15"/>
           </svg>
-          错误弹窗
+          {{ t('demo.errorModal') }}
         </button>
 
         <button class="btn btn-warning" @click="showConfirmModal">
@@ -77,15 +77,15 @@
             <line x1="12" y1="9" x2="12" y2="13"/>
             <line x1="12" y1="17" x2="12.01" y2="17"/>
           </svg>
-          确认弹窗
+          {{ t('demo.confirmModal') }}
         </button>
       </div>
     </div>
 
     <!-- API 演示 -->
     <div class="demo-section">
-      <h2>API 调用演示</h2>
-      <p class="demo-desc">模拟后端接口调用，展示全局错误处理</p>
+      <h2>{{ t('demo.apiTitle') }}</h2>
+      <p class="demo-desc">{{ t('demo.apiDesc') }}</p>
 
       <div class="demo-buttons">
         <button class="btn btn-primary" @click="simulateApiSuccess">
@@ -93,7 +93,7 @@
             <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
             <polyline points="22 4 12 14.01 9 11.01"/>
           </svg>
-          模拟成功响应
+          {{ t('demo.apiSuccess') }}
         </button>
 
         <button class="btn btn-danger" @click="simulateApiError">
@@ -102,7 +102,7 @@
             <line x1="15" y1="9" x2="9" y2="15"/>
             <line x1="9" y1="9" x2="15" y2="15"/>
           </svg>
-          模拟错误响应
+          {{ t('demo.apiError') }}
         </button>
       </div>
     </div>
@@ -113,7 +113,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M19 12H5M12 19l-7-7 7-7"/>
         </svg>
-        返回首页
+        {{ t('demo.backHome') }}
       </button>
     </div>
   </div>
@@ -121,6 +121,7 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
+import { t } from '@/locales'
 import { showSuccess, showError, showWarning, showInfo } from '@/components/Toast/useToast'
 import { showSuccessModal, showErrorModal, showConfirmModal } from '@/components/Modal/useModal'
 
@@ -128,42 +129,42 @@ const router = useRouter()
 
 // Toast 演示
 const showSuccessToast = () => {
-  showSuccess('操作成功完成！', '成功')
+  showSuccess(t('demo.msgOperationSuccess'), t('toast.success'))
 }
 
 const showErrorToast = () => {
-  showError('操作失败，请重试！', '错误')
+  showError(t('demo.msgOperationFailed'), t('toast.error'))
 }
 
 const showWarningToast = () => {
-  showWarning('请注意检查输入内容！', '警告')
+  showWarning(t('demo.msgCheckInput'), t('toast.warning'))
 }
 
 const showInfoToast = () => {
-  showInfo('这是一条普通的消息提示！', '提示')
+  showInfo(t('demo.msgInfoMessage'), t('toast.info'))
 }
 
 // Modal 演示
 const showSuccessModalDemo = () => {
-  showSuccessModal('您的操作已成功完成！', '操作成功')
+  showSuccessModal(t('demo.msgModalSuccess'), t('demo.operationSuccess'))
 }
 
 const showErrorModalDemo = () => {
-  showErrorModal('操作过程中发生错误，请稍后重试或联系客服。', '操作失败')
+  showErrorModal(t('demo.msgModalError'), t('demo.operationFailed'))
 }
 
 const showConfirmModalDemo = () => {
   showConfirmModal(
-    '您确定要执行此操作吗？此操作不可撤销。',
-    '确认操作',
+    t('demo.msgConfirmAction'),
+    t('demo.confirmAction'),
     {
-      confirmText: '确认执行',
-      cancelText: '取消',
+      confirmText: t('demo.confirmExecute'),
+      cancelText: t('modal.cancel'),
       onConfirm: () => {
-        showSuccess('操作已确认执行！')
+        showSuccess(t('demo.msgConfirmed'))
       },
       onCancel: () => {
-        showInfo('操作已取消')
+        showInfo(t('demo.msgCancelled'))
       }
     }
   )
@@ -171,11 +172,11 @@ const showConfirmModalDemo = () => {
 
 // API 模拟
 const simulateApiSuccess = () => {
-  showSuccess('数据加载成功！')
+  showSuccess(t('demo.msgDataLoaded'))
 }
 
 const simulateApiError = () => {
-  showError('网络请求失败，请检查网络连接后重试！')
+  showError(t('demo.msgNetworkError'))
 }
 
 const goBack = () => {

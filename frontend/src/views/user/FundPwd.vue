@@ -241,7 +241,7 @@ const submitForm = async () => {
   if (!form.coinPwd || form.coinPwd.length < 6) {
     toastStore.show({
       type: 'warning',
-      title: '密码长度不足',
+      title: t('common.pwdLengthNotEnough'),
       message: t('user.coinPwdLength')
     })
     return
@@ -250,7 +250,7 @@ const submitForm = async () => {
   if (form.coinPwd !== form.confirmPwd) {
     toastStore.show({
       type: 'warning',
-      title: '密码不匹配',
+      title: t('common.pwdNotMatch'),
       message: t('user.pwdNotMatch')
     })
     return
@@ -289,7 +289,7 @@ const submitForm = async () => {
       const errorMessage = res.message || res.data?.message || res.msg || res.error || t('user.setFailed')
       toastStore.show({
         type: 'error',
-        title: '设置失败',
+        title: t('common.setFailedTitle'),
         message: errorMessage
       })
     }
@@ -297,7 +297,7 @@ const submitForm = async () => {
     const errorMsg = error.response?.data?.message || error.response?.data?.msg || error.message || t('user.setFailed')
     toastStore.show({
       type: 'error',
-      title: '设置失败',
+      title: t('common.setFailedTitle'),
       message: errorMsg
     })
   } finally {
@@ -320,7 +320,7 @@ const submitEditForm = async () => {
   if (!form.coinPwd || form.coinPwd.length < 6) {
     toastStore.show({
       type: 'warning',
-      title: '密码长度不足',
+      title: t('common.pwdLengthNotEnough'),
       message: t('user.coinPwdLength')
     })
     return
@@ -329,7 +329,7 @@ const submitEditForm = async () => {
   if (form.coinPwd !== form.confirmPwd) {
     toastStore.show({
       type: 'warning',
-      title: '密码不匹配',
+      title: t('common.pwdNotMatch'),
       message: t('user.pwdNotMatch')
     })
     return
@@ -357,7 +357,7 @@ const submitEditForm = async () => {
       const errorMessage = res.message || res.data?.message || res.msg || res.error || t('user.changeFailed')
       toastStore.show({
         type: 'error',
-        title: '修改失败',
+        title: t('common.changeFailedTitle'),
         message: errorMessage
       })
     }
@@ -365,7 +365,7 @@ const submitEditForm = async () => {
     const errorMsg = error.response?.data?.message || error.response?.data?.msg || error.message || t('user.changeFailed')
     toastStore.show({
       type: 'error',
-      title: '修改失败',
+      title: t('common.changeFailedTitle'),
       message: errorMsg
     })
   } finally {

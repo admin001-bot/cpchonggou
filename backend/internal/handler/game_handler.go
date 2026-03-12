@@ -100,14 +100,14 @@ type BetPlayInfo struct {
 // GetGameList 获取游戏列表
 func (h *GameHandler) GetGameList(c *gin.Context) {
 	games := []GameInfo{
-		{ID: 55, Name: "幸运飞艇", Title: "幸运飞艇", Enable: 1},
-		{ID: 50, Name: "北京赛车", Title: "北京赛车", Enable: 1},
-		{ID: 122, Name: "五分时时彩", Title: "五分时时彩", Enable: 1},
-		{ID: 52, Name: "极速飞艇", Title: "极速飞艇", Enable: 1},
-		{ID: 66, Name: "PC蛋蛋", Title: "PC蛋蛋", Enable: 1},
-		{ID: 100, Name: "极速分分彩", Title: "极速分分彩", Enable: 1},
-		{ID: 72, Name: "极速赛车", Title: "极速赛车", Enable: 1},
-		{ID: 113, Name: "极速六合", Title: "极速六合", Enable: 1},
+		{ID: 55, Name: i18n.T("game.55"), Title: i18n.T("game.55"), Enable: 1},
+		{ID: 50, Name: i18n.T("game.50"), Title: i18n.T("game.50"), Enable: 1},
+		{ID: 122, Name: i18n.T("game.122"), Title: i18n.T("game.122"), Enable: 1},
+		{ID: 52, Name: i18n.T("game.52"), Title: i18n.T("game.52"), Enable: 1},
+		{ID: 66, Name: i18n.T("game.66"), Title: i18n.T("game.66"), Enable: 1},
+		{ID: 100, Name: i18n.T("game.100"), Title: i18n.T("game.100"), Enable: 1},
+		{ID: 72, Name: i18n.T("game.72"), Title: i18n.T("game.72"), Enable: 1},
+		{ID: 113, Name: i18n.T("game.113"), Title: i18n.T("game.113"), Enable: 1},
 	}
 	response.Success(c, games)
 }
@@ -772,7 +772,7 @@ func (h *GameHandler) GetHistory(c *gin.Context) {
     // 如果没有数据或查询失败，返回空数组
     if result.Error != nil {
         // 记录错误日志
-        fmt.Println("查询历史开奖失败:", result.Error.Error())
+        fmt.Println("query lottery history failed:", result.Error.Error())
         response.Success(c, []gin.H{})
         return
     }
@@ -928,7 +928,14 @@ func buildFullActionData(gameName, groupName, playName string) string {
             if strings.Contains(playName, "冠亚和") {
                 return playName
             }
-            // 其他玩法：直接返回组名 + 玩法名，如 "冠军单"、"亚军大"
+            // 两面玩法（单、双、大、小、龙、虎）：只返回玩法名，不拼接组名
+            twoSidedPlays := []string{"单", "双", "大", "小", "龙", "虎"}
+            for _, sp := range twoSidedPlays {
+                if playName == sp {
+                    return playName
+                }
+            }
+            // 其他玩法（如数字）：直接返回组名 + 玩法名，如 "冠军1"、"亚军5"
             return fmt.Sprintf("%s%s", group, playName)
         }
     }

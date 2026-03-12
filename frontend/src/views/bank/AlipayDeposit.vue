@@ -129,8 +129,8 @@ const form = ref({
 const accounts = ref<Account[]>([
   {
     id: '1',
-    name: '支付宝账户1',
-    payeeName: '**明',
+    name: 'Alipay Account 1',
+    payeeName: '**M',
     payee: '138****8888',
     qrCode: '/images/qrcode-demo.png',
   },

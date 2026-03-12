@@ -49,32 +49,32 @@ const expandedIndex = ref<number | null>(0)
 // 帮助中心数据
 const helpItems = ref([
   {
-    question: t('help.q1') || '遇到登录不成功怎么办?',
-    answer: t('help.a1') || '检查用户名和密码是否正确, 注意区别大小写; 检查用户名是否有空格, 如果有, 请删除空格'
+    question: t('help.q1'),
+    answer: t('help.a1')
   },
   {
-    question: t('help.q2') || '登录成功跳转首页显示没登录?',
-    answer: t('help.a2') || '检查浏览器是否开启了"无痕浏览器模式", 如果是, 请关闭; 检查浏览器是否"阻止所有Cookie", 如果是, 请取消; 如果还是无法登录, 请更换其他浏览器试试'
+    question: t('help.q2'),
+    answer: t('help.a2')
   },
   {
-    question: t('help.q3') || '安卓手机推什么浏览器?',
-    answer: t('help.a3') || 'X浏览器: 不足1M, 加速便<br>X浏览器-X5内核版: 少于1M<br>Edge: 微软新版浏览器, 强大'
+    question: t('help.q3'),
+    answer: t('help.a3')
   },
   {
-    question: t('help.q4') || '苹果手机推什么浏览器?',
-    answer: t('help.a4') || 'Safari浏览器: 内核浏览器<br>Edge: 微软新版浏览器, 强大'
+    question: t('help.q4'),
+    answer: t('help.a4')
   },
   {
-    question: t('help.q5') || '如何充值?',
-    answer: t('help.a5') || '登录后进入"资金管理"，点击"存款"，选择支付方式进行充值'
+    question: t('help.q5'),
+    answer: t('help.a5')
   },
   {
-    question: t('help.q6') || '如何提现?',
-    answer: t('help.a6') || '登录后进入"资金管理"，点击"提款"，输入金额和资金密码进行提现'
+    question: t('help.q6'),
+    answer: t('help.a6')
   },
   {
-    question: t('help.q7') || '忘记密码怎么办?',
-    answer: t('help.a7') || '联系在线客服，协助您重置密码'
+    question: t('help.q7'),
+    answer: t('help.a7')
   }
 ])
 

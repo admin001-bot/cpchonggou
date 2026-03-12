@@ -47,86 +47,86 @@
     <div class="bet-section">
       <!-- 第一行: 3, 4, 5 -->
       <div class="bet-row">
-        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(3)) }" @click="handleToggle(getNumberPlayId(3), '冠亞和3')">
+        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(3)) }" @click="handleToggle(getNumberPlayId(3), `${t('rank.topSum')}3`)">
           <span class="bet-number">3</span>
           <span class="bet-odds">{{ getOdds(getNumberPlayId(3)).toFixed(1) }}</span>
         </div>
-        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(4)) }" @click="handleToggle(getNumberPlayId(4), '冠亞和4')">
+        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(4)) }" @click="handleToggle(getNumberPlayId(4), `${t('rank.topSum')}4`)">
           <span class="bet-number">4</span>
           <span class="bet-odds">{{ getOdds(getNumberPlayId(4)).toFixed(1) }}</span>
         </div>
-        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(5)) }" @click="handleToggle(getNumberPlayId(5), '冠亞和5')">
+        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(5)) }" @click="handleToggle(getNumberPlayId(5), `${t('rank.topSum')}5`)">
           <span class="bet-number">5</span>
           <span class="bet-odds">{{ getOdds(getNumberPlayId(5)).toFixed(1) }}</span>
         </div>
       </div>
       <!-- 第二行: 6, 7, 8 -->
       <div class="bet-row">
-        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(6)) }" @click="handleToggle(getNumberPlayId(6), '冠亞和6')">
+        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(6)) }" @click="handleToggle(getNumberPlayId(6), `${t('rank.topSum')}6`)">
           <span class="bet-number">6</span>
           <span class="bet-odds">{{ getOdds(getNumberPlayId(6)).toFixed(1) }}</span>
         </div>
-        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(7)) }" @click="handleToggle(getNumberPlayId(7), '冠亞和7')">
+        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(7)) }" @click="handleToggle(getNumberPlayId(7), `${t('rank.topSum')}7`)">
           <span class="bet-number">7</span>
           <span class="bet-odds">{{ getOdds(getNumberPlayId(7)).toFixed(1) }}</span>
         </div>
-        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(8)) }" @click="handleToggle(getNumberPlayId(8), '冠亞和8')">
+        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(8)) }" @click="handleToggle(getNumberPlayId(8), `${t('rank.topSum')}8`)">
           <span class="bet-number">8</span>
           <span class="bet-odds">{{ getOdds(getNumberPlayId(8)).toFixed(1) }}</span>
         </div>
       </div>
       <!-- 第三行: 9, 10, 11 -->
       <div class="bet-row">
-        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(9)) }" @click="handleToggle(getNumberPlayId(9), '冠亞和9')">
+        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(9)) }" @click="handleToggle(getNumberPlayId(9), `${t('rank.topSum')}9`)">
           <span class="bet-number">9</span>
           <span class="bet-odds">{{ getOdds(getNumberPlayId(9)).toFixed(1) }}</span>
         </div>
-        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(10)) }" @click="handleToggle(getNumberPlayId(10), '冠亞和10')">
+        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(10)) }" @click="handleToggle(getNumberPlayId(10), `${t('rank.topSum')}10`)">
           <span class="bet-number">10</span>
           <span class="bet-odds">{{ getOdds(getNumberPlayId(10)).toFixed(1) }}</span>
         </div>
-        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(11)) }" @click="handleToggle(getNumberPlayId(11), '冠亞和11')">
+        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(11)) }" @click="handleToggle(getNumberPlayId(11), `${t('rank.topSum')}11`)">
           <span class="bet-number">11</span>
           <span class="bet-odds">{{ getOdds(getNumberPlayId(11)).toFixed(1) }}</span>
         </div>
       </div>
       <!-- 第四行: 12, 13, 14 -->
       <div class="bet-row">
-        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(12)) }" @click="handleToggle(getNumberPlayId(12), '冠亞和12')">
+        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(12)) }" @click="handleToggle(getNumberPlayId(12), `${t('rank.topSum')}12`)">
           <span class="bet-number">12</span>
           <span class="bet-odds">{{ getOdds(getNumberPlayId(12)).toFixed(1) }}</span>
         </div>
-        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(13)) }" @click="handleToggle(getNumberPlayId(13), '冠亞和13')">
+        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(13)) }" @click="handleToggle(getNumberPlayId(13), `${t('rank.topSum')}13`)">
           <span class="bet-number">13</span>
           <span class="bet-odds">{{ getOdds(getNumberPlayId(13)).toFixed(1) }}</span>
         </div>
-        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(14)) }" @click="handleToggle(getNumberPlayId(14), '冠亞和14')">
+        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(14)) }" @click="handleToggle(getNumberPlayId(14), `${t('rank.topSum')}14`)">
           <span class="bet-number">14</span>
           <span class="bet-odds">{{ getOdds(getNumberPlayId(14)).toFixed(1) }}</span>
         </div>
       </div>
       <!-- 第五行: 15, 16, 17 -->
       <div class="bet-row">
-        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(15)) }" @click="handleToggle(getNumberPlayId(15), '冠亞和15')">
+        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(15)) }" @click="handleToggle(getNumberPlayId(15), `${t('rank.topSum')}15`)">
           <span class="bet-number">15</span>
           <span class="bet-odds">{{ getOdds(getNumberPlayId(15)).toFixed(1) }}</span>
         </div>
-        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(16)) }" @click="handleToggle(getNumberPlayId(16), '冠亞和16')">
+        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(16)) }" @click="handleToggle(getNumberPlayId(16), `${t('rank.topSum')}16`)">
           <span class="bet-number">16</span>
           <span class="bet-odds">{{ getOdds(getNumberPlayId(16)).toFixed(1) }}</span>
         </div>
-        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(17)) }" @click="handleToggle(getNumberPlayId(17), '冠亞和17')">
+        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(17)) }" @click="handleToggle(getNumberPlayId(17), `${t('rank.topSum')}17`)">
           <span class="bet-number">17</span>
           <span class="bet-odds">{{ getOdds(getNumberPlayId(17)).toFixed(1) }}</span>
         </div>
       </div>
       <!-- 第六行: 18, 19 -->
       <div class="bet-row end">
-        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(18)) }" @click="handleToggle(getNumberPlayId(18), '冠亞和18')">
+        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(18)) }" @click="handleToggle(getNumberPlayId(18), `${t('rank.topSum')}18`)">
           <span class="bet-number">18</span>
           <span class="bet-odds">{{ getOdds(getNumberPlayId(18)).toFixed(1) }}</span>
         </div>
-        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(19)) }" @click="handleToggle(getNumberPlayId(19), '冠亞和19')">
+        <div class="bet-item number-item" :class="{ selected: isSelected(getNumberPlayId(19)) }" @click="handleToggle(getNumberPlayId(19), `${t('rank.topSum')}19`)">
           <span class="bet-number">19</span>
           <span class="bet-odds">{{ getOdds(getNumberPlayId(19)).toFixed(1) }}</span>
         </div>

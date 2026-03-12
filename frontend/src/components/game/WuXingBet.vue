@@ -9,7 +9,7 @@
           :class="{ active: isSelected(getPlayId(1)) }"
           @click="toggleBet(getPlayId(1))"
         >
-          <span class="element-name">金</span>
+          <span class="element-name">{{ t('element.gold') }}</span>
           <span class="element-numbers">03,04,11,12,19,20,27,28,35,36,43,44</span>
           <span class="odds">{{ getOdds(getPlayId(1)) }}</span>
         </div>
@@ -18,7 +18,7 @@
           :class="{ active: isSelected(getPlayId(2)) }"
           @click="toggleBet(getPlayId(2))"
         >
-          <span class="element-name">木</span>
+          <span class="element-name">{{ t('element.wood') }}</span>
           <span class="element-numbers">07,08,15,16,23,24,31,32,39,40,47,48</span>
           <span class="odds">{{ getOdds(getPlayId(2)) }}</span>
         </div>
@@ -29,7 +29,7 @@
           :class="{ active: isSelected(getPlayId(3)) }"
           @click="toggleBet(getPlayId(3))"
         >
-          <span class="element-name">水</span>
+          <span class="element-name">{{ t('element.water') }}</span>
           <span class="element-numbers">01,02,09,10,17,18,25,26,33,34,41,42,49</span>
           <span class="odds">{{ getOdds(getPlayId(3)) }}</span>
         </div>
@@ -38,7 +38,7 @@
           :class="{ active: isSelected(getPlayId(4)) }"
           @click="toggleBet(getPlayId(4))"
         >
-          <span class="element-name">火</span>
+          <span class="element-name">{{ t('element.fire') }}</span>
           <span class="element-numbers">05,06,13,14,21,22,29,30,37,38,45,46</span>
           <span class="odds">{{ getOdds(getPlayId(4)) }}</span>
         </div>
@@ -49,7 +49,7 @@
           :class="{ active: isSelected(getPlayId(5)) }"
           @click="toggleBet(getPlayId(5))"
         >
-          <span class="element-name">土</span>
+          <span class="element-name">{{ t('element.earth') }}</span>
           <span class="element-numbers">11,12,19,20,27,28,35,36,43,44</span>
           <span class="odds">{{ getOdds(getPlayId(5)) }}</span>
         </div>

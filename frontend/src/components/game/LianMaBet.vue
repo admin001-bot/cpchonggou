@@ -9,7 +9,7 @@
         :class="{ active: currentSubPlay === sub.id }"
         @click="selectSubPlay(sub.id)"
       >
-        {{ sub.name }}
+        {{ t(sub.nameKey) }}
       </div>
     </div>
 
@@ -39,7 +39,7 @@
 
     <!-- 已选号码显示 -->
     <div class="selected-numbers" v-if="selectedBets.length > 0">
-      <div class="selected-title">已选号码 ({{ selectedBets.length }}/{{ maxSelect }})</div>
+      <div class="selected-title">{{ t('lianma.selectedNumbers', { count: selectedBets.length, max: maxSelect }) }}</div>
       <div class="selected-list">
         <span
           v-for="num in selectedBets"
@@ -69,12 +69,12 @@ const emit = defineEmits<{
 
 // 子玩法定义
 const subPlays = [
-  { id: 'szq', name: '三全中', min: 3, max: 10 },
-  { id: 'sze', name: '三中二', min: 3, max: 7 },
-  { id: 'eqz', name: '二全中', min: 2, max: 7 },
-  { id: 'ezt', name: '二中特', min: 2, max: 7 },
-  { id: 'tc', name: '特串', min: 2, max: 7 },
-  { id: 'sqz', name: '四全中', min: 4, max: 4 }
+  { id: 'szq', nameKey: 'lianma.szq', min: 3, max: 10 },
+  { id: 'sze', nameKey: 'lianma.sze', min: 3, max: 7 },
+  { id: 'eqz', nameKey: 'lianma.eqz', min: 2, max: 7 },
+  { id: 'ezt', nameKey: 'lianma.ezt', min: 2, max: 7 },
+  { id: 'tc', nameKey: 'lianma.tc', min: 2, max: 7 },
+  { id: 'sqz', nameKey: 'lianma.sqz', min: 4, max: 4 }
 ]
 
 const currentSubPlay = ref('szq')
@@ -94,12 +94,12 @@ const maxSelect = computed(() => currentConfig.value.max)
 const currentTip = computed(() => {
   const config = currentConfig.value
   const tips: Record<string, string> = {
-    'szq': `选择 ${config.min}-${config.max} 个号码，全部选中即中奖`,
-    'sze': `选择 ${config.min}-${config.max} 个号码，选中 2 个或以上即中奖`,
-    'eqz': `选择 ${config.min}-${config.max} 个号码，全部选中即中奖`,
-    'ezt': `选择 ${config.min}-${config.max} 个号码，选中特码即中奖`,
-    'tc': `选择 ${config.min}-${config.max} 个号码（1 个正码 +1 个特码）`,
-    'sqz': `选择 ${config.min} 个号码，全部选中即中奖`
+    'szq': t('lianma.szqDesc', { min: config.min, max: config.max }),
+    'sze': t('lianma.szeDesc', { min: config.min, max: config.max }),
+    'eqz': t('lianma.eqzDesc', { min: config.min, max: config.max }),
+    'ezt': t('lianma.eztDesc', { min: config.min, max: config.max }),
+    'tc': t('lianma.tcDesc', { min: config.min, max: config.max }),
+    'sqz': t('lianma.sqzDesc', { min: config.min })
   }
   return tips[config.id] || ''
 })
@@ -120,7 +120,7 @@ const toggleNumber = (num: number) => {
   } else {
     // 检查是否超出最大选择数
     if (selectedBets.value.length >= maxSelect.value) {
-      alert(`最多选择 ${maxSelect.value} 个号码`)
+      alert(t('lianma.maxSelect', { max: maxSelect.value }))
       return
     }
     selectedBets.value.push(num)
@@ -146,21 +146,22 @@ const getNumberClass = (num: number) => {
 
 // 获取生肖
 const getZodiac = (num: number) => {
-  const zodiacMap: Record<number, string> = {
-    1: '羊', 13: '羊', 25: '羊', 37: '羊', 49: '羊',
-    12: '猴', 24: '猴', 36: '猴', 48: '猴',
-    11: '雞', 23: '雞', 35: '雞', 47: '雞',
-    10: '狗', 22: '狗', 34: '狗', 46: '狗',
-    9: '豬', 21: '豬', 33: '豬', 45: '豬',
-    8: '鼠', 20: '鼠', 32: '鼠', 44: '鼠',
-    7: '牛', 19: '牛', 31: '牛', 43: '牛',
-    6: '虎', 18: '虎', 30: '虎', 42: '虎',
-    5: '兔', 17: '兔', 29: '兔', 41: '兔',
-    4: '龍', 16: '龍', 28: '龍', 40: '龍',
-    3: '蛇', 15: '蛇', 27: '蛇', 39: '蛇',
-    2: '馬', 14: '馬', 26: '馬', 38: '馬'
+  const zodiacKeyMap: Record<number, string> = {
+    1: 'lhc.goat', 13: 'lhc.goat', 25: 'lhc.goat', 37: 'lhc.goat', 49: 'lhc.goat',
+    12: 'lhc.monkey', 24: 'lhc.monkey', 36: 'lhc.monkey', 48: 'lhc.monkey',
+    11: 'lhc.rooster', 23: 'lhc.rooster', 35: 'lhc.rooster', 47: 'lhc.rooster',
+    10: 'lhc.dog', 22: 'lhc.dog', 34: 'lhc.dog', 46: 'lhc.dog',
+    9: 'lhc.pig', 21: 'lhc.pig', 33: 'lhc.pig', 45: 'lhc.pig',
+    8: 'lhc.rat', 20: 'lhc.rat', 32: 'lhc.rat', 44: 'lhc.rat',
+    7: 'lhc.ox', 19: 'lhc.ox', 31: 'lhc.ox', 43: 'lhc.ox',
+    6: 'lhc.tiger', 18: 'lhc.tiger', 30: 'lhc.tiger', 42: 'lhc.tiger',
+    5: 'lhc.rabbit', 17: 'lhc.rabbit', 29: 'lhc.rabbit', 41: 'lhc.rabbit',
+    4: 'lhc.dragon', 16: 'lhc.dragon', 28: 'lhc.dragon', 40: 'lhc.dragon',
+    3: 'lhc.snake', 15: 'lhc.snake', 27: 'lhc.snake', 39: 'lhc.snake',
+    2: 'lhc.horse', 14: 'lhc.horse', 26: 'lhc.horse', 38: 'lhc.horse'
   }
-  return zodiacMap[num] || ''
+  const key = zodiacKeyMap[num]
+  return key ? t(key) : ''
 }
 
 // 监听 selectedBets 变化，通知父组件

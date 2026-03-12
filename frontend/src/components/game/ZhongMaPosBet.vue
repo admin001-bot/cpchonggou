@@ -147,7 +147,7 @@ const emit = defineEmits<{
   (e: 'toggle-bet', playId: number): void
 }>()
 
-const posNames = ['正碼一', '正碼二', '正碼三', '正碼四', '正碼五', '正碼六']
+const posNames = [t('zhongma.pos1'), t('zhongma.pos2'), t('zhongma.pos3'), t('zhongma.pos4'), t('zhongma.pos5'), t('zhongma.pos6')]
 const currentPos = ref(0)
 
 // playId 规律（基于 PHP 模板）：

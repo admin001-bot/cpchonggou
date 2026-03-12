@@ -244,7 +244,7 @@ onMounted(async () => {
         const userInfo = JSON.parse(userInfoStr)
         userStore.setUserInfo(userInfo)
       } catch (e) {
-        console.error('解析用户信息失败:', e)
+        console.error('Failed to parse user info:', e)
       }
     }
   }

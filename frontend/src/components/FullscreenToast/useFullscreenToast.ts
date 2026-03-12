@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { t } from '@/locales'
 
 export type FullscreenToastType = 'success' | 'error' | 'warning' | 'info'
 
@@ -56,7 +57,7 @@ export function showFullscreenToast(options: FullscreenToastOptions | string): P
 export function showFullscreenSuccess(message: string, title?: string): Promise<boolean> {
   return showFullscreenToast({
     type: 'success',
-    title: title || '成功',
+    title: title || t('toast.success'),
     message
   })
 }
@@ -67,7 +68,7 @@ export function showFullscreenSuccess(message: string, title?: string): Promise<
 export function showFullscreenError(message: string, title?: string): Promise<boolean> {
   return showFullscreenToast({
     type: 'error',
-    title: title || '错误',
+    title: title || t('toast.error'),
     message
   })
 }
@@ -78,7 +79,7 @@ export function showFullscreenError(message: string, title?: string): Promise<bo
 export function showFullscreenWarning(message: string, title?: string): Promise<boolean> {
   return showFullscreenToast({
     type: 'warning',
-    title: title || '警告',
+    title: title || t('toast.warning'),
     message
   })
 }
@@ -89,7 +90,7 @@ export function showFullscreenWarning(message: string, title?: string): Promise<
 export function showFullscreenInfo(message: string, title?: string): Promise<boolean> {
   return showFullscreenToast({
     type: 'info',
-    title: title || '提示',
+    title: title || t('toast.info'),
     message
   })
 }
@@ -126,13 +127,13 @@ function stopTimer(): void {
 function getDefaultTitle(type?: FullscreenToastType): string {
   switch (type) {
     case 'success':
-      return '成功'
+      return t('toast.success')
     case 'error':
-      return '错误'
+      return t('toast.error')
     case 'warning':
-      return '警告'
+      return t('toast.warning')
     default:
-      return '提示'
+      return t('toast.info')
   }
 }
 

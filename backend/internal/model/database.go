@@ -28,7 +28,7 @@ func Init(cfg *config.DatabaseConfig) error {
 		Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {
-		return fmt.Errorf("连接数据库失败: %w", err)
+		return fmt.Errorf("connect database failed: %w", err)
 	}
 
 	sqlDB, err := DB.DB()

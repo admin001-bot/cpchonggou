@@ -158,7 +158,7 @@ const formatAddress = (address: string) => {
 const showMessage = (msg: string, type: 'success' | 'error' = 'success') => {
   toastStore.show({
     type,
-    title: type === 'success' ? '成功' : '错误',
+    title: type === 'success' ? t('toast.success') : t('toast.error'),
     message: msg
   })
 }
@@ -170,7 +170,7 @@ const fetchBankInfo = async () => {
       boundAddress.value = res.data
     }
   } catch (error) {
-    console.error('获取地址信息失败', error)
+    console.error('Failed to fetch address info', error)
   }
 }
 

@@ -92,9 +92,9 @@ const goBack = () => {
 const refreshBalance = async () => {
   try {
     await userStore.getUserInfo()
-    console.log('余额已刷新')
+    console.log('Balance refreshed')
   } catch (error) {
-    console.error('刷新余额失败:', error)
+    console.error('Failed to refresh balance:', error)
   }
 }
 

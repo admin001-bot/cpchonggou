@@ -192,7 +192,7 @@ const fetchBankInfo = async () => {
       Object.assign(bankInfo, res.data)
     }
   } catch (error) {
-    console.error('获取银行卡信息失败', error)
+    console.error('Failed to get bank info', error)
   }
 }
 
@@ -206,7 +206,7 @@ const fetchWithdrawConfig = async () => {
       checkWithdrawTime()
     }
   } catch (error) {
-    console.error('获取提款配置失败', error)
+    console.error('Failed to get withdraw config', error)
   }
 }
 
@@ -260,7 +260,7 @@ const submitWithdraw = async () => {
     const res = await withdraw(requestData)
 
     // 调试日志：查看后端返回的完整数据结构
-    console.log('提款响应:', res)
+    console.log('Withdraw response:', res)
 
     if (res.code === 0) {
       toastStore.show({
@@ -282,7 +282,7 @@ const submitWithdraw = async () => {
         || res.error
         || t('bank.withdrawFailed')
 
-      console.log('错误信息:', errorMessage, '原始响应:', res)
+      console.log('Error message:', errorMessage, 'Raw response:', res)
 
       toastStore.show({
         type: 'error',
@@ -297,11 +297,11 @@ const submitWithdraw = async () => {
       || error.message
       || t('bank.withdrawFailed')
 
-    console.log('异常错误:', error, errorMsg)
+    console.log('Exception error:', error, errorMsg)
 
     toastStore.show({
       type: 'error',
-      title: '提款失败',
+      title: t('bank.withdrawFailed'),
       message: errorMsg
     })
   } finally {

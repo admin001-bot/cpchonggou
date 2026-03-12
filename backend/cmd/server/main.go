@@ -15,13 +15,13 @@ import (
 func main() {
 	// 初始化配置
 	if err := config.Init("./config/config.yaml"); err != nil {
-		log.Fatalf("配置初始化失败: %v", err)
+		log.Fatalf("config init failed: %v", err)
 	}
 	cfg := config.GetConfig()
 
 	// 初始化数据库
 	if err := model.Init(&cfg.Database); err != nil {
-		log.Fatalf("数据库初始化失败: %v", err)
+		log.Fatalf("database init failed: %v", err)
 	}
 
 	// 设置运行模式
@@ -67,7 +67,7 @@ func main() {
 	authMiddleware := func(c *gin.Context) {
 		token := c.GetHeader("Authorization")
 		if token == "" {
-			c.JSON(401, gin.H{"code": 401, "message": "请先登录"})
+			c.JSON(401, gin.H{"code": 401, "message": i18n.T("login.login_required")})
 			c.Abort()
 			return
 		}
@@ -75,7 +75,7 @@ func main() {
 		// 从token中解析用户ID
 		uid, err := handler.ParseToken(token)
 		if err != nil {
-			c.JSON(401, gin.H{"code": 401, "message": "登录已过期"})
+			c.JSON(401, gin.H{"code": 401, "message": i18n.T("login.token_invalid")})
 			c.Abort()
 			return
 		}
@@ -154,8 +154,8 @@ func main() {
 
 	// 启动服务器
 	addr := fmt.Sprintf(":%d", cfg.Server.Port)
-	log.Printf("服务器启动在 %s", addr)
+	log.Printf("server started on %s", addr)
 	if err := r.Run(addr); err != nil {
-		log.Fatalf("服务器启动失败: %v", err)
+		log.Fatalf("server start failed: %v", err)
 	}
 }

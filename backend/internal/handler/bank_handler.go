@@ -211,7 +211,7 @@ func checkConsumption(uid uint, cashMinAmount int) (bool, float64, float64) {
 
 // Withdraw 提交提款申请
 func (h *BankHandler) Withdraw(c *gin.Context) {
-	fmt.Println("=== 提款请求开始 ===")
+	fmt.Println("=== Withdraw request start ===")
 	fmt.Println("Request URL:", c.Request.URL)
 	fmt.Println("Request Method:", c.Request.Method)
 	fmt.Println("Content-Type:", c.GetHeader("Content-Type"))
@@ -219,7 +219,7 @@ func (h *BankHandler) Withdraw(c *gin.Context) {
 	// 从 context 获取用户 ID
 	userID, exists := c.Get("userID")
 	if !exists {
-		fmt.Println("错误：未授权，userID 不存在")
+		fmt.Println("error: unauthorized, userID not found")
 		response.Error(c, i18n.T("common.unauthorized"))
 		return
 	}
@@ -228,14 +228,14 @@ func (h *BankHandler) Withdraw(c *gin.Context) {
 
 	var req WithdrawRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		fmt.Println("绑定 JSON 失败:", err)
+		fmt.Println("bind JSON failed:", err)
 		bodyBytes, _ := io.ReadAll(c.Request.Body)
-		fmt.Println("原始 Body 数据:", string(bodyBytes))
+		fmt.Println("raw body data:", string(bodyBytes))
 		response.Error(c, i18n.T("bet.param_error")+": "+err.Error())
 		return
 	}
 
-	fmt.Println("提款请求参数:", req)
+	fmt.Println("withdraw request params:", req)
 
 	// 验证金额是否为正数
 	if req.Amount <= 0 {

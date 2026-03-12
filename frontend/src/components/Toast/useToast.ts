@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { t } from '@/locales'
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info'
 
@@ -66,7 +67,7 @@ export function showSuccess(message: string, title?: string): string {
   return showToast({
     type: 'success',
     message,
-    title: title || '成功',
+    title: title || t('toast.success'),
     duration: 3000
   })
 }
@@ -78,7 +79,7 @@ export function showError(message: string, title?: string): string {
   return showToast({
     type: 'error',
     message,
-    title: title || '错误',
+    title: title || t('toast.error'),
     duration: 5000
   })
 }
@@ -90,7 +91,7 @@ export function showWarning(message: string, title?: string): string {
   return showToast({
     type: 'warning',
     message,
-    title: title || '警告',
+    title: title || t('toast.warning'),
     duration: 4000
   })
 }
@@ -102,7 +103,7 @@ export function showInfo(message: string, title?: string): string {
   return showToast({
     type: 'info',
     message,
-    title: title || '提示',
+    title: title || t('toast.info'),
     duration: 3000
   })
 }

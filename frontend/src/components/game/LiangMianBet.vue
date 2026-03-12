@@ -187,11 +187,11 @@ const emit = defineEmits<{
 
 // 时时时彩球位列表
 const sscBalls = [
-  { position: 1, name: '第一球' },
-  { position: 2, name: '第二球' },
-  { position: 3, name: '第三球' },
-  { position: 4, name: '第四球' },
-  { position: 5, name: '第五球' }
+  { position: 1 },
+  { position: 2 },
+  { position: 3 },
+  { position: 4 },
+  { position: 5 }
 ]
 
 // PK10名次列表

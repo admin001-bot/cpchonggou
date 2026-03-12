@@ -108,4 +108,14 @@ var En = map[string]string{
 	"week.5": "Friday",
 	"week.6": "Saturday",
 	"log.bet": "Bet",
+
+	// Game names
+	"game.55":  "Lucky Airship",
+	"game.50":  "Beijing Racing",
+	"game.122": "5-Min Lottery",
+	"game.52":  "Speed Airship",
+	"game.66":  "PC Egg",
+	"game.100": "Speed Lottery",
+	"game.72":  "Speed Racing",
+	"game.113": "Speed Lotto",
 }

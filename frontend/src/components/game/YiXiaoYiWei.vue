@@ -11,7 +11,7 @@
           :class="{ active: selectedZodiac === zodiac.id }"
           @click="selectZodiac(zodiac.id)"
         >
-          <span class="zodiac-name">{{ zodiac.name }}</span>
+          <span class="zodiac-name">{{ t(zodiac.nameKey) }}</span>
           <span class="zodiac-numbers">{{ zodiac.numbers }}</span>
         </div>
       </div>
@@ -28,7 +28,7 @@
           :class="{ active: selectedWei === wei.id }"
           @click="selectWei(wei.id)"
         >
-          <span class="wei-name">{{ wei.name }}尾</span>
+          <span class="wei-name">{{ t('lianwei.wei', { name: wei.name }) }}</span>
           <span class="wei-numbers">{{ wei.numbers }}</span>
         </div>
       </div>
@@ -36,11 +36,11 @@
 
     <!-- 已选组合显示 -->
     <div class="selected-combo" v-if="selectedZodiac && selectedWei !== null">
-      <div class="selected-title">已选组合</div>
+      <div class="selected-title">{{ t('yixiaoyiwei.selected') }}</div>
       <div class="selected-content">
         <span class="selected-zodiac">{{ getZodiacName(selectedZodiac) }}</span>
         <span class="selected-operator">+</span>
-        <span class="selected-wei">{{ selectedWei }}尾</span>
+        <span class="selected-wei">{{ t('lianwei.wei', { name: selectedWei }) }}</span>
       </div>
     </div>
   </div>
@@ -66,18 +66,18 @@ const selectedWei = ref<number | null>(null)
 
 // 生肖列表 (playId: 1138801-1138812)
 const zodiacList = [
-  { id: 1, name: '鼠', numbers: '08,20,32,44' },
-  { id: 2, name: '牛', numbers: '07,19,31,43' },
-  { id: 3, name: '虎', numbers: '06,18,30,42' },
-  { id: 4, name: '兔', numbers: '05,17,29,41' },
-  { id: 5, name: '龍', numbers: '04,16,28,40' },
-  { id: 6, name: '蛇', numbers: '03,15,27,39' },
-  { id: 7, name: '馬', numbers: '02,14,26,38' },
-  { id: 8, name: '羊', numbers: '01,13,25,37,49' },
-  { id: 9, name: '猴', numbers: '12,24,36,48' },
-  { id: 10, name: '雞', numbers: '11,23,35,47' },
-  { id: 11, name: '狗', numbers: '10,22,34,46' },
-  { id: 12, name: '豬', numbers: '09,21,33,45' }
+  { id: 1, nameKey: 'lhc.rat', numbers: '08,20,32,44' },
+  { id: 2, nameKey: 'lhc.ox', numbers: '07,19,31,43' },
+  { id: 3, nameKey: 'lhc.tiger', numbers: '06,18,30,42' },
+  { id: 4, nameKey: 'lhc.rabbit', numbers: '05,17,29,41' },
+  { id: 5, nameKey: 'lhc.dragon', numbers: '04,16,28,40' },
+  { id: 6, nameKey: 'lhc.snake', numbers: '03,15,27,39' },
+  { id: 7, nameKey: 'lhc.horse', numbers: '02,14,26,38' },
+  { id: 8, nameKey: 'lhc.goat', numbers: '01,13,25,37,49' },
+  { id: 9, nameKey: 'lhc.monkey', numbers: '12,24,36,48' },
+  { id: 10, nameKey: 'lhc.rooster', numbers: '11,23,35,47' },
+  { id: 11, nameKey: 'lhc.dog', numbers: '10,22,34,46' },
+  { id: 12, nameKey: 'lhc.pig', numbers: '09,21,33,45' }
 ]
 
 // 尾数列表 (0-9)
@@ -107,7 +107,7 @@ const selectWei = (id: number) => {
 // 获取生肖名称
 const getZodiacName = (id: number) => {
   const zodiac = zodiacList.find(z => z.id === id)
-  return zodiac?.name || ''
+  return zodiac?.nameKey ? t(zodiac.nameKey) : ''
 }
 
 // 计算一肖一尾的 playId

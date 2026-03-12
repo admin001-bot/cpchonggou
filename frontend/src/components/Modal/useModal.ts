@@ -1,6 +1,7 @@
 import { ref, h, render } from 'vue'
 import type { VNode } from 'vue'
 import Modal from './index.vue'
+import { t } from '@/locales'
 
 export type ModalType = 'success' | 'error' | 'warning' | 'info'
 
@@ -36,8 +37,8 @@ export function showModal(options: ModalOptions): void {
     showClose: options.showClose ?? true,
     showFooter: options.showFooter ?? true,
     showCancel: options.showCancel ?? false,
-    confirmText: options.confirmText || '确定',
-    cancelText: options.cancelText || '取消',
+    confirmText: options.confirmText || t('modal.confirm'),
+    cancelText: options.cancelText || t('modal.cancel'),
     closeOnClickOverlay: options.closeOnClickOverlay ?? true,
     'onUpdate:visible': (val: boolean) => {
       if (!val) {
@@ -66,10 +67,10 @@ export function showModal(options: ModalOptions): void {
 export function showSuccessModal(message: string, title?: string): void {
   showModal({
     type: 'success',
-    title: title || '成功',
+    title: title || t('toast.success'),
     message,
     showCancel: false,
-    confirmText: '确定'
+    confirmText: t('modal.confirm')
   })
 }
 
@@ -79,10 +80,10 @@ export function showSuccessModal(message: string, title?: string): void {
 export function showErrorModal(message: string, title?: string): void {
   showModal({
     type: 'error',
-    title: title || '错误',
+    title: title || t('toast.error'),
     message,
     showCancel: false,
-    confirmText: '确定'
+    confirmText: t('modal.confirm')
   })
 }
 
@@ -92,10 +93,10 @@ export function showErrorModal(message: string, title?: string): void {
 export function showWarningModal(message: string, title?: string): void {
   showModal({
     type: 'warning',
-    title: title || '警告',
+    title: title || t('toast.warning'),
     message,
     showCancel: false,
-    confirmText: '确定'
+    confirmText: t('modal.confirm')
   })
 }
 
@@ -114,11 +115,11 @@ export function showConfirmModal(
 ): void {
   showModal({
     type: 'info',
-    title: title || '确认',
+    title: title || t('modal.confirmTitle'),
     message,
     showCancel: true,
-    confirmText: options?.confirmText || '确定',
-    cancelText: options?.cancelText || '取消',
+    confirmText: options?.confirmText || t('modal.confirm'),
+    cancelText: options?.cancelText || t('modal.cancel'),
     onConfirm: options?.onConfirm,
     onCancel: options?.onCancel
   })

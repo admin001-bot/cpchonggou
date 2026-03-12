@@ -286,7 +286,7 @@ router.beforeEach(async (to, _from, next) => {
   if (titleKey && (titleKey.startsWith('bet.') || titleKey.startsWith('home.') || titleKey.startsWith('common.') || titleKey.startsWith('bank.'))) {
     document.title = t(titleKey)
   } else {
-    document.title = titleKey || '彩票系统'
+    document.title = titleKey || t('common.appTitle')
   }
 
   // 检查是否需要登录

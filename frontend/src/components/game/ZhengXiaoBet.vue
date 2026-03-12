@@ -13,7 +13,7 @@
 
     <!-- 提示信息 -->
     <div class="tip-bar">
-      选择生肖进行投注，该位置号码与生肖对应即中奖
+      {{ t('zhengxiao.desc') }}
     </div>
 
     <!-- 生肖网格 -->
@@ -26,7 +26,7 @@
           :class="{ active: isSelected(getPlayId(zodiac.id)) }"
           @click="toggleBet(getPlayId(zodiac.id))"
         >
-          <span class="zodiac-name">{{ zodiac.name }}</span>
+          <span class="zodiac-name">{{ t(zodiac.nameKey) }}</span>
           <span class="zodiac-numbers">{{ zodiac.numbers }}</span>
         </div>
       </div>
@@ -48,23 +48,23 @@ const emit = defineEmits<{
   (e: 'toggle-bet', playId: number): void
 }>()
 
-const posNames = ['正 1 肖', '正 2 肖', '正 3 肖', '正 4 肖', '正 5 肖', '正 6 肖']
+const posNames = [t('zhengxiao.pos1'), t('zhengxiao.pos2'), t('zhengxiao.pos3'), t('zhengxiao.pos4'), t('zhengxiao.pos5'), t('zhengxiao.pos6')]
 const currentPos = ref(0)
 
 // 生肖列表 (playId 基础：11393001-11393012，每个位置偏移 12)
 const zodiacList = [
-  { id: 1, name: '鼠', numbers: '08,20,32,44' },
-  { id: 2, name: '牛', numbers: '07,19,31,43' },
-  { id: 3, name: '虎', numbers: '06,18,30,42' },
-  { id: 4, name: '兔', numbers: '05,17,29,41' },
-  { id: 5, name: '龍', numbers: '04,16,28,40' },
-  { id: 6, name: '蛇', numbers: '03,15,27,39' },
-  { id: 7, name: '馬', numbers: '02,14,26,38' },
-  { id: 8, name: '羊', numbers: '01,13,25,37,49' },
-  { id: 9, name: '猴', numbers: '12,24,36,48' },
-  { id: 10, name: '雞', numbers: '11,23,35,47' },
-  { id: 11, name: '狗', numbers: '10,22,34,46' },
-  { id: 12, name: '豬', numbers: '09,21,33,45' }
+  { id: 1, nameKey: 'lhc.rat', numbers: '08,20,32,44' },
+  { id: 2, nameKey: 'lhc.ox', numbers: '07,19,31,43' },
+  { id: 3, nameKey: 'lhc.tiger', numbers: '06,18,30,42' },
+  { id: 4, nameKey: 'lhc.rabbit', numbers: '05,17,29,41' },
+  { id: 5, nameKey: 'lhc.dragon', numbers: '04,16,28,40' },
+  { id: 6, nameKey: 'lhc.snake', numbers: '03,15,27,39' },
+  { id: 7, nameKey: 'lhc.horse', numbers: '02,14,26,38' },
+  { id: 8, nameKey: 'lhc.goat', numbers: '01,13,25,37,49' },
+  { id: 9, nameKey: 'lhc.monkey', numbers: '12,24,36,48' },
+  { id: 10, nameKey: 'lhc.rooster', numbers: '11,23,35,47' },
+  { id: 11, nameKey: 'lhc.dog', numbers: '10,22,34,46' },
+  { id: 12, nameKey: 'lhc.pig', numbers: '09,21,33,45' }
 ]
 
 // 获取基础偏移量

@@ -57,10 +57,16 @@ export function setLocale(locale: Locale): void {
   localStorage.setItem('locale', locale)
 }
 
-// 翻译函数
-export function t(key: string): string {
+// 翻译函数（支持参数替换）
+export function t(key: string, params?: Record<string, string | number>): string {
   const locale = getCurrentLocale()
-  return messages[locale][key] || key
+  let result = messages[locale][key] || key
+  if (params) {
+    Object.entries(params).forEach(([k, v]) => {
+      result = result.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v))
+    })
+  }
+  return result
 }
 
 // 导出语言包（供外部使用）

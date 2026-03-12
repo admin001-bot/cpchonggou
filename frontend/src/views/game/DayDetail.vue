@@ -164,7 +164,7 @@ async function loadData() {
       }
     }
   } catch (e) {
-    console.error('加载数据失败', e)
+    console.error('Failed to load data', e)
   } finally {
     loading.value = false
   }

@@ -1,7 +1,7 @@
 import axios from 'axios'
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { ElMessage } from 'element-plus'
-import { getCurrentLocale } from '@/locales'
+import { getCurrentLocale, t } from '@/locales'
 
 // 创建axios实例
 const service: AxiosInstance = axios.create({
@@ -48,11 +48,11 @@ service.interceptors.response.use(
         if (needAuth) {
           window.location.href = '/login'
         }
-        return Promise.reject(new Error(res.message || '未授权'))
+        return Promise.reject(new Error(res.message || t('common.unauthorized')))
       }
 
-      ElMessage.error(res.message || '请求失败')
-      return Promise.reject(new Error(res.message || '请求失败'))
+      ElMessage.error(res.message || t('common.error'))
+      return Promise.reject(new Error(res.message || t('common.error')))
     }
 
     return res
@@ -77,7 +77,7 @@ service.interceptors.response.use(
       return Promise.reject(error)
     }
 
-    ElMessage.error(error.message || '网络错误')
+    ElMessage.error(error.message || t('common.error'))
     return Promise.reject(error)
   }
 )

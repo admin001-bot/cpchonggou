@@ -95,7 +95,7 @@ async function loadLotteryData() {
       console.log('lotteryData:', lotteryData.value)
     }
   } catch (e) {
-    console.error('加载游戏数据失败', e)
+    console.error('Failed to load game data', e)
     // 加载失败时显示为0
     lotteryData.value = {
       balance: 0,

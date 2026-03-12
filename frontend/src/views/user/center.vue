@@ -434,7 +434,7 @@ const fetchPendingCount = async () => {
       pendingCount.value = res.data.notCount || 0
     }
   } catch (error) {
-    console.error('获取即时注单失败', error)
+    console.error('Failed to get pending bets', error)
   }
 }
 

@@ -9,13 +9,13 @@
         :class="{ active: currentCount === count }"
         @click="selectCount(count)"
       >
-        {{ count }}连肖
+        {{ t('lianxiao.title', { count }) }}
       </div>
     </div>
 
     <!-- 提示信息 -->
     <div class="tip-bar">
-      选择 {{ currentCount }} 个生肖，全部选中即中奖
+      {{ t('lianxiao.desc', { count: currentCount }) }}
     </div>
 
     <!-- 生肖网格 -->
@@ -28,7 +28,7 @@
           :class="{ active: selectedZodiacs.includes(zodiac.id) }"
           @click="toggleZodiac(zodiac.id)"
         >
-          <span class="zodiac-name">{{ zodiac.name }}</span>
+          <span class="zodiac-name">{{ t(zodiac.nameKey) }}</span>
           <span class="zodiac-numbers">{{ zodiac.numbers }}</span>
         </div>
       </div>
@@ -36,7 +36,7 @@
 
     <!-- 已选生肖显示 -->
     <div class="selected-zodiacs" v-if="selectedZodiacs.length > 0">
-      <div class="selected-title">已选生肖 ({{ selectedZodiacs.length }}/{{ currentCount }})</div>
+      <div class="selected-title">{{ t('lianxiao.selected', { count: selectedZodiacs.length, total: currentCount }) }}</div>
       <div class="selected-list">
         <span
           v-for="id in selectedZodiacs"
@@ -70,18 +70,18 @@ const selectedZodiacs = ref<number[]>([])
 
 // 生肖列表 (playId: 1138801-1138812)
 const zodiacList = [
-  { id: 1, name: '鼠', numbers: '08,20,32,44' },
-  { id: 2, name: '牛', numbers: '07,19,31,43' },
-  { id: 3, name: '虎', numbers: '06,18,30,42' },
-  { id: 4, name: '兔', numbers: '05,17,29,41' },
-  { id: 5, name: '龍', numbers: '04,16,28,40' },
-  { id: 6, name: '蛇', numbers: '03,15,27,39' },
-  { id: 7, name: '馬', numbers: '02,14,26,38' },
-  { id: 8, name: '羊', numbers: '01,13,25,37,49' },
-  { id: 9, name: '猴', numbers: '12,24,36,48' },
-  { id: 10, name: '雞', numbers: '11,23,35,47' },
-  { id: 11, name: '狗', numbers: '10,22,34,46' },
-  { id: 12, name: '豬', numbers: '09,21,33,45' }
+  { id: 1, nameKey: 'lhc.rat', numbers: '08,20,32,44' },
+  { id: 2, nameKey: 'lhc.ox', numbers: '07,19,31,43' },
+  { id: 3, nameKey: 'lhc.tiger', numbers: '06,18,30,42' },
+  { id: 4, nameKey: 'lhc.rabbit', numbers: '05,17,29,41' },
+  { id: 5, nameKey: 'lhc.dragon', numbers: '04,16,28,40' },
+  { id: 6, nameKey: 'lhc.snake', numbers: '03,15,27,39' },
+  { id: 7, nameKey: 'lhc.horse', numbers: '02,14,26,38' },
+  { id: 8, nameKey: 'lhc.goat', numbers: '01,13,25,37,49' },
+  { id: 9, nameKey: 'lhc.monkey', numbers: '12,24,36,48' },
+  { id: 10, nameKey: 'lhc.rooster', numbers: '11,23,35,47' },
+  { id: 11, nameKey: 'lhc.dog', numbers: '10,22,34,46' },
+  { id: 12, nameKey: 'lhc.pig', numbers: '09,21,33,45' }
 ]
 
 // 选择连肖数量
@@ -97,7 +97,7 @@ const toggleZodiac = (id: number) => {
     selectedZodiacs.value.splice(index, 1)
   } else {
     if (selectedZodiacs.value.length >= currentCount.value) {
-      alert(`最多选择 ${currentCount.value} 个生肖`)
+      alert(t('lianxiao.maxSelect', { count: currentCount.value }))
       return
     }
     selectedZodiacs.value.push(id)
@@ -115,7 +115,7 @@ const removeZodiac = (id: number) => {
 // 获取生肖名称
 const getZodiacName = (id: number) => {
   const zodiac = zodiacList.find(z => z.id === id)
-  return zodiac?.name || ''
+  return zodiac?.nameKey ? t(zodiac.nameKey) : ''
 }
 
 // 监听选择变化，通知父组件

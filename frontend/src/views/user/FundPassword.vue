@@ -195,7 +195,7 @@ const loadUserInfo = async () => {
       hasFundPwd.value = !!bankResult.data.coinPassword
     }
   } catch (error) {
-    console.error('加载用户信息失败:', error)
+    console.error('Failed to load user info:', error)
   }
 }
 

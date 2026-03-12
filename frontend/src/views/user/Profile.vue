@@ -465,7 +465,7 @@ const loadBankInfo = async () => {
       bankData.subAddress = res.data.subAddress || res.data.countname || ''
     }
   } catch (error) {
-    console.error('加载银行卡信息失败', error)
+    console.error('Failed to load bank info', error)
   }
 }
 
