@@ -45,7 +45,8 @@
       "Bash(python:*)",
       "Bash(printf 'SELECT COUNT\\(*\\) cnt FROM ssc_bets WHERE uid=2742 AND isDelete=0 AND lotteryNo!=\"\" AND actionTime >= 1773244800;\\\\n' | docker exec -i lottery-mysql-dev mysql -upj -ppj pj 2>&1)",
       "Bash(echo \"SELECT COUNT\\(*\\) FROM ssc_bets WHERE uid=2742 AND isDelete=0 AND lotteryNo!='' AND actionTime >= 1773244800\" | docker exec -i lottery-mysql-dev mysql -upj -ppj pj 2>&1)",
-      "WebFetch(domain:xy.ancha-gro.cfd)"
+      "WebFetch(domain:xy.ancha-gro.cfd)",
+      "Bash(git push:*)"
     ]
   }
 }
