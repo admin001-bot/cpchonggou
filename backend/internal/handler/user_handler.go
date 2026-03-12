@@ -686,10 +686,20 @@ func (h *UserHandler) GuestLogin(c *gin.Context) {
 	sessionKey := hex.EncodeToString(sessionBytes) // 32字符
 
 	// 创建会话 - loginIP 是 varchar，直接存储字符串
+	// os 和 browser 字段限制为32字符，需要截断
+	osHeader := c.GetHeader("sec-ch-ua-platform")
+	browserHeader := c.GetHeader("sec-ch-ua")
+	if len(osHeader) > 32 {
+		osHeader = osHeader[:32]
+	}
+	if len(browserHeader) > 32 {
+		browserHeader = browserHeader[:32]
+	}
+
 	sessionSQL := `INSERT INTO ssc_member_session (uid, username, session_key, loginTime, accessTime, loginIP, os, browser, isOnLine)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)`
 
-	if err := model.DB.Exec(sessionSQL, guestUID, guestUsername, sessionKey, currentTime, currentTime, clientIP, c.GetHeader("sec-ch-ua-platform"), c.GetHeader("sec-ch-ua")).Error; err != nil {
+	if err := model.DB.Exec(sessionSQL, guestUID, guestUsername, sessionKey, currentTime, currentTime, clientIP, osHeader, browserHeader).Error; err != nil {
 		response.Error(c, i18n.T("login.failed"))
 		return
 	}
