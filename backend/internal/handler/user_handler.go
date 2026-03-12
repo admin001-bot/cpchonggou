@@ -431,7 +431,7 @@ func (h *UserHandler) SetPassword(c *gin.Context) {
 
 	// 查询用户密码
 	var user model.User
-	if err := model.DB.Select("password").First(&user, uid).Error; err != nil {
+	if err := model.DB.Select("uid, password").First(&user, uid).Error; err != nil {
 		response.Error(c, i18n.T("bet.user_not_found"))
 		return
 	}
@@ -445,7 +445,7 @@ func (h *UserHandler) SetPassword(c *gin.Context) {
 
 	// 更新密码
 	newPwdHash := md5Hash(npwd)
-	if err := model.DB.Model(&user).Update("password", newPwdHash).Error; err != nil {
+	if err := model.DB.Model(&model.User{}).Where("uid = ?", uid).Update("password", newPwdHash).Error; err != nil {
 		response.Error(c, i18n.T("user.changePwdFailed"))
 		return
 	}
@@ -543,7 +543,7 @@ func (h *UserHandler) SetCoinPassword(c *gin.Context) {
 	}
 
 	// 更新资金密码
-	if err := model.DB.Model(&user).Update("coinPassword", newPwdHash).Error; err != nil {
+	if err := model.DB.Model(&model.User{}).Where("uid = ?", uid).Update("coinPassword", newPwdHash).Error; err != nil {
 		response.Error(c, i18n.T("user.changeCoinPwdFailed"))
 		return
 	}
