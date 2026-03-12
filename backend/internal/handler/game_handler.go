@@ -30,6 +30,8 @@ type BetUserInfo struct {
 	PanID        int8
 	Type         int8
 	MaxTurnMoney int
+	MaxMoney     int
+	Rebate       float64
 }
 
 // NewGameHandler 创建游戏处理器
@@ -337,6 +339,8 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
             PanID:        2, // 游客默认使用B盘
             Type:         0,
             MaxTurnMoney: 0,
+            MaxMoney:     0,
+            Rebate:       0,
         }
     } else {
         // 普通用户从members表查询
@@ -356,6 +360,8 @@ func (h *GameHandler) PlaceBet(c *gin.Context) {
             PanID:        normalUser.PanID,
             Type:         normalUser.Type,
             MaxTurnMoney: normalUser.MaxTurnMoney,
+            MaxMoney:     normalUser.MaxMoney,
+            Rebate:       normalUser.Rebate,
         }
     }
 
