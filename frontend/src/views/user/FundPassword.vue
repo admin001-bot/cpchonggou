@@ -187,11 +187,8 @@ const loadUserInfo = async () => {
     const result = await userApi.getUserInfo()
     if (result.code === 0 && result.data) {
       Object.assign(userInfoData, result.data)
-    }
-    // 检查是否已设置提款密码
-    const bankResult = await userApi.getUserBank()
-    if (bankResult.code === 0 && bankResult.data) {
-      hasFundPwd.value = !!bankResult.data.coinPassword
+      // 使用 getUserInfo 返回的 hasFundPwd 字段
+      hasFundPwd.value = !!(result.data as any).hasFundPwd
     }
   } catch (error) {
     console.error('Failed to load user info:', error)
